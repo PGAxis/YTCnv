@@ -3,19 +3,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="YTCnv.MainPage">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
 
+    <VerticalStackLayout Padding="30,0" Spacing="25">
+
+        <FlexLayout Padding="0,20,15,25" HeightRequest="80">
+            <Label Text="Youtube Converter" FontAttributes="Bold" FontSize="25" FlexLayout.Grow="1" FontFamily="Poppins" VerticalOptions="Center"/>
+        </FlexLayout>
+
+        <VerticalStackLayout>
             <Label Text="YouTube URL:" FontAttributes="Bold"/>
             <Entry x:Name="UrlEntry" Placeholder="https://www.youtube.com/watch?v=..." />
-
-            <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" />
-
-            <ProgressBar x:Name="DwnldProgress" IsVisible="False"/>
-            <ActivityIndicator x:Name="DownloadIndicator" IsVisible="False" IsRunning="False" />
-            <Label x:Name="StatusLabel" IsVisible="False"/>
-
         </VerticalStackLayout>
-    </ScrollView>
+
+        <FlexLayout VerticalOptions="Center">
+            <HorizontalStackLayout FlexLayout.Grow="1">
+                <Label Text="Format: " FontAttributes="Bold" VerticalTextAlignment="Center"/>
+                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="50">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>MP3</x:String>
+                            <x:String>MP4</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </HorizontalStackLayout>
+            <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" WidthRequest="100"/>
+        </FlexLayout>
+
+
+        <ProgressBar x:Name="DwnldProgress" IsVisible="False" />
+        <ActivityIndicator x:Name="DownloadIndicator" IsVisible="False" IsRunning="False" />
+        <Label x:Name="StatusLabel" IsVisible="False" HorizontalTextAlignment="Center"/>
+
+    </VerticalStackLayout>
 
 </ContentPage>
