@@ -1,11 +1,14 @@
 ﻿#if ANDROID
 using Com.Arthenica.Ffmpegkit;
 using Com.Arthenica.Smartexception;
+using Javax.Security.Auth;
 
 namespace YTCnv
 {
     public static class FFmpegInterop
     {
+        private static FFmpegSession _activeSession;
+
         public static async Task<bool> RunFFmpegCommand(string command)
         {
             var tcs = new TaskCompletionSource<FFmpegSession>();
@@ -13,7 +16,7 @@ namespace YTCnv
 
             try
             {
-                FFmpegKit.ExecuteAsync(command, callback);
+                _activeSession = FFmpegKit.ExecuteAsync(command, callback);
 
                 var session = await tcs.Task;
                 var returnCode = session.ReturnCode;
@@ -33,6 +36,15 @@ namespace YTCnv
             {
                 Console.WriteLine($"Exception while running FFmpeg: {ex.Message}");
                 return false;
+            }
+        }
+
+        public static void CancelFFmpegCommand()
+        {
+            if (_activeSession != null && _activeSession.State == SessionState.Running)
+            {
+                FFmpegKit.Cancel(_activeSession.SessionId);
+                Console.WriteLine("FFmpeg session cancelled.");
             }
         }
     }

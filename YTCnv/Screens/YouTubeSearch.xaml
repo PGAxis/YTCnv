@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="YTCnv.Screens.YouTubeSearch"
+             Shell.NavBarIsVisible="False">
+    
+    <VerticalStackLayout Padding="20,10,20,0">
+
+        <FlexLayout Padding="0,0,15,25" HeightRequest="80">
+            <Frame Padding="0,0,10,0" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                <ImageButton x:Name="GoFromSettings" Source="back.png" WidthRequest="23" HeightRequest="23" Clicked="GoBack"/>
+            </Frame>
+            <Label Text="Youtube Search" FontSize="18" FontFamily="Poppins" VerticalTextAlignment="Center" Padding="10,2,0,0"/>
+        </FlexLayout>
+
+        <VerticalStackLayout Padding="0,20,0,20" Spacing="15">
+
+            <StackLayout x:Name="ApiKeyPrompt" IsVisible="False" HorizontalOptions="Center">
+                <Label Text="Enter your YouTube Data API v3 Key" FontAttributes="Bold" />
+                <Entry x:Name="ApiKeyEntry" Placeholder="Paste your API key here" />
+                <Button Text="Save Key" Clicked="OnSaveApiKeyClicked" WidthRequest="90"/>
+                <Label Text="Don’t have a key? Visit:" Padding="0,30,0,0" HorizontalTextAlignment="Center"/>
+                <Button Text="Open Google API Console" TextColor="Blue" FontAttributes="Bold" BackgroundColor="Transparent" Clicked="OnOpenGoogleApiPage" Padding="0" BorderWidth="0"/>
+                
+                <Label Text="Once there, follow these steps:" Padding="0,30,0,0" HorizontalTextAlignment="Center"/>
+                <Label Text="1) Create new project"/>
+                <Label Text="2) Enable YouTube Data API v3"/>
+                <Label Text="3) Go to Credentials and create the API key"/>
+            </StackLayout>
+
+            <FlexLayout x:Name="SearchPanel" IsVisible="False">
+                <Frame Padding="0,0,10,0" FlexLayout.Grow="1" BackgroundColor="Transparent" BorderColor="Transparent" >
+                    <Entry x:Name="SearchEntry" Placeholder="Search for videos..." />
+                </Frame>
+                <Button Text="Search" Clicked="OnSearchClicked" />
+            </FlexLayout>
+
+            <ActivityIndicator x:Name="GettingVidsIndicator" IsVisible="False" IsRunning="False" />
+
+            <CollectionView x:Name="ResultsView" ItemsSource="{Binding SearchResults}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="10" Margin="0,5" BorderColor="#acacac" BackgroundColor="DimGrey" CornerRadius="10">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                                <Label Text="{Binding Author}" FontSize="10" />
+                                <FlexLayout>
+                                    <Frame Padding="0" FlexLayout.Grow="1" BackgroundColor="Transparent" BorderColor="Transparent">
+                                        <Frame Padding="0" HeightRequest="120" BackgroundColor="Transparent" BorderColor="Transparent" WidthRequest="213" HorizontalOptions="Start" CornerRadius="10">
+                                            <Grid WidthRequest="214" HeightRequest="120">
+                                                <Image Source="{Binding ThumbnailUrl}" HeightRequest="120" WidthRequest="214" BackgroundColor="Transparent" />
+                                                <Label Text="{Binding Duration}" BackgroundColor="#80000000" TextColor="White" FontSize="12" Padding="4" HorizontalOptions="End" VerticalOptions="End" Margin="4" />
+                                            </Grid>
+                                        </Frame>
+                                    </Frame>
+                                    <VerticalStackLayout Spacing="15" VerticalOptions="Center">
+                                        <Button Text="Copy ID" Clicked="OnCopyIdClicked" CommandParameter="{Binding VideoId}" BackgroundColor="#acacac" TextColor="Black"/>
+                                        <Button Text="Copy URL" Clicked="OnCopyUrlClicked" CommandParameter="{Binding VideoId}" BackgroundColor="#acacac" TextColor="Black"/>
+                                    </VerticalStackLayout>
+                                </FlexLayout>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentPage>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="YTCnv.Screens.Settings"
+             Shell.NavBarIsVisible="False">
+
+    <FlexLayout Direction="Column">
+        <VerticalStackLayout Padding="20,10,20,0" Spacing="15" FlexLayout.Grow="1">
+
+            <FlexLayout Padding="0,0,15,25" HeightRequest="80">
+                <Frame Padding="0,0,10,0" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                    <ImageButton x:Name="GoFromSettings" Source="back.png" WidthRequest="23" HeightRequest="23" Clicked="GoBack"/>
+                </Frame>
+                <Label Text="Settings" FontSize="18" FontFamily="Poppins" VerticalTextAlignment="Center" Padding="10,2,0,0"/>
+            </FlexLayout>
+
+            <Label x:Name="ApiKeyLabel" Text="API Key: " FontFamily="Poppins" />
+
+            <Button x:Name="RevealKeyButton" Text="Unlock to View/Change Key" Clicked="OnUnlockClicked" BackgroundColor="White" TextColor="Black" />
+
+            <StackLayout x:Name="KeyEditorPanel" IsVisible="False" Spacing="10">
+                <Entry x:Name="ApiKeyEntry" Placeholder="Enter new API key" />
+                <Button Text="Save New API Key" Clicked="OnSaveApiKeyClicked" BackgroundColor="White" TextColor="Black" />
+            </StackLayout>
+
+            <!--Settings-->
+            <FlexLayout BackgroundColor="Grey" Margin="0,20,0,0" Padding="25,0">
+                <Frame  FlexLayout.Grow="1" Padding="0" BackgroundColor="Transparent" BorderColor="Transparent">
+                    <HorizontalStackLayout HorizontalOptions="Start">
+                        <Label Text="Enable up to 4K downloads" VerticalOptions="Center" HorizontalOptions="Start"/>
+                        <Frame HorizontalOptions="End" VerticalOptions="Start" Padding="0" BackgroundColor="Transparent" BorderColor="Transparent">
+                            <Label BackgroundColor="Red" Text="Beta" Padding="2,0" FontSize="10" VerticalTextAlignment="Center"/>
+                        </Frame>
+                    </HorizontalStackLayout>
+                </Frame>
+                <Switch x:Name="use4kSwitch" VerticalOptions="Center" IsToggled="{Binding Use4K, Mode=TwoWay}"/>
+            </FlexLayout>
+
+        </VerticalStackLayout>
+
+        <Label x:Name="VersionLabel" HorizontalOptions="Center" TextColor="DimGrey" Padding="2"/>
+    </FlexLayout>
+</ContentPage>

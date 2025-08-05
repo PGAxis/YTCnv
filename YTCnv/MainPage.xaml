@@ -4,21 +4,27 @@
              x:Class="YTCnv.MainPage">
 
 
-    <VerticalStackLayout Padding="30,0" Spacing="25">
+    <VerticalStackLayout Padding="25,0" Spacing="25">
 
-        <FlexLayout Padding="0,20,15,25" HeightRequest="80">
-            <Label Text="Youtube Converter" FontAttributes="Bold" FontSize="25" FlexLayout.Grow="1" FontFamily="Poppins" VerticalOptions="Center"/>
+        <FlexLayout Padding="0,20,0,25" HeightRequest="80" VerticalOptions="Center">
+            <Label Text="Youtube Converter" FontAttributes="Bold" FontSize="20" FlexLayout.Grow="1" FontFamily="Poppins"/>
+            <Frame Padding="5" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                <ImageButton x:Name="YoutubeSearcher" Source="magglass.png" WidthRequest="25" HeightRequest="25" Clicked="OpenSearch"/>
+            </Frame>
+            <Frame Padding="5,0,0,0" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                <ImageButton x:Name="GoToSettings" Source="settings.png" WidthRequest="25" HeightRequest="25" Clicked="OpenSettings"/>
+            </Frame>
         </FlexLayout>
 
         <VerticalStackLayout>
-            <Label Text="YouTube URL:" FontAttributes="Bold"/>
+            <Label Text="YouTube URL or ID:" FontAttributes="Bold"/>
             <Entry x:Name="UrlEntry" Placeholder="https://www.youtube.com/watch?v=..." />
         </VerticalStackLayout>
 
         <FlexLayout VerticalOptions="Center">
             <HorizontalStackLayout FlexLayout.Grow="1">
                 <Label Text="Format: " FontAttributes="Bold" VerticalTextAlignment="Center"/>
-                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="50">
+                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="35" FontSize="13">
                     <Picker.ItemsSource>
                         <x:Array Type="{x:Type x:String}">
                             <x:String>MP3</x:String>
@@ -28,6 +34,7 @@
                 </Picker>
             </HorizontalStackLayout>
             <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" WidthRequest="100"/>
+            <Button x:Name="CancelButton" Text="Cancel" Clicked="OnCancelClicked" WidthRequest="100" BackgroundColor="White" TextColor="Black" IsVisible="False"/>
         </FlexLayout>
 
 
