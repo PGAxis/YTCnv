@@ -16,14 +16,16 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install MAUI Workload
-        run: dotnet workload install maui
+      - name: Install iOS Workload
+        run: dotnet workload install ios
 
       - name: Restore NuGet packages
         run: dotnet restore FFmpegKitIOSBinding/FFmpegKitIOSBinding.csproj
 
       - name: Build iOS Binding Library
         run: dotnet build FFmpegKitIOSBinding/FFmpegKitIOSBinding.csproj -c Release
+        env:
+          DOTNET_EnableWriteXorExecute: 1
 
       - name: Upload binding DLL
         uses: actions/upload-artifact@v4
