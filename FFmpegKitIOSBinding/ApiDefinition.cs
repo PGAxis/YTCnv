@@ -66,6 +66,22 @@ namespace FFmpegKitIOSBinding
     interface FFmpegSession
     {
         [Static]
+        [Export("getReturnCode")]
+        nint ReturnCode { get; }
+
+        [Static]
+        [Export("getFailStackTrace")]
+        string FailStackTrace { get; }
+
+        [Static]
+        [Export("getSessionId")]
+        string SessionId { get; }
+
+        [Static]
+        [Export("getState")]
+        SessionState State { get; }
+        
+        [Static]
         [Export("create:")]
         FFmpegSession Create(NSArray arguments);
 
@@ -210,4 +226,5 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
     }
 }
+
 
