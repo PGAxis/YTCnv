@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FFmpegKit.iOS.Binding
-          path: FFmpegKitIOSBinding/bin/Release/*.dll
+          path: FFmpegKitIOSBinding/bin/Release/net8.0-ios/*.dll
