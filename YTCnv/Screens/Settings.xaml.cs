@@ -66,7 +66,10 @@ public partial class Settings : ContentPage
         bool valid = await TestApiKey(newKey);
         if (!valid)
         {
-            await DisplayAlert("Invalid", "This API key is not valid.", "OK");
+            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+                await DisplayAlert("No Internet", "Please connect to the internet before saving your API key", "OK");
+            else
+                await DisplayAlert("Invalid", "That API key appears to be invalid.", "OK");
             return;
         }
 

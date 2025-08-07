@@ -58,16 +58,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AndroidExternalJavaLibrary Include="Platforms\Android\Jars\ffmpeg-kit-full-gpl-6.0-2.LTS.aar" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="YoutubeExplode" Version="6.5.4" />
 		<PackageReference Include="YoutubeExplode.Converter" Version="6.5.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="FFmpegKitIOSBinding">
+			<HintPath>Libs/FFmpegKitIOSBinding.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
@@ -84,4 +87,3 @@
 	</ItemGroup>
 
 </Project>
-

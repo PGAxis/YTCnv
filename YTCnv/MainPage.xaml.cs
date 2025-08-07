@@ -12,10 +12,6 @@ using YTCnv.Screens;
 
 namespace YTCnv
 {
-    /*var context = Android.App.Application.Context;
-    var intent = new Intent(context, typeof(MediaPlayerNotificationService));
-    context.StartForegroundService(intent);*/
-
     public partial class MainPage : ContentPage
     {
         CancellationTokenSource _downloadCts;
@@ -34,7 +30,6 @@ namespace YTCnv
         {
             _downloadCts = new CancellationTokenSource();
             StatusLabel.IsVisible = false;
-            //Console.WriteLine("Writing currently yay :D");
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 Task.Run(async () => await DoTheThing());
@@ -84,6 +79,7 @@ namespace YTCnv
             string mp4Path = Path.Combine(FileSystem.CacheDirectory, "video.mp4");
             string semiOutput = Path.Combine(FileSystem.AppDataDirectory, "semi-outputVideo.mp4");
             string semiOutputAudio = Path.Combine(FileSystem.AppDataDirectory, "semi-outputAudio.mp3");
+            string imagePath = Path.Combine(FileSystem.CacheDirectory, "thumbnail.jpg");
 
             try
             {
@@ -121,7 +117,6 @@ namespace YTCnv
                 string thumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
                 using HttpClient http = new HttpClient();
                 byte[] bytes = await http.GetByteArrayAsync(thumbnailUrl);
-                string imagePath = Path.Combine(FileSystem.CacheDirectory, "thumbnail.jpg");
                 File.WriteAllBytes(imagePath, bytes);
 
                 StreamManifest streamManifest = await YouTube.Videos.Streams.GetManifestAsync(url, _downloadCts.Token);
@@ -161,6 +156,12 @@ namespace YTCnv
                     
                     SaveAudioToDownloads(Android.App.Application.Context, title + ".mp3", semiOutputAudio);
 #endif
+#if IOS
+                    await FFmpegInteropIOS.RunFFmpegCommand($"-y -i \"{m4aPath}\" -i \"{imagePath}\" -map 0:a -map 1:v -c:a libmp3lame -b:a 128k -c:v mjpeg -disposition:v attached_pic -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover\" -metadata title=\"{title}\" -metadata artist=\"{author}\"  -threads 1 \"{semiOutputAudio}\"");
+
+                    string savedPath = SaveToDocuments(title + ".mp3", semiOutputAudio);
+                    await ShareFileAsync(savedPath);
+#endif
 
                     File.Delete(m4aPath);
                     File.Delete(semiOutputAudio);
@@ -193,6 +194,15 @@ namespace YTCnv
 
                     SaveVideoToDownloads(Android.App.Application.Context, title + ".mp4", semiOutput);
 #endif
+#if IOS
+                    if (_4KChoice)
+                        await FFmpegInteropIOS.RunFFmpegCommand($"-y -i \"{mp4Path}\" -i \"{m4aPath}\" -c:v libx264 -pix_fmt yuv420p -preset faster -crf 23 -c:a copy -map 0:v:0 -map 1:a:0 -shortest -metadata title=\"{title}\" -metadata artist=\"{author}\" \"{semiOutput}\"");
+                    else
+                        await FFmpegInteropIOS.RunFFmpegCommand($"-y -i \"{mp4Path}\" -i \"{m4aPath}\" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 -shortest -metadata title=\"{title}\" -metadata artist=\"{author}\" \"{semiOutput}\"");
+
+                    string savedPath = SaveToDocuments(title + ".mp4", semiOutputAudio);
+                    await ShareFileAsync(savedPath);
+#endif
 
                     File.Delete(m4aPath);
                     File.Delete(mp4Path);
@@ -220,6 +230,8 @@ namespace YTCnv
                         File.Delete(semiOutput);
                     if (File.Exists(semiOutputAudio))
                         File.Delete(semiOutputAudio);
+                    if (File.Exists(imagePath))
+                        File.Delete(imagePath);
                 });
 
 #if ANDROID
@@ -252,6 +264,8 @@ namespace YTCnv
                         File.Delete(semiOutput);
                     if (File.Exists(semiOutputAudio))
                         File.Delete(semiOutputAudio);
+                    if (File.Exists(imagePath))
+                        File.Delete(imagePath);
                 }
                 else
                 {
@@ -275,6 +289,8 @@ namespace YTCnv
                         File.Delete(semiOutput);
                     if (File.Exists(semiOutputAudio))
                         File.Delete(semiOutputAudio);
+                    if (File.Exists(imagePath))
+                        File.Delete(imagePath);
                 }
 #if ANDROID
                 var context = Android.App.Application.Context;
@@ -302,6 +318,8 @@ namespace YTCnv
                     File.Delete(semiOutput);
                 if (File.Exists(semiOutputAudio))
                     File.Delete(semiOutputAudio);
+                if (File.Exists(imagePath))
+                    File.Delete(imagePath);
 #if ANDROID
                 var context = Android.App.Application.Context;
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
@@ -379,11 +397,34 @@ namespace YTCnv
             }
         }
 #endif
+#if IOS
+        public static string SaveToDocuments(string fileName, string inputFilePath)
+        {
+            var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var destinationPath = Path.Combine(documentsPath, fileName);
+
+            File.Copy(inputFilePath, destinationPath, overwrite: true);
+
+            return destinationPath;
+        }
+
+        public static async Task ShareFileAsync(string filePath, string title = "Share File")
+        {
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = title,
+                File = new ShareFile(filePath)
+            });
+        }
+#endif
 
         private void OnCancelClicked(object sender, EventArgs e)
         {
 #if ANDROID
             FFmpegInterop.CancelFFmpegCommand();
+#endif
+#if IOS
+            FFmpegInteropIOS.CancelFFmpegCommand();
 #endif
 
             _downloadCts?.Cancel();

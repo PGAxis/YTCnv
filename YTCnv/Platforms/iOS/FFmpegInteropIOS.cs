@@ -1,16 +1,16 @@
-﻿#if ANDROID
-using Com.Arthenica.Ffmpegkit;
+﻿#if IOS
+using FFmpegKitIOSBinding;
 
 namespace YTCnv
 {
-    public static class FFmpegInterop
+    public static class FFmpegInteropIOS
     {
         private static FFmpegSession _activeSession;
 
         public static async Task<bool> RunFFmpegCommand(string command)
         {
             var tcs = new TaskCompletionSource<FFmpegSession>();
-            var callback = new FFmpegSessionCompleteCallback(tcs);
+            var callback = new OwnFFmpegSessionCompleteCallback(tcs);
 
             try
             {
@@ -47,11 +47,11 @@ namespace YTCnv
         }
     }
 
-    public class FFmpegSessionCompleteCallback : Java.Lang.Object, IFFmpegSessionCompleteCallback
+    public class OwnFFmpegSessionCompleteCallback : FFmpegSessionCompleteCallback
     {
         private readonly TaskCompletionSource<FFmpegSession> _tcs;
 
-        public FFmpegSessionCompleteCallback(TaskCompletionSource<FFmpegSession> tcs)
+        public OwnFFmpegSessionCompleteCallback(TaskCompletionSource<FFmpegSession> tcs)
         {
             _tcs = tcs;
         }
