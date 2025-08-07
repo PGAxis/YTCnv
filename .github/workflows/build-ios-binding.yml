@@ -20,13 +20,13 @@ jobs:
         run: dotnet workload install maui
 
       - name: Restore NuGet packages
-        run: dotnet restore FFmpegBindingKit/FFmpegBindingKit.csproj
+        run: dotnet restore FFmpegKitIOSBinding/FFmpegKitIOSBinding.csproj
 
       - name: Build iOS Binding Library
-        run: dotnet build FFmpegBindingKit/FFmpegBindingKit.csproj -c Release
+        run: dotnet build FFmpegKitIOSBinding/FFmpegKitIOSBinding.csproj -c Release
 
       - name: Upload binding DLL
         uses: actions/upload-artifact@v4
         with:
           name: FFmpegKit.iOS.Binding
-          path: FFmpegBindingKit/bin/Release/*.dll
+          path: FFmpegKitIOSBinding/bin/Release/*.dll
