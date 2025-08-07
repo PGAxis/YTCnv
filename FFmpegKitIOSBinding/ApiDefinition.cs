@@ -4,6 +4,7 @@ using ObjCRuntime;
 
 namespace Com.Arthenica.FFmpegKit
 {
+    // Enum for LogRedirectionStrategy
     [Native]
     public enum LogRedirectionStrategy : long
     {
@@ -11,16 +12,43 @@ namespace Com.Arthenica.FFmpegKit
         Redirect = 1,
         RedirectWithLogFile = 2
     }
-    
-    // Constants
-    [Static]
-    partial interface Constants
+
+    // ReturnCodeEnum for clarity
+    public enum ReturnCodeEnum : ulong
     {
-        [Field("AbstractSessionDefaultTimeoutForAsynchronousMessagesInTransmit", "__Internal")]
-        int AbstractSessionDefaultTimeoutForAsynchronousMessagesInTransmit { get; }
+        Success = 0,
+        Cancel = 255
     }
 
-    // FFmpegKit Interface
+    // ReturnCode class binding
+    [BaseType(typeof(NSObject))]
+    interface ReturnCode
+    {
+        [Export("init:")]
+        IntPtr Constructor(int value);
+
+        [Static]
+        [Export("isSuccess:")]
+        bool IsSuccess(ReturnCode value);
+
+        [Static]
+        [Export("isCancel:")]
+        bool IsCancel(ReturnCode value);
+
+        [Export("getValue")]
+        int GetValue();
+
+        [Export("isValueSuccess")]
+        bool IsValueSuccess();
+
+        [Export("isValueError")]
+        bool IsValueError();
+
+        [Export("isValueCancel")]
+        bool IsValueCancel();
+    }
+
+    // FFmpegKit main interface
     [BaseType(typeof(NSObject))]
     interface FFmpegKit
     {
@@ -49,7 +77,7 @@ namespace Com.Arthenica.FFmpegKit
         FFmpegSession[] ListSessions();
     }
 
-    // FFmpegSession Interface
+    // FFmpegSession interface
     [BaseType(typeof(NSObject))]
     interface FFmpegSession
     {
@@ -91,7 +119,7 @@ namespace Com.Arthenica.FFmpegKit
         void AddStatistics(Statistics statistics);
     }
 
-    // AbstractSession Interface
+    // AbstractSession interface
     [BaseType(typeof(NSObject))]
     interface AbstractSession : ISession
     {
@@ -102,7 +130,7 @@ namespace Com.Arthenica.FFmpegKit
         void WaitForAsynchronousMessagesInTransmit(int timeout);
     }
 
-    // FFmpegSessionCompleteCallback Interface
+    // FFmpegSessionCompleteCallback interface (delegate)
     [BaseType(typeof(NSObject))]
     interface FFmpegSessionCompleteCallback
     {
@@ -110,20 +138,7 @@ namespace Com.Arthenica.FFmpegKit
         void Apply(FFmpegSession session);
     }
 
-    // ReturnCode Interface
-    [BaseType(typeof(NSObject))]
-    interface ReturnCode
-    {
-        [Static]
-        [Export("isSuccess:")]
-        bool IsSuccess(ReturnCode returnCode);
-
-        [Static]
-        [Export("isCancel:")]
-        bool IsCancel(ReturnCode returnCode);
-    }
-
-    // LogCallback Interface
+    // LogCallback interface
     [BaseType(typeof(NSObject))]
     interface LogCallback
     {
@@ -131,7 +146,7 @@ namespace Com.Arthenica.FFmpegKit
         void Apply(Log log);
     }
 
-    // StatisticsCallback Interface
+    // StatisticsCallback interface
     [BaseType(typeof(NSObject))]
     interface StatisticsCallback
     {
@@ -139,15 +154,7 @@ namespace Com.Arthenica.FFmpegKit
         void Apply(Statistics statistics);
     }
 
-    // LogRedirectionStrategy Enum
-    enum LogRedirectionStrategy
-    {
-        None,
-        Redirect,
-        RedirectWithLogFile
-    }
-
-    // Log Interface
+    // Log interface
     [BaseType(typeof(NSObject))]
     interface Log
     {
@@ -161,7 +168,7 @@ namespace Com.Arthenica.FFmpegKit
         double Time { get; }
     }
 
-    // Statistics Interface
+    // Statistics interface
     [BaseType(typeof(NSObject))]
     interface Statistics
     {
@@ -187,7 +194,7 @@ namespace Com.Arthenica.FFmpegKit
         double Duration { get; }
     }
 
-    // ISession Interface
+    // ISession protocol
     [Protocol]
     interface ISession
     {
@@ -219,4 +226,3 @@ namespace Com.Arthenica.FFmpegKit
         string FailStackTrace { get; }
     }
 }
-
