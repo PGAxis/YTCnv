@@ -4,22 +4,6 @@ using ObjCRuntime;
 
 namespace FFmpegKitIOSBinding
 {
-    // Enum for LogRedirectionStrategy
-    [Native]
-    public enum LogRedirectionStrategy : long
-    {
-        None = 0,
-        Redirect = 1,
-        RedirectWithLogFile = 2
-    }
-
-    // ReturnCodeEnum for clarity
-    public enum ReturnCodeEnum : ulong
-    {
-        Success = 0,
-        Cancel = 255
-    }
-
     // ReturnCode class binding
     [BaseType(typeof(NSObject))]
     interface ReturnCode
@@ -226,5 +210,4 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
     }
 }
-
 
