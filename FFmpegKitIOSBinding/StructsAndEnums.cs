@@ -17,4 +17,14 @@ namespace FFmpegKitIOSBinding
         Success = 0,
         Cancel = 255
     }
+
+    [Native]
+    public enum SessionState : long
+    {
+        Created,
+        Running,
+        Failed,
+        Completed
+    }
 }
+
