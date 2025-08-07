@@ -2,7 +2,7 @@ using System;
 using Foundation;
 using ObjCRuntime;
 
-namespace Com.Arthenica.FFmpegKit
+namespace FFmpegKitIOSBinding
 {
     // Enum for LogRedirectionStrategy
     [Native]
@@ -226,3 +226,4 @@ namespace Com.Arthenica.FFmpegKit
         string FailStackTrace { get; }
     }
 }
+
