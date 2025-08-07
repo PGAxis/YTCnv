@@ -4,6 +4,14 @@ using ObjCRuntime;
 
 namespace Com.Arthenica.FFmpegKit
 {
+    [Native]
+    public enum LogRedirectionStrategy : long
+    {
+        None = 0,
+        Redirect = 1,
+        RedirectWithLogFile = 2
+    }
+    
     // Constants
     [Static]
     partial interface Constants
@@ -211,3 +219,4 @@ namespace Com.Arthenica.FFmpegKit
         string FailStackTrace { get; }
     }
 }
+
