@@ -1,70 +1,83 @@
-namespace FFmpegKitIOSBinding
+using System;
+using Foundation;
+using ObjCRuntime;
+using CoreFoundation;
+
+namespace Com.Arthenica.Ffmpegkit
 {
+    // Delegate types for callbacks used in FFmpegKit
+    // These are typedefs in the original, here we define delegates accordingly.
 
-    // The first step to creating a binding is to add your native framework ("MyLibrary.xcframework")
-    // to the project.
-    // Open your binding csproj and add a section like this
-    // <ItemGroup>
-    //   <NativeReference Include="MyLibrary.xcframework">
-    //     <Kind>Framework</Kind>
-    //     <Frameworks></Frameworks>
-    //   </NativeReference>
-    // </ItemGroup>
-    //
-    // Once you've added it, you will need to customize it for your specific library:
-    //  - Change the Include to the correct path/name of your library
-    //  - Change Kind to Static (.a) or Framework (.framework/.xcframework) based upon the library kind and extension.
-    //    - Dynamic (.dylib) is a third option but rarely if ever valid, and only on macOS and Mac Catalyst
-    //  - If your library depends on other frameworks, add them inside <Frameworks></Frameworks>
-    // Example:
-    // <NativeReference Include="libs\MyTestFramework.xcframework">
-    //   <Kind>Framework</Kind>
-    //   <Frameworks>CoreLocation ModelIO</Frameworks>
-    // </NativeReference>
-    // 
-    // Once you've done that, you're ready to move on to binding the API...
-    //
-    // Here is where you'd define your API definition for the native Objective-C library.
-    //
-    // For example, to bind the following Objective-C class:
-    //
-    //     @interface Widget : NSObject {
-    //     }
-    //
-    // The C# binding would look like this:
-    //
-    //     [BaseType (typeof (NSObject))]
-    //     interface Widget {
-    //     }
-    //
-    // To bind Objective-C properties, such as:
-    //
-    //     @property (nonatomic, readwrite, assign) CGPoint center;
-    //
-    // You would add a property definition in the C# interface like so:
-    //
-    //     [Export ("center")]
-    //     CGPoint Center { get; set; }
-    //
-    // To bind an Objective-C method, such as:
-    //
-    //     -(void) doSomething:(NSObject *)object atIndex:(NSInteger)index;
-    //
-    // You would add a method definition to the C# interface like so:
-    //
-    //     [Export ("doSomething:atIndex:")]
-    //     void DoSomething (NSObject object, nint index);
-    //
-    // Objective-C "constructors" such as:
-    //
-    //     -(id)initWithElmo:(ElmoMuppet *)elmo;
-    //
-    // Can be bound as:
-    //
-    //     [Export ("initWithElmo:")]
-    //     NativeHandle Constructor (ElmoMuppet elmo);
-    //
-    // For more information, see https://aka.ms/ios-binding
-    //
+    delegate void FFmpegSessionCompleteCallback(FFmpegSession session);
+    delegate void LogCallback(IntPtr log); // You can define this more precisely if you want
+    delegate void StatisticsCallback(IntPtr stats); // Same here
 
+    [BaseType(typeof(NSObject))]
+    interface FFmpegKit
+    {
+        // Sync execution with arguments
+        [Static]
+        [Export("executeWithArguments:")]
+        FFmpegSession ExecuteWithArguments(NSArray arguments);
+
+        // Async execution with arguments and complete callback
+        [Static]
+        [Export("executeWithArgumentsAsync:withCompleteCallback:")]
+        FFmpegSession ExecuteWithArgumentsAsync(NSArray arguments, FFmpegSessionCompleteCallback completeCallback);
+
+        // Async execution with arguments, complete, log and statistics callbacks
+        [Static]
+        [Export("executeWithArgumentsAsync:withCompleteCallback:withLogCallback:withStatisticsCallback:")]
+        FFmpegSession ExecuteWithArgumentsAsync(NSArray arguments, FFmpegSessionCompleteCallback completeCallback, LogCallback logCallback, StatisticsCallback statisticsCallback);
+
+        // Async execution with arguments, complete callback and dispatch queue
+        [Static]
+        [Export("executeWithArgumentsAsync:withCompleteCallback:onDispatchQueue:")]
+        FFmpegSession ExecuteWithArgumentsAsync(NSArray arguments, FFmpegSessionCompleteCallback completeCallback, DispatchQueue queue);
+
+        // Async execution with arguments, complete, log, statistics callbacks, and dispatch queue
+        [Static]
+        [Export("executeWithArgumentsAsync:withCompleteCallback:withLogCallback:withStatisticsCallback:onDispatchQueue:")]
+        FFmpegSession ExecuteWithArgumentsAsync(NSArray arguments, FFmpegSessionCompleteCallback completeCallback, LogCallback logCallback, StatisticsCallback statisticsCallback, DispatchQueue queue);
+
+        // Sync execution with command string
+        [Static]
+        [Export("execute:")]
+        FFmpegSession Execute(string command);
+
+        // Async execution with command string and complete callback
+        [Static]
+        [Export("executeAsync:withCompleteCallback:")]
+        FFmpegSession ExecuteAsync(string command, FFmpegSessionCompleteCallback completeCallback);
+
+        // Async execution with command string, complete, log and statistics callbacks
+        [Static]
+        [Export("executeAsync:withCompleteCallback:withLogCallback:withStatisticsCallback:")]
+        FFmpegSession ExecuteAsync(string command, FFmpegSessionCompleteCallback completeCallback, LogCallback logCallback, StatisticsCallback statisticsCallback);
+
+        // Async execution with command string, complete callback and dispatch queue
+        [Static]
+        [Export("executeAsync:withCompleteCallback:onDispatchQueue:")]
+        FFmpegSession ExecuteAsync(string command, FFmpegSessionCompleteCallback completeCallback, DispatchQueue queue);
+
+        // Async execution with command string, complete, log, statistics callbacks, and dispatch queue
+        [Static]
+        [Export("executeAsync:withCompleteCallback:withLogCallback:withStatisticsCallback:onDispatchQueue:")]
+        FFmpegSession ExecuteAsync(string command, FFmpegSessionCompleteCallback completeCallback, LogCallback logCallback, StatisticsCallback statisticsCallback, DispatchQueue queue);
+
+        // Cancel all sessions
+        [Static]
+        [Export("cancel")]
+        void Cancel();
+
+        // Cancel session by id
+        [Static]
+        [Export("cancel:")]
+        void Cancel(long sessionId);
+
+        // List sessions
+        [Static]
+        [Export("listSessions")]
+        NSArray ListSessions();
+    }
 }
