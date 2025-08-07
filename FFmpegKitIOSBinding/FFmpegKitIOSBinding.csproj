@@ -1,1 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-ios</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>true</ImplicitUsings>
+    <IsBindingProject>true</IsBindingProject>
 
+    <!--
+      Enable trim analyzers for class libraries.
+      To learn more, see: https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming
+    -->
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="StructsAndEnums.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="FFmpegKitFrameworks\" />
+  </ItemGroup>
+	
+	<ItemGroup>
+		<NativeReference Include="FFmpegKitFrameworks/ffmpegkit.xcframework/ios-arm64/ffmpegkit.framework">
+			<Kind>Framework</Kind>
+			<SmartLink>True</SmartLink>
+			<ForceLoad>True</ForceLoad>
+		</NativeReference>
+		<NativeReference Include="FFmpegKitFrameworks/ffmpegkit.xcframework/ios-arm64_x86_64-simulator/ffmpegkit.framework">
+			<Kind>Framework</Kind>
+			<SmartLink>True</SmartLink>
+			<ForceLoad>True</ForceLoad>
+		</NativeReference>
+		<NativeReference Include="FFmpegKitFrameworks/ffmpegkit.xcframework/ios-arm64_x86_64-maccatalyst/ffmpegkit.framework">
+			<Kind>Framework</Kind>
+			<SmartLink>True</SmartLink>
+			<ForceLoad>True</ForceLoad>
+		</NativeReference>
+	</ItemGroup>
+</Project>
