@@ -32,10 +32,6 @@
 			<SmartLink>True</SmartLink>
 			<ForceLoad>True</ForceLoad>
 		</NativeReference>
-		<NativeReference Include="FFmpegKitFrameworks/ffmpegkit.xcframework/ios-arm64_x86_64-maccatalyst/ffmpegkit.framework">
-			<Kind>Framework</Kind>
-			<SmartLink>True</SmartLink>
-			<ForceLoad>True</ForceLoad>
-		</NativeReference>
 	</ItemGroup>
 </Project>
+
