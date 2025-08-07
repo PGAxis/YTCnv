@@ -72,7 +72,7 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
 
         [Export("getSessionId")]
-        string SessionId { get; }
+        long SessionId { get; }
 
         [Export("getState")]
         SessionState State { get; }
@@ -222,6 +222,7 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
     }
 }
+
 
 
 
