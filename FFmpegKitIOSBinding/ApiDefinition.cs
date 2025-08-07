@@ -65,19 +65,15 @@ namespace FFmpegKitIOSBinding
     [BaseType(typeof(NSObject))]
     interface FFmpegSession
     {
-        [Static]
         [Export("getReturnCode")]
-        nint ReturnCode { get; }
+        ReturnCode ReturnCode { get; }
 
-        [Static]
         [Export("getFailStackTrace")]
         string FailStackTrace { get; }
 
-        [Static]
         [Export("getSessionId")]
         string SessionId { get; }
 
-        [Static]
         [Export("getState")]
         SessionState State { get; }
         
@@ -226,5 +222,6 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
     }
 }
+
 
 
