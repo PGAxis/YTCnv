@@ -222,7 +222,3 @@ namespace FFmpegKitIOSBinding
         string FailStackTrace { get; }
     }
 }
-
-
-
-
