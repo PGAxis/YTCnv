@@ -13,6 +13,8 @@
 		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
 		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
 
+		<BuildTargetFrameworksOnly>true</BuildTargetFrameworksOnly>
+
 		<OutputType>Exe</OutputType>
 		<RootNamespace>YTCnv</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -64,14 +66,15 @@
 		<PackageReference Include="YoutubeExplode" Version="6.5.4" />
 	</ItemGroup>
 
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+		<RuntimeIdentifiers>iossimulator-x64;iossimulator-arm64;ios-arm64</RuntimeIdentifiers>
+	</PropertyGroup>
+	
 	<ItemGroup>
 	  <Folder Include="Screens\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
-		<ProjectReference Include="..\FFmpegKitBindingAndroid\FFmpegKitBindingAndroid.csproj">
-			<ExcludeFromCurrentTargetFramework Condition="'$(TargetFramework)' != 'net8.0-android'">true</ExcludeFromCurrentTargetFramework>
-		</ProjectReference>
+		<ProjectReference Include="..\FFmpegKitBindingAndroid\FFmpegKitBindingAndroid.csproj"/>
 	</ItemGroup>
 </Project>
-
