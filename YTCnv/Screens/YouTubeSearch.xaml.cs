@@ -46,13 +46,7 @@ public partial class YouTubeSearch : ContentPage
             }
             else
             {
-                if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-                {
-                    ApiKeyPrompt.IsVisible = false;
-                SearchPanel.IsVisible = true;
-                }
-                else
-                    await DisplayAlert("Invalid Key", "Your API key is invalid or expired. Please enter a new one.", "OK");
+                await DisplayAlert("Invalid Key", "Your API key is invalid or expired. Please enter a new one.", "OK");
                 ApiKeyPrompt.IsVisible = true;
                 SearchPanel.IsVisible = false;
             }
@@ -77,10 +71,7 @@ public partial class YouTubeSearch : ContentPage
         }
         else
         {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-                await DisplayAlert("No Internet", "Please connect to the internet before saving your API key", "OK");
-            else
-                await DisplayAlert("Invalid", "That API key appears to be invalid.", "OK");
+            await DisplayAlert("Invalid", "That API key appears to be invalid.", "OK");
         }
     }
 
@@ -156,10 +147,7 @@ public partial class YouTubeSearch : ContentPage
         }
         catch (Exception ex)
         {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-                await DisplayAlert("No Internet", "Please connect to the internet before searching for videos", "OK");
-            else
-                await DisplayAlert("Error", ex.Message, "OK");
+            await DisplayAlert("Error", ex.Message, "OK");
             GettingVidsIndicator.IsVisible = false;
             GettingVidsIndicator.IsRunning = false;
         }
@@ -211,4 +199,5 @@ public partial class YouTubeSearch : ContentPage
     {
         await Launcher.Default.OpenAsync("https://console.developers.google.com");
     }
+
 }

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Text.Json;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace YTCnv
 {
@@ -25,7 +25,7 @@ namespace YTCnv
             return instance;
         }
 
-        private bool use4K;
+        private bool use4K = false;
         public bool Use4K
         {
             get => use4K;
@@ -69,4 +69,6 @@ namespace YTCnv
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
 }
+

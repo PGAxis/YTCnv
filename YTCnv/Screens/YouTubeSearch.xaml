@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="YTCnv.Screens.YouTubeSearch"
              Shell.NavBarIsVisible="False">
-    
+
     <VerticalStackLayout Padding="20,10,20,0">
 
         <FlexLayout Padding="0,0,15,25" HeightRequest="80">
@@ -21,7 +21,7 @@
                 <Button Text="Save Key" Clicked="OnSaveApiKeyClicked" WidthRequest="90"/>
                 <Label Text="Don’t have a key? Visit:" Padding="0,30,0,0" HorizontalTextAlignment="Center"/>
                 <Button Text="Open Google API Console" TextColor="Blue" FontAttributes="Bold" BackgroundColor="Transparent" Clicked="OnOpenGoogleApiPage" Padding="0" BorderWidth="0"/>
-                
+
                 <Label Text="Once there, follow these steps:" Padding="0,30,0,0" HorizontalTextAlignment="Center"/>
                 <Label Text="1) Create new project"/>
                 <Label Text="2) Enable YouTube Data API v3"/>

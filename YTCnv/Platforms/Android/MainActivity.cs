@@ -1,10 +1,8 @@
 ﻿using Android;
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
-using System.Threading.Tasks;
 
 namespace YTCnv
 {
@@ -15,7 +13,6 @@ namespace YTCnv
         {
             base.OnCreate(savedInstanceState);
 
-            // Change the status bar color to transparent
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
             {
                 Window.SetStatusBarColor(Android.Graphics.Color.Transparent);

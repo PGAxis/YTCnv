@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="YTCnv.MainPage">
 
-
     <VerticalStackLayout Padding="25,0" Spacing="25">
 
         <FlexLayout Padding="0,20,0,25" HeightRequest="80" VerticalOptions="Center">
@@ -22,9 +21,8 @@
         </VerticalStackLayout>
 
         <FlexLayout VerticalOptions="Center">
-            <HorizontalStackLayout FlexLayout.Grow="1">
-                <Label Text="Format: " FontAttributes="Bold" VerticalTextAlignment="Center"/>
-                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="35" FontSize="13">
+            <HorizontalStackLayout x:Name="downloadOptions" FlexLayout.Grow="1" IsVisible="False">
+                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="35" FontSize="13" SelectedIndexChanged="OnWantedFormatChanged">
                     <Picker.ItemsSource>
                         <x:Array Type="{x:Type x:String}">
                             <x:String>MP3</x:String>
@@ -32,8 +30,11 @@
                         </x:Array>
                     </Picker.ItemsSource>
                 </Picker>
+                <Picker x:Name="qualityPicker" Title="Choose quality" FontSize="13"/>
             </HorizontalStackLayout>
-            <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" WidthRequest="100"/>
+
+            <Button x:Name="LoadButton" Text="Load metadata" Clicked="OnLoadClicked" WidthRequest="100" BackgroundColor="White" TextColor="Black" FlexLayout.Grow="1"/>
+            <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" WidthRequest="100" IsVisible="False"/>
             <Button x:Name="CancelButton" Text="Cancel" Clicked="OnCancelClicked" WidthRequest="100" BackgroundColor="White" TextColor="Black" IsVisible="False"/>
         </FlexLayout>
 
@@ -43,5 +44,4 @@
         <Label x:Name="StatusLabel" IsVisible="False" HorizontalTextAlignment="Center"/>
 
     </VerticalStackLayout>
-
 </ContentPage>
