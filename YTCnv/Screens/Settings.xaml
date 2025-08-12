@@ -28,9 +28,6 @@
                 <Frame  FlexLayout.Grow="1" Padding="0" BackgroundColor="Transparent" BorderColor="Transparent">
                     <HorizontalStackLayout HorizontalOptions="Start">
                         <Label Text="Enable up to 4K downloads" VerticalOptions="Center" HorizontalOptions="Start"/>
-                        <!--<Frame HorizontalOptions="End" VerticalOptions="Start" Padding="0" BackgroundColor="Transparent" BorderColor="Transparent">
-                            <Label BackgroundColor="Red" Text="Beta" Padding="2,0" FontSize="10" VerticalTextAlignment="Center"/>
-                        </Frame>-->
                     </HorizontalStackLayout>
                 </Frame>
                 <Switch x:Name="use4kSwitch" VerticalOptions="Center" IsToggled="{Binding Use4K, Mode=TwoWay}"/>

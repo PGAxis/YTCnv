@@ -263,9 +263,7 @@ namespace YTCnv
 
                 if (selectedFormat == 0)
                 {
-                    var bitrateChoice = audioOptions.ElementAt(qualityPicker.SelectedIndex).Key;
-
-                    IStreamInfo audioStream = streamManifest.GetAudioOnlyStreams().Where(s => s.Container == Container.Mp4).FirstOrDefault(s => s.Bitrate.KiloBitsPerSecond == bitrateChoice);
+                    IStreamInfo audioStream = fastDwnld ? streamManifest.GetAudioOnlyStreams().Where(s => s.Container == Container.Mp4).TryGetWithHighestBitrate() : streamManifest.GetAudioOnlyStreams().Where(s => s.Container == Container.Mp4).FirstOrDefault(s => s.Bitrate.KiloBitsPerSecond == audioOptions.ElementAt(qualityPicker.SelectedIndex).Key);
                     await YouTube.Videos.Streams.DownloadAsync(audioStream, m4aPath, progress: progress, cancellationToken: _downloadCts.Token);
 
                     MainThread.BeginInvokeOnMainThread(() =>
@@ -287,14 +285,18 @@ namespace YTCnv
                 }
                 if (selectedFormat == 1)
                 {
-                    var resolutionChoice = videoOptions.ElementAt(qualityPicker.SelectedIndex).Key;
-
                     IStreamInfo audioStream = streamManifest.GetAudioOnlyStreams().Where(s => s.Container == Container.Mp4).TryGetWithHighestBitrate();
-                    IVideoStreamInfo videoStream = _4KChoice ?
-                        (resolutionChoice > 1080 ?
-                            streamManifest.GetVideoOnlyStreams().FirstOrDefault(s => s.VideoQuality.MaxHeight == resolutionChoice) :
-                            streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).FirstOrDefault(s => s.VideoQuality.MaxHeight == resolutionChoice)) :
-                        streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).FirstOrDefault(s => s.VideoQuality.MaxHeight == resolutionChoice);
+                    IVideoStreamInfo videoStream = fastDwnld ?
+                        (_4KChoice ? 
+                            (IVideoStreamInfo)streamManifest.GetVideoOnlyStreams().TryGetWithHighestBitrate() :
+                            (IVideoStreamInfo)streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).TryGetWithHighestBitrate()) :
+                        (_4KChoice ?
+                        (videoOptions.ElementAt(qualityPicker.SelectedIndex).Key > 1080 ?
+                            (IVideoStreamInfo)streamManifest.GetVideoOnlyStreams().FirstOrDefault(s => s.VideoQuality.MaxHeight == videoOptions.ElementAt(qualityPicker.SelectedIndex).Key) :
+                            (IVideoStreamInfo)streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).FirstOrDefault(s => s.VideoQuality.MaxHeight == videoOptions.ElementAt(qualityPicker.SelectedIndex).Key)) :
+                        streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).FirstOrDefault(s => s.VideoQuality.MaxHeight == videoOptions.ElementAt(qualityPicker.SelectedIndex).Key));
+
+                    bool isMoreThan1080p = videoStream.VideoQuality.MaxHeight > 1080;
 
                     Task audioTask = YouTube.Videos.Streams.DownloadAsync(audioStream, m4aPath, cancellationToken: _downloadCts.Token).AsTask();
                     Task videoTask = YouTube.Videos.Streams.DownloadAsync(videoStream, mp4Path, progress: progress, cancellationToken: _downloadCts.Token).AsTask();
@@ -312,7 +314,7 @@ namespace YTCnv
 #if ANDROID
                     if (_4KChoice)
                     {
-                        if (resolutionChoice > 1080)
+                        if (isMoreThan1080p)
                             await FFmpegInterop.RunFFmpegCommand($"-y -i \"{mp4Path}\" -i \"{m4aPath}\" -c:v libx264 -pix_fmt yuv420p -preset faster -crf 23 -c:a copy -map 0:v:0 -map 1:a:0 -shortest -metadata title=\"{title}\" -metadata artist=\"{author}\" \"{semiOutput}\"");
                         else
                             await FFmpegInterop.RunFFmpegCommand($"-y -i \"{mp4Path}\" -i \"{m4aPath}\" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 -shortest -metadata title=\"{title}\" -metadata artist=\"{author}\" \"{semiOutput}\"");
@@ -523,12 +525,6 @@ namespace YTCnv
 
         private void ResetMainPageState(bool isQuickDownload, bool clearUrl = true)
         {
-            if (isQuickDownload)
-            {
-                QuickDownloadPage();
-                return;
-            }
-
             downloadOptions.IsVisible = false;
             FormatPicker.IsEnabled = true;
             qualityPicker.IsEnabled = true;
@@ -545,6 +541,11 @@ namespace YTCnv
 
             LoadButton.IsVisible = true;
             LoadButton.IsEnabled = true;
+
+            if (isQuickDownload)
+            {
+                QuickDownloadPage();
+            }
         }
 
         private void QuickDownloadPage()
