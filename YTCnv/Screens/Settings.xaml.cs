@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace YTCnv.Screens;
 
 public partial class Settings : ContentPage
@@ -10,7 +12,8 @@ public partial class Settings : ContentPage
         InitializeComponent();
         BindingContext = this;
         use4kSwitch.BindingContext = settings;
-        LoadMaskedKey();
+        enableQuickDwnld.BindingContext = settings;
+        //LoadMaskedKey();
         VersionLabel.Text = $"{AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})";
     }
 
@@ -21,16 +24,53 @@ public partial class Settings : ContentPage
         LoadMaskedKey();
     }
 
-    private void LoadMaskedKey()
+    private async Task LoadMaskedKey()
     {
-        var key = Preferences.Get(ApiKeyPref, null);
-        if (string.IsNullOrEmpty(key))
-        {
-            ApiKeyLabel.Text = "API Key: [ Not Set ]";
-        }
+        settings.APIKeyValidity = settings.APIKeyValidity;
+        string apiKey = Preferences.Get(ApiKeyPref, null);
+
+        if (apiKey != null)
+            ApiKeyLabel.Text = $"API Key: {new string('*', apiKey.Length)}";
         else
+            ApiKeyLabel.Text = "API Key: [ Not Set ]";
+
+        switch (settings.APIKeyValidity)
         {
-            ApiKeyLabel.Text = $"API Key: {new string('*', key.Length)}";
+            case 0:
+                ApiKeyLabel.Text = $"API Key: {new string('*', apiKey.Length)}";
+                break;
+            case 1:
+                await DisplayAlert("Invalid API key", "Your API key appears to be invalid. To use the search feature, please enter a valid API key", "OK");
+                break;
+            case 2:
+                settings.APIKeyValidity = await settings.TestApiKey(apiKey);
+                switch (settings.APIKeyValidity)
+                {
+                    case 0:
+                        ApiKeyLabel.Text = $"API Key: {new string('*', apiKey.Length)}";
+                        break;
+                    case 1:
+                        await DisplayAlert("Invalid API key", "Your API key appears to be invalid. To use the search feature, please enter a valid API key", "OK");
+                        break;
+                    case 2:
+                        bool show = await DisplayAlert("Network Error", "Your API key can not be checked. Please connect to the internet and try again.\nClicking OK will show the API key.", "OK", "CANCEl");
+                        if (show)
+                        {
+                            ApiKeyLabel.Text = $"API Key: {apiKey}";
+                            KeyEditorPanel.IsVisible = true;
+                            RevealKeyButton.IsVisible = false;
+                        }
+                        else
+                            ApiKeyLabel.Text = $"API Key: {new string('*', apiKey.Length)}";
+                        break;
+                    case 3:
+                        ApiKeyLabel.Text = "API Key: [ Not Set ]";
+                        break;
+                }
+                break;
+            case 3:
+                ApiKeyLabel.Text = "API Key: [ Not Set ]";
+                break;
         }
     }
 
@@ -53,37 +93,52 @@ public partial class Settings : ContentPage
 
         if (string.IsNullOrEmpty(newKey))
         {
-            await DisplayAlert("Missing", "Please enter an API key.", "OK");
+            bool delete = await DisplayAlert("Missing", "Do you wish to remove your API key from this app?", "OK", "CANCEL");
+            if (delete)
+            {
+                Preferences.Set(ApiKeyPref, string.Empty);
+
+                LoadMaskedKey();
+                KeyEditorPanel.IsVisible = false;
+                RevealKeyButton.IsVisible = true;
+            }
+            else
+            {
+                LoadMaskedKey();
+                KeyEditorPanel.IsVisible = false;
+                RevealKeyButton.IsVisible = true;
+            }
             return;
         }
 
-        bool valid = await TestApiKey(newKey);
-        if (!valid)
-        {
-            await DisplayAlert("Invalid", "This API key is not valid.", "OK");
-            return;
-        }
+        byte validity = await settings.TestApiKey(newKey);
 
-        Preferences.Set(ApiKeyPref, newKey);
-        await DisplayAlert("Saved", "API key has been updated successfully.", "OK");
-
-        LoadMaskedKey();
-        KeyEditorPanel.IsVisible = false;
-        RevealKeyButton.IsVisible = true;
-    }
-
-    private async Task<bool> TestApiKey(string apiKey)
-    {
-        try
+        switch (validity)
         {
-            using var http = new HttpClient();
-            string testUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=test&maxResults=1&key={apiKey}";
-            var result = await http.GetAsync(testUrl);
-            return result.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
+            case 0:
+                Preferences.Set(ApiKeyPref, newKey);
+                await DisplayAlert("Saved", "API key has been updated successfully.", "OK");
+
+                LoadMaskedKey();
+                KeyEditorPanel.IsVisible = false;
+                RevealKeyButton.IsVisible = true;
+                break;
+            case 1:
+                await DisplayAlert("Invalid API key", "Your API key appears to be invalid. To use the search feature, please enter a valid API key", "OK");
+                return;
+            case 2:
+                await DisplayAlert("Lost connection", "The API key cannot be checked and may be invalid.", "OK");
+
+                Preferences.Set(ApiKeyPref, newKey);
+                await DisplayAlert("Saved", "API key has been saved, however it may not work.", "OK");
+
+                LoadMaskedKey();
+                KeyEditorPanel.IsVisible = false;
+                RevealKeyButton.IsVisible = true;
+                break;
+            case 3:
+                await DisplayAlert("Missing", "Please enter an API key.", "OK");
+                break;
         }
     }
 

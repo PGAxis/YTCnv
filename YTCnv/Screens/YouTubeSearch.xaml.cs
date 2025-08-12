@@ -1,13 +1,17 @@
+using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json.Linq;
 using System.Collections.ObjectModel;
 using System.Web;
 using System.Xml;
+using YTCnv.Popups;
 
 namespace YTCnv.Screens;
 
 public partial class YouTubeSearch : ContentPage
 {
     private const string ApiKeyPref = "YoutubeApiKey";
+
+    private SettingsSave settings = SettingsSave.Instance();
 
     public ObservableCollection<YouTubeResult> SearchResults { get; set; } = new();
 
@@ -29,27 +33,40 @@ public partial class YouTubeSearch : ContentPage
         SearchResults.Clear();
         SearchEntry.Text = "";
 
-        var apiKey = Preferences.Get(ApiKeyPref, null);
-
-        if (string.IsNullOrWhiteSpace(apiKey))
+        switch (settings.APIKeyValidity)
         {
-            ApiKeyPrompt.IsVisible = true;
-            SearchPanel.IsVisible = false;
-        }
-        else
-        {
-            bool valid = await TestApiKey(apiKey);
-            if (valid)
-            {
+            case 0:
                 ApiKeyPrompt.IsVisible = false;
                 SearchPanel.IsVisible = true;
-            }
-            else
-            {
-                await DisplayAlert("Invalid Key", "Your API key is invalid or expired. Please enter a new one.", "OK");
-                ApiKeyPrompt.IsVisible = true;
+                break;
+            case 1:
+                this.ShowPopup(new GoToPagePopup("The API key seems to be be invalid. Please visit settings to renew your API key", "settings", nameof(Settings)));
+                return;
+            case 2:
+                settings.APIKeyValidity = await settings.TestApiKey(Preferences.Get(ApiKeyPref, null));
+                switch (settings.APIKeyValidity)
+                {
+                    case 0:
+                        ApiKeyPrompt.IsVisible = false;
+                        SearchPanel.IsVisible = true;
+                        break;
+                    case 1:
+                        this.ShowPopup(new GoToPagePopup("The API key seems to be be invalid. Please visit settings to renew your API key", "settings", nameof(Settings)));
+                        break;
+                    case 2:
+                        await DisplayAlert("Lost connection", "You have to be connected to the internet to use the search feature", "OK");
+                        await Shell.Current.GoToAsync("///MainPage");
+                        return;
+                    case 3:
+                        SearchPanel.IsVisible = false;
+                        ApiKeyPrompt.IsVisible = true;
+                        break;
+                }
+                break;
+            case 3:
                 SearchPanel.IsVisible = false;
-            }
+                ApiKeyPrompt.IsVisible = true;
+                break;
         }
     }
 
@@ -58,20 +75,37 @@ public partial class YouTubeSearch : ContentPage
         var newKey = ApiKeyEntry.Text?.Trim();
         if (string.IsNullOrWhiteSpace(newKey))
         {
-            await DisplayAlert("Missing Key", "Please paste your YouTube API key.", "OK");
+            await DisplayAlert("Missing Key", "Please input your YouTube API key.", "OK");
             return;
         }
 
-        if (await TestApiKey(newKey))
+        settings.APIKeyValidity = await settings.TestApiKey(newKey);
+
+        switch (settings.APIKeyValidity)
         {
-            Preferences.Set(ApiKeyPref, newKey);
-            await DisplayAlert("Saved", "Your API key is saved and valid.", "OK");
-            ApiKeyPrompt.IsVisible = false;
-            SearchPanel.IsVisible = true;
-        }
-        else
-        {
-            await DisplayAlert("Invalid", "That API key appears to be invalid.", "OK");
+            case 0:
+                Preferences.Set(ApiKeyPref, newKey);
+                ApiKeyPrompt.IsVisible = false;
+                SearchPanel.IsVisible = true;
+                break;
+            case 1:
+                await DisplayAlert("Invalid API key", "Your API key appears to be invalid. To use the search feature, please enter a valid API key", "OK");
+                return;
+            case 2:
+                await DisplayAlert("Lost connection", "The API key cannot be checked and may be invalid.", "OK");
+
+                Preferences.Set(ApiKeyPref, newKey);
+                await DisplayAlert("Saved", "API key has been saved, however it may not work.", "OK");
+
+                ApiKeyPrompt.IsVisible = false;
+                SearchPanel.IsVisible = true;
+
+                break;
+            case 3:
+                await DisplayAlert("Missing", "Please enter an API key.", "OK");
+                SearchPanel.IsVisible = false;
+                ApiKeyPrompt.IsVisible = true;
+                break;
         }
     }
 
@@ -158,18 +192,36 @@ public partial class YouTubeSearch : ContentPage
         }
     }
 
-    private async Task<bool> TestApiKey(string apiKey)
+    private async Task<byte> TestApiKey(string apiKey)
     {
         try
         {
             using var http = new HttpClient();
             string testUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=test&maxResults=1&key={apiKey}";
             var result = await http.GetAsync(testUrl);
-            return result.IsSuccessStatusCode;
+            if (result.IsSuccessStatusCode)
+                return 0;
+            else
+                return 1;
         }
-        catch
+#if ANDROID
+        catch(Java.Net.UnknownHostException)
         {
-            return false;
+            return 2;
+        }
+#endif
+        catch (HttpRequestException)
+        {
+            return 2;
+        }
+        catch (TaskCanceledException)
+        {
+            return 2;
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", ex.Message, "OK");
+            return 1;
         }
     }
 

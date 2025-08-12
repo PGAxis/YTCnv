@@ -15,6 +15,9 @@ namespace YTCnv
         CancellationTokenSource _downloadCts;
 
         private bool _4KChoice;
+        private bool fastDwnld;
+
+        private const string ApiKeyPref = "YoutubeApiKey";
 
         private Dictionary<double, string> audioOptions;
         private Dictionary<int, string> videoOptions;
@@ -28,6 +31,20 @@ namespace YTCnv
             InitializeComponent();
             FormatPicker.SelectedIndex = 0;
             settings.LoadSettings();
+            SetApiKey();
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            fastDwnld = settings.QuickDwnld;
+            ResetMainPageState(fastDwnld);
+        }
+
+        private void SetApiKey()
+        {
+            Task.Run(async () => settings.APIKeyValidity = await settings.TestApiKey(Preferences.Get(ApiKeyPref, null)));
         }
 
         private void OnLoadClicked(object sender, EventArgs e)
@@ -58,7 +75,7 @@ namespace YTCnv
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     await DisplayAlert("", "Please enter a YouTube URL", "OK");
-                    ResetMainPageState();
+                    ResetMainPageState(fastDwnld);
                 });
                 return;
             }
@@ -80,7 +97,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Invalid URL", "Please enter a valid YouTube URL", "OK");
-                        ResetMainPageState();
+                        ResetMainPageState(fastDwnld);
                     });
                     return;
                 }
@@ -103,6 +120,7 @@ namespace YTCnv
                     DownloadIndicator.IsVisible = false;
                     DownloadIndicator.IsRunning = false;
                     downloadOptions.IsVisible = true;
+                    qualityPicker.IsVisible = true;
                     qualityPicker.ItemsSource = audioOptions.Values.ToList();
                     qualityPicker.SelectedIndex = 0;
                     DownloadButton.IsVisible = true;
@@ -115,7 +133,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Lost connection", "Please connect to the internet", "OK");
-                        ResetMainPageState(false);
+                        ResetMainPageState(fastDwnld, false);
                     });
                 }
                 else
@@ -123,7 +141,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Error", ex.Message, "OK");
-                        ResetMainPageState();
+                        ResetMainPageState(fastDwnld);
                     });
                 }
             }
@@ -138,16 +156,16 @@ namespace YTCnv
             StatusLabel.IsVisible = false;
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                Task.Run(async () => await DoTheThing());
+                Task.Run(async () => await DoTheThing(fastDwnld));
             }
             else
             {
                 Task.Run(async () => await DisplayAlert("Lost connection", "Please connect to the internet", "OK"));
-                ResetMainPageState(false);
+                ResetMainPageState(fastDwnld, false);
             }
         }
 
-        private async Task DoTheThing()
+        private async Task DoTheThing(bool useNewUrl)
         {
             YoutubeClient YouTube = new YoutubeClient();
 
@@ -169,12 +187,15 @@ namespace YTCnv
                 });
             });
 
+            if (useNewUrl)
+                url = UrlEntry.Text;
+
             if (string.IsNullOrWhiteSpace(url))
             {
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await DisplayAlert("", "Please enter a YouTube URL", "OK");
-                    ResetMainPageState();
+                    await DisplayAlert("No URL", "Please enter a YouTube URL", "OK");
+                    ResetMainPageState(fastDwnld);
                 });
                 return;
             }
@@ -208,7 +229,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Invalid URL", "Please enter a valid YouTube URL", "OK");
-                        ResetMainPageState();
+                        ResetMainPageState(fastDwnld);
                     });
                     return;
                 }
@@ -312,7 +333,7 @@ namespace YTCnv
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     await DisplayAlert("Canceled", "The download was cancelled.", "OK");
-                    ResetMainPageState(false);
+                    ResetMainPageState(fastDwnld, false);
 
                     DeleteFiles();
                 });
@@ -330,7 +351,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Lost connection", "Please connect to the internet", "OK");
-                        ResetMainPageState(false);
+                        ResetMainPageState(fastDwnld, false);
                     });
 
                     DeleteFiles();
@@ -340,7 +361,7 @@ namespace YTCnv
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         await DisplayAlert("Error", ex.Message, "OK");
-                        ResetMainPageState();
+                        ResetMainPageState(fastDwnld);
                     });
 
                     DeleteFiles();
@@ -355,7 +376,7 @@ namespace YTCnv
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    ResetMainPageState();
+                    ResetMainPageState(fastDwnld);
                 });
 
                 DeleteFiles();
@@ -390,6 +411,8 @@ namespace YTCnv
             title = title.Replace("[Official Video]", "");
             title = title.Replace("(Official Audio)", "");
             title = title.Replace("[Official Audio]", "");
+            title = title.Replace("(Official Audio Visualizer)", "");
+            title = title.Replace("[Official Audio Visualizer]", "");
             title = title.Replace("(Official Song)", "");
             title = title.Replace("[Official Song]", "");
             title = title.Replace("[Lyrics]", "");
@@ -498,8 +521,14 @@ namespace YTCnv
             }
         }
 
-        private void ResetMainPageState(bool clearUrl = true)
+        private void ResetMainPageState(bool isQuickDownload, bool clearUrl = true)
         {
+            if (isQuickDownload)
+            {
+                QuickDownloadPage();
+                return;
+            }
+
             downloadOptions.IsVisible = false;
             FormatPicker.IsEnabled = true;
             qualityPicker.IsEnabled = true;
@@ -516,6 +545,14 @@ namespace YTCnv
 
             LoadButton.IsVisible = true;
             LoadButton.IsEnabled = true;
+        }
+
+        private void QuickDownloadPage()
+        {
+            downloadOptions.IsVisible = true;
+            qualityPicker.IsVisible = false;
+            LoadButton.IsVisible = false;
+            DownloadButton.IsVisible = true;
         }
     }
 }
