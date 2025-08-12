@@ -417,8 +417,12 @@ namespace YTCnv
             title = title.Replace("[Official Audio Visualizer]", "");
             title = title.Replace("(Official Song)", "");
             title = title.Replace("[Official Song]", "");
-            title = title.Replace("[Lyrics]", "");
+            title = title.Replace("(Full Album)", "");
+            title = title.Replace("[Full Album]", "");
+            title = title.Replace("(Intro)", "");
+            title = title.Replace("[Intro]", "");
             title = title.Replace("(Lyrics)", "");
+            title = title.Replace("[Lyrics]", "");
             title = title.Replace(author, "");
             title = title.Trim();
             title = title.Trim('-');
