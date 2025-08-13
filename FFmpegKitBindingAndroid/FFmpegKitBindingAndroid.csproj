@@ -1,1 +1,25 @@
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      Enable trim analyzers for Android class libraries.
+      To learn more, see: https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming
+    -->
+    <IsTrimmable>true</IsTrimmable>
+    <!--
+      NOTE: you can simply add .aar or .jar files in this directory to be included in the project.
+      To learn more, see: https://learn.microsoft.com/dotnet/maui/migration/android-binding-projects
+    -->
+  </PropertyGroup>
+	<ItemGroup>
+		<AndroidLibrary Include="Jars\ffmpeg-kit-full-gpl-6.0-2.LTS.aar" />
+		<EmbeddedJar Include="Jars\smart-exception-java-0.2.1.jar" />
+		<EmbeddedJar Include="Jars\smart-exception-common-0.2.1.jar" />
+	</ItemGroup>
+	<PropertyGroup>
+		<AndroidEnableMultiDex>true</AndroidEnableMultiDex>
+	</PropertyGroup>
+</Project>
