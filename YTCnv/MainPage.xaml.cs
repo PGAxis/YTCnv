@@ -65,6 +65,8 @@ namespace YTCnv
 
         private async Task LoadVideoMetadata()
         {
+            settings.IsDownloadRunning = true;
+
             YoutubeClient YouTube = new YoutubeClient();
 
             _4KChoice = settings.Use4K;
@@ -79,6 +81,7 @@ namespace YTCnv
                     await DisplayAlert("", "Please enter a YouTube URL", "OK");
                     ResetMainPageState(fastDwnld);
                 });
+                settings.IsDownloadRunning = false;
                 return;
             }
 
@@ -101,6 +104,7 @@ namespace YTCnv
                         await DisplayAlert("Invalid URL", "Please enter a valid YouTube URL", "OK");
                         ResetMainPageState(fastDwnld);
                     });
+                    settings.IsDownloadRunning = false;
                     return;
                 }
 
@@ -127,6 +131,8 @@ namespace YTCnv
                     qualityPicker.SelectedIndex = 0;
                     DownloadButton.IsVisible = true;
                 });
+
+                settings.IsDownloadRunning = false;
             }
             catch (Exception ex)
             {
@@ -146,6 +152,7 @@ namespace YTCnv
                         ResetMainPageState(fastDwnld);
                     });
                 }
+                settings.IsDownloadRunning = false;
             }
         }
 
@@ -169,6 +176,8 @@ namespace YTCnv
 
         private async Task DoTheThing(bool useNewUrl)
         {
+            settings.IsDownloadRunning = true;
+
             YoutubeClient YouTube = new YoutubeClient();
 
             _4KChoice = settings.Use4K;
@@ -199,6 +208,7 @@ namespace YTCnv
                     await DisplayAlert("No URL", "Please enter a YouTube URL", "OK");
                     ResetMainPageState(fastDwnld);
                 });
+                settings.IsDownloadRunning = false;
                 return;
             }
 
@@ -233,6 +243,7 @@ namespace YTCnv
                         await DisplayAlert("Invalid URL", "Please enter a valid YouTube URL", "OK");
                         ResetMainPageState(fastDwnld);
                     });
+                    settings.IsDownloadRunning = false;
                     return;
                 }
 
@@ -284,6 +295,8 @@ namespace YTCnv
 
                     File.Delete(m4aPath);
                     File.Delete(semiOutputAudio);
+
+                    settings.IsDownloadRunning = false;
                 }
                 if (selectedFormat == 1)
                 {
@@ -330,6 +343,8 @@ namespace YTCnv
                     File.Delete(m4aPath);
                     File.Delete(mp4Path);
                     File.Delete(semiOutput);
+
+                    settings.IsDownloadRunning = false;
                 }
             }
             catch (OperationCanceledException)
@@ -347,6 +362,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
+                settings.IsDownloadRunning = false;
             }
             catch (Exception ex)
             {
@@ -375,6 +391,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
+                settings.IsDownloadRunning = false;
             }
             finally
             {
@@ -389,6 +406,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
+                settings.IsDownloadRunning = false;
             }
 
             void DeleteFiles()
@@ -419,11 +437,16 @@ namespace YTCnv
             title = title.Replace("[Official Audio Visualizer]", "");
             title = title.Replace("(Official Song)", "");
             title = title.Replace("[Official Song]", "");
+            title = title.Replace("(Full Album)", "");
+            title = title.Replace("[Full Album]", "");
+            title = title.Replace("(Deluxe Edition)", "");
+            title = title.Replace("[Deluxe Edition]", "");
             title = title.Replace("[Lyrics]", "");
             title = title.Replace("(Lyrics)", "");
-            title = title.Replace(author, "");
-            title = title.Trim();
-            title = title.Trim('-');
+            title = title.Replace($"{author} - ", "");
+            title = title.Replace($"{author}-", "");
+            title = title.Replace($" - {author}", "");
+            title = title.Replace($"-{author}", "");
             title = title.Trim();
 
             if (string.IsNullOrWhiteSpace(title))
@@ -492,6 +515,8 @@ namespace YTCnv
             DownloadIndicator.IsVisible = false;
             DownloadIndicator.IsRunning = false;
             StatusLabel.IsVisible = false;
+
+            settings.IsDownloadRunning = false;
         }
 
         private async void OpenSettings(object sender, EventArgs e)
@@ -507,7 +532,7 @@ namespace YTCnv
         private void OnWantedFormatChanged(object sender, EventArgs e)
         {
             if (qualityPicker == null || audioOptions == null || videoOptions == null)
-                return; // Still initializing — ignore
+                return;
 
             if (sender is not Picker picker)
                 return;

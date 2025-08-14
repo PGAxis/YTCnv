@@ -18,10 +18,10 @@ namespace YTCnv
                 Window.SetStatusBarColor(Android.Graphics.Color.Transparent);
             }
 
-            await RequestNotificationPermission();
+            RequestNotificationPermission();
         }
 
-        public async Task RequestNotificationPermission()
+        public void RequestNotificationPermission()
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
             {
