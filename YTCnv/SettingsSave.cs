@@ -98,6 +98,10 @@ namespace YTCnv
             }
         }
 
+        //---------- Singleton values ----------
+
+        public bool IsDownloadRunning = false;
+
         //---------- Save/Load ----------
 
         public void SaveSettings()
