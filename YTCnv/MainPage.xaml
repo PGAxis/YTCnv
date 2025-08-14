@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="YTCnv.MainPage">
+
+    <VerticalStackLayout Padding="25,0" Spacing="25">
+
+        <FlexLayout Padding="0,20,0,25" HeightRequest="80" VerticalOptions="Center">
+            <Label Text="Youtube Converter" FontAttributes="Bold" FontSize="20" FlexLayout.Grow="1" FontFamily="Poppins"/>
+            <Frame Padding="5" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                <ImageButton x:Name="YoutubeSearcher" Source="magglass.png" WidthRequest="25" HeightRequest="25" Clicked="OpenSearch"/>
+            </Frame>
+            <Frame Padding="5,0,0,0" VerticalOptions="Center" BackgroundColor="Transparent" BorderColor="Transparent">
+                <ImageButton x:Name="GoToSettings" Source="settings.png" WidthRequest="25" HeightRequest="25" Clicked="OpenSettings"/>
+            </Frame>
+        </FlexLayout>
+
+        <VerticalStackLayout>
+            <Label Text="YouTube URL or ID:" FontAttributes="Bold"/>
+            <Entry x:Name="UrlEntry" Placeholder="https://www.youtube.com/watch?v=..." />
+        </VerticalStackLayout>
+
+        <FlexLayout VerticalOptions="Center">
+            <HorizontalStackLayout x:Name="downloadOptions" FlexLayout.Grow="1" IsVisible="False">
+                <Picker x:Name="FormatPicker" Title="Choose format" WidthRequest="35" FontSize="13" SelectedIndexChanged="OnWantedFormatChanged">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>MP3</x:String>
+                            <x:String>MP4</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+                <Picker x:Name="qualityPicker" Title="Choose quality" FontSize="13"/>
+            </HorizontalStackLayout>
+
+            <Button x:Name="LoadButton" Text="Load metadata" Clicked="OnLoadClicked" WidthRequest="100" BackgroundColor="White" TextColor="Black" FlexLayout.Grow="1"/>
+            <Button x:Name="DownloadButton" Text="Download" Clicked="OnDownloadClicked" WidthRequest="100" IsVisible="False"/>
+            <Button x:Name="CancelButton" Text="Cancel" Clicked="OnCancelClicked" WidthRequest="100" BackgroundColor="White" TextColor="Black" IsVisible="False"/>
+        </FlexLayout>
+
+
+        <ProgressBar x:Name="DwnldProgress" IsVisible="False" />
+        <ActivityIndicator x:Name="DownloadIndicator" IsVisible="False" IsRunning="False" />
+        <Label x:Name="StatusLabel" IsVisible="False" HorizontalTextAlignment="Center"/>
+
+    </VerticalStackLayout>
+</ContentPage>
