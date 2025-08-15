@@ -7,6 +7,8 @@ using YoutubeExplode.Common;
 using YoutubeExplode.Videos.Streams;
 using Settings = YTCnv.Screens.Settings;
 using YTCnv.Screens;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace YTCnv
 {
@@ -116,7 +118,7 @@ namespace YTCnv
                 List<VideoOnlyStreamInfo> videoStreams = _4KChoice ?
                     streamManifest.GetVideoOnlyStreams().OrderByDescending(s => s.VideoQuality.MaxHeight).ToList() :
                     streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 && s.VideoCodec.ToString().Contains("avc")).OrderByDescending(s => s.VideoQuality.MaxHeight).ToList();
-                videoOptions = videoStreams.ToDictionary(s => s.VideoQuality.MaxHeight, s => $"{s.VideoQuality.Label} ({s.Size.MegaBytes:F1} MB)");
+                videoOptions = videoStreams.GroupBy(s => s.VideoQuality.MaxHeight).Select(g => g.OrderByDescending(s => s.VideoQuality.MaxHeight).First()).ToDictionary(s => s.VideoQuality.MaxHeight, s => $"{s.VideoQuality.Label} ({s.Size.MegaBytes:F1} MB)");
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
@@ -131,8 +133,6 @@ namespace YTCnv
                     qualityPicker.SelectedIndex = 0;
                     DownloadButton.IsVisible = true;
                 });
-
-                settings.IsDownloadRunning = false;
             }
             catch (Exception ex)
             {
@@ -161,6 +161,8 @@ namespace YTCnv
             FormatPicker.IsEnabled = false;
             qualityPicker.IsEnabled = false;
 
+            if (_downloadCts != null)
+                _downloadCts.Dispose();
             _downloadCts = new CancellationTokenSource();
             StatusLabel.IsVisible = false;
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
@@ -208,7 +210,7 @@ namespace YTCnv
                     await DisplayAlert("No URL", "Please enter a YouTube URL", "OK");
                     ResetMainPageState(fastDwnld);
                 });
-                settings.IsDownloadRunning = false;
+                DownloadStopped();
                 return;
             }
 
@@ -243,11 +245,13 @@ namespace YTCnv
                         await DisplayAlert("Invalid URL", "Please enter a valid YouTube URL", "OK");
                         ResetMainPageState(fastDwnld);
                     });
-                    settings.IsDownloadRunning = false;
+                    DownloadStopped();
                     return;
                 }
 
                 string author = video.Author.ChannelTitle;
+                author = author.Replace(" - Topic", "", true, CultureInfo.InvariantCulture);
+
                 string title = CleanTitle(video.Title, author);
 
                 string thumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
@@ -295,8 +299,6 @@ namespace YTCnv
 
                     File.Delete(m4aPath);
                     File.Delete(semiOutputAudio);
-
-                    settings.IsDownloadRunning = false;
                 }
                 if (selectedFormat == 1)
                 {
@@ -343,9 +345,9 @@ namespace YTCnv
                     File.Delete(m4aPath);
                     File.Delete(mp4Path);
                     File.Delete(semiOutput);
-
-                    settings.IsDownloadRunning = false;
                 }
+
+                DownloadStopped();
             }
             catch (OperationCanceledException)
             {
@@ -362,7 +364,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
-                settings.IsDownloadRunning = false;
+                DownloadStopped();
             }
             catch (Exception ex)
             {
@@ -391,7 +393,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
-                settings.IsDownloadRunning = false;
+                DownloadStopped();
             }
             finally
             {
@@ -406,7 +408,7 @@ namespace YTCnv
                 var stopIntent = new Intent(context, Java.Lang.Class.FromType(typeof(DownloadNotificationService)));
                 context.StopService(stopIntent);
 #endif
-                settings.IsDownloadRunning = false;
+                DownloadStopped();
             }
 
             void DeleteFiles()
@@ -426,27 +428,21 @@ namespace YTCnv
 
         public static string CleanTitle(string title, string author)
         {
+            List<string> toRemove = new List<string>(["Official Music Video", "Official Video", "Official Audio", "Official Audio Visualizer", "Official Song", "Full Album", "Deluxe Edition", "Lyrics"]);
+
             title = new string(title.Where(c => !Path.GetInvalidFileNameChars().Contains(c)).ToArray());
-            title = title.Replace("(Official Music Video)", "");
-            title = title.Replace("[Official Music Video]", "");
-            title = title.Replace("(Official Video)", "");
-            title = title.Replace("[Official Video]", "");
-            title = title.Replace("(Official Audio)", "");
-            title = title.Replace("[Official Audio]", "");
-            title = title.Replace("(Official Audio Visualizer)", "");
-            title = title.Replace("[Official Audio Visualizer]", "");
-            title = title.Replace("(Official Song)", "");
-            title = title.Replace("[Official Song]", "");
-            title = title.Replace("(Full Album)", "");
-            title = title.Replace("[Full Album]", "");
-            title = title.Replace("(Deluxe Edition)", "");
-            title = title.Replace("[Deluxe Edition]", "");
-            title = title.Replace("[Lyrics]", "");
-            title = title.Replace("(Lyrics)", "");
-            title = title.Replace($"{author} - ", "");
-            title = title.Replace($"{author}-", "");
-            title = title.Replace($" - {author}", "");
-            title = title.Replace($"-{author}", "");
+
+            foreach (string subString in toRemove)
+            {
+                title = title.Replace("(" + subString + ")", "", true, CultureInfo.InvariantCulture);
+                title = title.Replace("[" + subString + "]", "", true, CultureInfo.InvariantCulture);
+            }
+
+            title = Regex.Replace(title, @"\[.*?\]", "");
+            title = title.Replace($"{author} - ", "", true, CultureInfo.InvariantCulture);
+            title = title.Replace($"{author}-", "", true, CultureInfo.InvariantCulture);
+            title = title.Replace($" - {author}", "", true, CultureInfo.InvariantCulture);
+            title = title.Replace($"-{author}", "", true, CultureInfo.InvariantCulture);
             title = title.Trim();
 
             if (string.IsNullOrWhiteSpace(title))
@@ -581,6 +577,14 @@ namespace YTCnv
             qualityPicker.IsVisible = false;
             LoadButton.IsVisible = false;
             DownloadButton.IsVisible = true;
+        }
+
+        private void DownloadStopped()
+        {
+            if (_downloadCts != null)
+                _downloadCts.Dispose();
+            _downloadCts = null;
+            settings.IsDownloadRunning = false;
         }
     }
 }
