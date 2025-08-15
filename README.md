@@ -1,1 +1,1 @@
-This is a .NET MAUI Android app, that uses YoutubeExplode and FFmpeg to provide an option to download YouTube videos as either a .mp3 or .mp4 file.
+This is a .NET MAUI Android app, that uses YoutubeExplode and FFmpeg to provide an option to download YouTube videos as either a .mp3 or .mp4 file. It also provides an option to searchh YouTube videos by name, when an API key is provided, as well as allowing downloads in every video resolution or audio bitrate that YouTube can offer.
