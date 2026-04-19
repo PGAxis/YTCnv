@@ -21,7 +21,8 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class org.mozilla.javascript.** { *; }
--keep class com.pg_axis.ytcnv.SettingsSave** { *; }
+-keep class com.pg_axis.ytcnv.settings.SettingsSave { *; }
+-keep class com.pg_axis.ytcnv.settings.SettingsSave$** { *; }
 -dontwarn org.mozilla.javascript.tools.**
 
 -dontwarn com.google.re2j.Matcher

@@ -1,0 +1,1 @@
+Fixed a bug, where the app would crash after first download and re-opening

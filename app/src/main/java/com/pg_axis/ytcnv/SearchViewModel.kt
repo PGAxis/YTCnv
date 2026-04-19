@@ -1,6 +1,5 @@
 package com.pg_axis.ytcnv
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -37,7 +36,6 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
         endReached = false
 
         updateSearchHistory(searchQuery.text.trim())
-        Log.d("Search history", "${settings.searchHistory.size}, ${settings.searchHistory}")
 
         viewModelScope.launch(Dispatchers.IO) {
             isLoading = true
