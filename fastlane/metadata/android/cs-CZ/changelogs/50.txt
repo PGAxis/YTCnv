@@ -1,0 +1,1 @@
+Opravena chyba, kdy aplikace spadla po prvním stažení a znovuotevření
