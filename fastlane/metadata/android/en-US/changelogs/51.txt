@@ -1,0 +1,1 @@
+Fixed a bug where the app needed to run in the background in order for the Overlay mode to work

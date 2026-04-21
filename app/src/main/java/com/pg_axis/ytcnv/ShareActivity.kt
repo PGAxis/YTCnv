@@ -17,6 +17,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.ui.theme.*
+import com.pg_axis.ytcnv.utils.NewPipeDownloader
+import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.localization.ContentCountry
+import org.schabi.newpipe.extractor.localization.Localization
 
 class ShareActivity : ComponentActivity() {
 
@@ -26,6 +30,12 @@ class ShareActivity : ComponentActivity() {
         val url = intent?.getStringExtra(Intent.EXTRA_TEXT) ?: run { finish(); return }
 
         val viewModel = ShareViewModel(application, url)
+
+        NewPipe.init(
+            NewPipeDownloader(),
+            Localization.DEFAULT,
+            ContentCountry.DEFAULT
+        )
 
         setContent {
             YTCnvTheme {

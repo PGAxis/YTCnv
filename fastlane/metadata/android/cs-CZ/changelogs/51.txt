@@ -1,0 +1,2 @@
+Fixed a bug where the app needed to run in the background in order for the overlay to work
+Opravena chyba, kdy aplikace musela běžet v pozadí, aby fungoval režim Překrytí
