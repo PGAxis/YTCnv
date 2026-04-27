@@ -38,7 +38,7 @@ A simple, open-source YouTube downloader for Android. Download YouTube videos as
 ### Requirements
 
 - Android Studio
-- Android SDK 26+
+- Android SDK 30+
 - JDK 17+
 
 ### FFmpeg AAR
