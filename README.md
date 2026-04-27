@@ -17,6 +17,8 @@ A simple, open-source YouTube downloader for Android. Download YouTube videos as
   <a href="https://shields.rbtlog.dev/com.pg_axis.ytcnv"><img src="https://shields.rbtlog.dev/simple/com.pg_axis.ytcnv"/></a>
 </p>
 
+<img src="https://github.com/PGAxis/YTCnv/blob/main/fastlane/metadata/android/en-US/images/icon.png" height="80"/>
+
 </div>
 
 ## Features
