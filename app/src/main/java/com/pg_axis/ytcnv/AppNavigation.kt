@@ -59,7 +59,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
             LockPortrait()
             val context = androidx.compose.ui.platform.LocalContext.current
             val settingsViewModel = remember {
-                SettingsViewModel(mainViewModel.settings, mainViewModel, context.applicationContext as Application)
+                SettingsViewModel(mainViewModel, context.applicationContext as Application)
             }
             SettingsScreen(
                 onBack = { navController.popBackStack() },

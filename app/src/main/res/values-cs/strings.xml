@@ -33,6 +33,7 @@
     <string name="language">Jazyk</string>
     <string name="u_settings">Aktualizace</string>
     <string name="d_reminder">Neupozorňovat na nové verze</string>
+    <string name="downloads">Stažené</string>
 
     <!-- Search Screen -->
     <string name="search_title">Vyhledávání</string>
@@ -76,6 +77,7 @@
     <string name="not_progress">Probíhá stahování…</string>
     <string name="remaining">zbývá</string>
     <string name="finalizing">Dokončování</string>
+    <string name="not_open_file">Otevřít soubor</string>
 
     <!-- Title Author Dialog -->
     <string name="tad_edit_metadata">Upravit metadata</string>

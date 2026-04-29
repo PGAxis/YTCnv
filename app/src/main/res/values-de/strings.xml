@@ -33,6 +33,7 @@
     <string name="language">Sprache</string>
     <string name="u_settings">Aktualisierungen</string>
     <string name="d_reminder">Nicht an neue Versionen erinnern</string>
+    <string name="downloads">Downloads</string>
 
     <!-- Search Screen -->
     <string name="search_title">Suche</string>
@@ -76,6 +77,7 @@
     <string name="not_progress">Download läuft…</string>
     <string name="remaining">verbleibend</string>
     <string name="finalizing">Wird abgeschlossen</string>
+    <string name="not_open_file">Datei öffnen</string>
 
     <!-- Title Author Dialog -->
     <string name="tad_edit_metadata">Metadaten bearbeiten</string>

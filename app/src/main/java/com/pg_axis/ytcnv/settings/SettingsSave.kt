@@ -33,10 +33,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
 
     override var fileUri by mutableStateOf("")
 
-    override var mainFolder by mutableStateOf("Internal storage")
-
-    override var finalFolder by mutableStateOf(" - Downloads")
-
     override var notifyOnFinish by mutableStateOf(true)
 
     override var notifyOnFail by mutableStateOf(true)
@@ -60,8 +56,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
             dontShowUpdatePopup = dontShowUpdate,
             termsAccepted = termsAccepted,
             savedFileUri = fileUri,
-            mainFolderName = mainFolder,
-            finalFolderName = finalFolder,
             notifyOnFinish = notifyOnFinish,
             notifyOnFail = notifyOnFail
         )
@@ -84,8 +78,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
                 dontShowUpdate = it.dontShowUpdatePopup
                 termsAccepted = it.termsAccepted
                 fileUri = it.savedFileUri ?: ""
-                mainFolder = it.mainFolderName ?: "Internal storage"
-                finalFolder = it.finalFolderName ?: " - Downloads"
                 notifyOnFinish = it.notifyOnFinish
                 notifyOnFail = it.notifyOnFail
             }
@@ -110,8 +102,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
         val dontShowUpdatePopup: Boolean = false,
         val termsAccepted: Boolean = false,
         val savedFileUri: String? = null,
-        val mainFolderName: String? = null,
-        val finalFolderName: String? = null,
         val notifyOnFinish: Boolean = true,
         val notifyOnFail: Boolean = true
     )

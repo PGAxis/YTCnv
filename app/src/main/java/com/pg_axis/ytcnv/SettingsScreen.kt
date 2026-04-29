@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,14 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pg_axis.ytcnv.settings.PreviewSettings
 import com.pg_axis.ytcnv.ui.theme.*
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun SettingsPreview() {
     val mainModel = remember { MainViewModel(Application()) }
-    val viewModel = remember { SettingsViewModel(PreviewSettings(), mainModel, Application()) }
+    val viewModel = remember { SettingsViewModel(mainModel, Application()) }
     YTCnvTheme {
         SettingsScreen({}, viewModel)
     }
@@ -51,6 +51,10 @@ fun SettingsScreen(
     val versionName = packageInfo.versionName
     val versionCode = packageInfo.longVersionCode
 
+    LaunchedEffect(Unit) {
+        viewModel.initPaths()
+    }
+
     // SAF folder picker launcher
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -61,11 +65,7 @@ fun SettingsScreen(
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                val folderName = uri.lastPathSegment
-                    ?.substringAfterLast(":")
-                    ?.substringAfterLast("/")
-                    ?: uri.toString()
-                viewModel.onFolderPicked(uri.toString(), folderName)
+                viewModel.onFolderPicked(uri.toString())
             }
         }
     }
@@ -131,7 +131,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.download_dest))
                     }
                     Text(
-                        text = viewModel.settings.mainFolder + viewModel.settings.finalFolder,
+                        text = viewModel.mainFolder + viewModel.finalFolder,
                         color = TextSecondary,
                         fontSize = 13.sp
                     )

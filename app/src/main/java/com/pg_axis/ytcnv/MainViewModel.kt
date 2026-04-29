@@ -629,7 +629,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_invalid_url))
                         }
                     }
-                    e.message?.contains("Software caused connection abort") == true -> {
+                    e.message?.contains("Software caused connection abort") == true || e.message?.contains("No address associated with hostname") == true -> {
                         showPopup(context.getString(R.string.pt_network_error), context.getString(R.string.pm_network_error), 2)
                         if (settings.notifyOnFail) {
                             DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_network_error))

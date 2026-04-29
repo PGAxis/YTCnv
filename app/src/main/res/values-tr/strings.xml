@@ -33,6 +33,7 @@
     <string name="language">Dil</string>
     <string name="u_settings">Güncellemeler</string>
     <string name="d_reminder">Yeni sürümleri bana hatırlatma</string>
+    <string name="downloads">İndirilenler</string>
 
     <!-- Search Screen -->
     <string name="search_title">Ara</string>
@@ -76,6 +77,7 @@
     <string name="not_progress">İndirme devam ediyor…</string>
     <string name="remaining">kalan</string>
     <string name="finalizing">Tamamlanıyor</string>
+    <string name="not_open_file">Dosyayı aç</string>
 
     <!-- Title Author Dialog -->
     <string name="tad_edit_metadata">Meta veriyi düzenle</string>

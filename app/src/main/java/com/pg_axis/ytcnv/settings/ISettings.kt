@@ -5,8 +5,6 @@ interface ISettings {
     var quickDwnld: Boolean
     var downloadHistory: List<SettingsSave.HistoryItem>
     var searchHistory: List<String>
-    var mainFolder: String
-    var finalFolder: String
     var fileUri: String
     var isDownloadRunning: Boolean
     var iHaveId: Boolean

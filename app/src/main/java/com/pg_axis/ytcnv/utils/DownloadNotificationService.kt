@@ -7,9 +7,16 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
+import android.os.Environment
 import android.os.IBinder
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import com.pg_axis.ytcnv.MainActivity
 import com.pg_axis.ytcnv.R
+import com.pg_axis.ytcnv.settings.SettingsSave
+import java.io.File
 
 class DownloadNotificationService : Service() {
 
@@ -33,15 +40,66 @@ class DownloadNotificationService : Service() {
                 context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val notification = Notification.Builder(context, FINISH_CHANNEL_ID)
-                .setContentTitle(context.getString(R.string.not_finished))
-                .setContentText("${context.getString(R.string.not_downloaded)} $fileName")
-                .setSmallIcon(R.drawable.finish)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-                .build()
+            val settings = SettingsSave.getInstance(context)
+            val file = if (settings.fileUri.isNotBlank()) {
+                val folder = DocumentFile.fromTreeUri(context, settings.fileUri.toUri())
+                folder?.findFile(fileName)?.uri
+            }
+            else {
+                val fileTmp = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    fileName
+                )
+                FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    fileTmp
+                )
+            }
 
-            manager.notify(FINISH_NOTIFICATION_ID, notification)
+            if (file != null) {
+                val mimeType = when (fileName.substringAfterLast('.', "").lowercase()) {
+                    "mp3" -> "audio/mpeg"
+                    "mp4" -> "video/mp4"
+                    else -> "*/*"
+                }
+
+                val openFileIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(file, mimeType)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val openFilePendingIntent = PendingIntent.getActivity(
+                    context, 1001, openFileIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                val openFileAction = Notification.Action.Builder(
+                    Icon.createWithResource(context, R.drawable.file),
+                    context.getString(R.string.not_open_file),
+                    openFilePendingIntent
+                ).build()
+
+                val notification = Notification.Builder(context, FINISH_CHANNEL_ID)
+                    .setContentTitle(context.getString(R.string.not_finished))
+                    .setContentText("${context.getString(R.string.not_downloaded)} $fileName")
+                    .setSmallIcon(R.drawable.finish)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .addAction(openFileAction)
+                    .build()
+
+                manager.notify(FINISH_NOTIFICATION_ID, notification)
+            }
+            else {
+                val notification = Notification.Builder(context, FINISH_CHANNEL_ID)
+                    .setContentTitle(context.getString(R.string.not_finished))
+                    .setContentText("${context.getString(R.string.not_downloaded)} $fileName")
+                    .setSmallIcon(R.drawable.finish)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .build()
+
+                manager.notify(FINISH_NOTIFICATION_ID, notification)
+            }
         }
 
         fun showFailedNotification(context: Context, errMsg: String) {

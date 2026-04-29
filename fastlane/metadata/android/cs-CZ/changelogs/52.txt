@@ -1,0 +1,3 @@
+Přepracován design posuvníku na obrazovce Náhledu
+Přepracováno zacházení s cestou stažení: Místo se nyní aktualizuje stejně s jazykem
+Přídáno tlačítko "Otevřít soubor" do oznámení o úspěšném stažení

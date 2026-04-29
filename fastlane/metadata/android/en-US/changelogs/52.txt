@@ -1,0 +1,3 @@
+Reworked slider design in Preview screen
+Reworked download path handling: Location now updates based on selected language
+Added "Open file" button to Success notification

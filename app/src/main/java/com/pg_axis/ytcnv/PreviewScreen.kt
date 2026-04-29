@@ -1,3 +1,5 @@
+@file:kotlin.OptIn(ExperimentalMaterial3Api::class)
+
 package com.pg_axis.ytcnv
 
 import android.annotation.SuppressLint
@@ -41,6 +43,7 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.pg_axis.ytcnv.ui.theme.CyanPrimary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -342,7 +345,20 @@ fun PreviewScreen(
                             thumbColor = Color.White,
                             activeTrackColor = Color.White,
                             inactiveTrackColor = Color.White.copy(alpha = 0.35f)
-                        )
+                        ),
+                        thumb = {
+                            Box(Modifier.size(14.dp).clip(CircleShape).background(CyanPrimary))
+                        },
+                        track = { sliderState ->
+                            SliderDefaults.Track(
+                                sliderState = sliderState,
+                                modifier = Modifier.height(3.dp),
+                                colors = SliderDefaults.colors(
+                                    activeTickColor = CyanPrimary,
+                                    inactiveTickColor = CyanPrimary.copy(alpha = 0.3f)
+                                )
+                            )
+                        }
                     )
                     Row(
                         modifier = Modifier
