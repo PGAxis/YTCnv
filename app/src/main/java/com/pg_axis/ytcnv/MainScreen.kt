@@ -61,6 +61,7 @@ import com.pg_axis.ytcnv.dialogs.TermsDialog
 import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.dialogs.UpdateDialog
 import com.pg_axis.ytcnv.settings.*
+import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 import com.pg_axis.ytcnv.ui.theme.BackgroundDark
 import com.pg_axis.ytcnv.ui.theme.BorderColor
 import com.pg_axis.ytcnv.ui.theme.CardDark
@@ -409,6 +410,15 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         }
                     }
                 }
+            }
+        }
+
+        if (viewModel.showPlaylistPicker) {
+            viewModel.lastDownloadedSongUri?.let { uri ->
+                PlaylistPickerSheet(
+                    songUri = uri,
+                    onDismiss = { viewModel.showPlaylistPicker = false }
+                )
             }
         }
     }

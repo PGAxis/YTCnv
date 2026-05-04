@@ -14,4 +14,5 @@ interface ISettings {
     var alreadyShown: Boolean
     var notifyOnFinish: Boolean
     var notifyOnFail: Boolean
+    var addToMusicAxs: Boolean
 }

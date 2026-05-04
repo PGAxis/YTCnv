@@ -58,6 +58,10 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
         settings.notifyOnFail = value
         settings.saveSettings()
     }
+    fun onMusicAxsChanged(value: Boolean) {
+        settings.addToMusicAxs = value
+        settings.saveSettings()
+    }
     fun onLanguageChange(key: String) {
         selectedLang = langOptions.getValue(key)
         Log.d("Locale Change", key)

@@ -14,4 +14,5 @@ class PreviewSettings : ISettings {
     override var alreadyShown = false
     override var notifyOnFinish = true
     override var notifyOnFail = true
+    override var addToMusicAxs = false
 }
