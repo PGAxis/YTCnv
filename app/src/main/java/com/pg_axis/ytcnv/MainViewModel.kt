@@ -3,6 +3,7 @@ package com.pg_axis.ytcnv
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -19,6 +20,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.pg_axis.ytcnv.dialogs.*
+import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.settings.*
 import com.pg_axis.ytcnv.ui.theme.PopupDefault
 import com.pg_axis.ytcnv.ui.theme.PopupError
@@ -56,6 +58,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val isQuick get() = settings.quickDwnld
     private val context get() = getApplication<Application>()
+
+    var showPlaylistPicker by mutableStateOf(false)
+    var lastDownloadedSongUri by mutableStateOf<Uri?>(null)
 
     // ─── URL entry ───
     var urlEntryText by mutableStateOf("")
@@ -479,7 +484,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val ffmpegResult = runFFmpeg(ffmpegCmd)
 
                 if (ffmpegResult) {
-                    FileSaver.saveAudio(context, "$title.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
+                    val savedUri = FileSaver.saveAudio(context, "$title.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
                     if (settings.notifyOnFinish) {
                         DownloadNotificationService.showFinishNotification(context, "$title.mp3")
                     }
@@ -487,6 +492,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         applyQuickDownloadState()
                         showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
                         urlEntryText = ""
+                        if (savedUri != null && MusicAxsClient.isMusicAxsInstalled(context) && settings.addToMusicAxs) {
+                            lastDownloadedSongUri = savedUri
+                            showPlaylistPicker = true
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {

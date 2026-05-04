@@ -33,10 +33,9 @@ class PreviewViewModel(val videoId: String) : ViewModel() {
                 )
                 videoTitle = info.name
 
-                // Prefer separate video-only + audio streams, capped at 1080p
                 val videoOnlyStream = info.videoOnlyStreams
                     .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
-                    .filter { it.height <= 1080 &&
+                    .filter { it.height <= 480 &&
                             it.format?.name?.contains("mpeg-4", ignoreCase = true) == true }
                     .maxByOrNull { it.height }
 
@@ -52,7 +51,7 @@ class PreviewViewModel(val videoId: String) : ViewModel() {
                     // Fallback: best combined progressive stream, capped at 1080p
                     val combined = info.videoStreams
                         .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
-                        .filter { it.height <= 1080 &&
+                        .filter { it.height <= 480 &&
                                 it.format?.name?.contains("mpeg-4", ignoreCase = true) == true }
                         .maxByOrNull { it.height }
                         ?: info.videoStreams

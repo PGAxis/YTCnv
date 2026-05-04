@@ -2,6 +2,7 @@ package com.pg_axis.ytcnv.utils
 
 import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
 import android.provider.MediaStore
 import androidx.documentfile.provider.DocumentFile
 import java.io.File
@@ -9,8 +10,8 @@ import androidx.core.net.toUri
 
 object FileSaver {
 
-    fun saveAudio(context: Context, fileName: String, inputFilePath: String, fileUri: String?) {
-        if (!fileUri.isNullOrBlank()) {
+    fun saveAudio(context: Context, fileName: String, inputFilePath: String, fileUri: String?): Uri? {
+        return if (!fileUri.isNullOrBlank()) {
             saveToChosenFolder(context, fileName, inputFilePath, "audio/mpeg", fileUri)
         } else {
             saveAudioToDownloads(context, fileName, inputFilePath)
@@ -31,7 +32,7 @@ object FileSaver {
         inputFilePath: String,
         mimeType: String,
         folderUriString: String
-    ) {
+    ): Uri {
         val folderUri = folderUriString.toUri()
         val pickedDir = DocumentFile.fromTreeUri(context, folderUri)
             ?: throw IllegalStateException("Could not access chosen folder")
@@ -40,9 +41,10 @@ object FileSaver {
         context.contentResolver.openOutputStream(newFile.uri)?.use { out ->
             File(inputFilePath).inputStream().use { it.copyTo(out) }
         }
+        return newFile.uri
     }
 
-    private fun saveAudioToDownloads(context: Context, fileName: String, inputFilePath: String) {
+    private fun saveAudioToDownloads(context: Context, fileName: String, inputFilePath: String): Uri {
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
             put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg")
@@ -53,6 +55,7 @@ object FileSaver {
         context.contentResolver.openOutputStream(uri)?.use { out ->
             File(inputFilePath).inputStream().use { it.copyTo(out) }
         }
+        return uri
     }
 
     private fun saveVideoToDownloads(context: Context, fileName: String, inputFilePath: String) {

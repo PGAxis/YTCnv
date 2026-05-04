@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.ui.theme.*
 
 @Composable
@@ -183,6 +184,17 @@ fun SettingsScreen(
                 )
             }
 
+            if (MusicAxsClient.isMusicAxsInstalled(context)) {
+                SettingsGroup(title = "Integration", initiallyExpanded = false) {
+                    SettingsToggleRow(
+                        label = "Add songs to Music.axs",
+                        description = "After downloading an MP3, show prompt to add it to a playlist in Music.axs",
+                        checked = viewModel.settings.addToMusicAxs,
+                        onCheckedChange = { viewModel.onMusicAxsChanged(it) }
+                    )
+                }
+            }
+
             // ─── Updates Group ───
             if (!BuildConfig.IS_FDROID) {
                 SettingsGroup(title = stringResource(R.string.u_settings), initiallyExpanded = false) {
@@ -263,20 +275,27 @@ fun SettingsGroup(
 @Composable
 fun SettingsToggleRow(
     label: String,
+    description: String? = null,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp),
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            color = TextPrimary,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, fontSize = 15.sp, color = TextPrimary)
+            if (description != null) {
+                Text(
+                    description,
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
+            }
+        }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
