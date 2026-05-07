@@ -15,6 +15,7 @@ import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.search.SearchExtractor
+import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 
 class SearchViewModel(val settings: ISettings) : ViewModel() {
@@ -25,6 +26,7 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
     var isLoadingMore by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
     var endReached by mutableStateOf(false)
+    var isMusicSearch by mutableStateOf(false)
     private var extractor: SearchExtractor? = null
     private var nextPage: Page? = null
 
@@ -43,7 +45,12 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
             results = emptyList()
 
             try {
-                extractor = ServiceList.YouTube.getSearchExtractor(searchQuery.text.trim())
+                val contentFilters = if (isMusicSearch)
+                    listOf(YoutubeSearchQueryHandlerFactory.MUSIC_SONGS)
+                else
+                    emptyList()
+
+                extractor = ServiceList.YouTube.getSearchExtractor(searchQuery.text.trim(), contentFilters, "")
                 extractor?.fetchPage()
 
                 val page = extractor?.initialPage
@@ -127,7 +134,7 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
                 videoId = extractVideoId(item.url),
                 uploader = item.uploaderName ?: "",
                 duration = formatDuration(item.duration),
-                thumbnailUrl = item.thumbnails.firstOrNull()?.url ?: "",
+                thumbnailUrl = item.thumbnails.maxByOrNull { it.height }?.url ?: "",
                 url = item.url
             )
         } ?: emptyList()

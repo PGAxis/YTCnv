@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,15 +16,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults.FocusedBorderThickness
+import androidx.compose.material3.OutlinedTextFieldDefaults.UnfocusedBorderThickness
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -31,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +78,7 @@ fun SearchPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
 fun SearchScreen(
@@ -97,7 +104,7 @@ fun SearchScreen(
             .background(BackgroundDark)
             .windowInsetsPadding(WindowInsets.systemBars)
             .clickable(indication = null, interactionSource = remember {
-                androidx.compose.foundation.interaction.MutableInteractionSource()
+                MutableInteractionSource()
             }) { focusManager.clearFocus() }
     ) {
         // ─── Header ───
@@ -126,46 +133,132 @@ fun SearchScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-                .height(IntrinsicSize.Max),
+                .padding(horizontal = 8.dp, vertical = 0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            val interactionSource = remember { MutableInteractionSource() }
+            BasicTextField(
                 value = viewModel.searchQuery,
                 onValueChange = { viewModel.onQueryChanged(it) },
-                placeholder = { Text(stringResource(R.string.search_prompt), color = TextSecondary) },
                 singleLine = true,
+                cursorBrush = SolidColor(Color.White),
+                textStyle = LocalTextStyle.current.copy(color = TextPrimary),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     focusManager.clearFocus()
                     viewModel.onSearch()
                 }),
-                shape = RoundedCornerShape(50.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = AquaAccent
-                ),
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .weight(1f)
-                    .onFocusChanged { isSearchFocused = it.isFocused }
+                    .onFocusChanged { isSearchFocused = it.isFocused },
+                decorationBox = { innerTextField ->
+                    OutlinedTextFieldDefaults.DecorationBox(
+                        value = viewModel.searchQuery.text,
+                        innerTextField = innerTextField,
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        placeholder = {
+                            Text(stringResource(R.string.search_prompt), color = TextSecondary)
+                        },
+                        trailingIcon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(CyanPrimary)
+                                    .clickable {
+                                        focusManager.clearFocus()
+                                        viewModel.onSearch()
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.magglass),
+                                    contentDescription = "Search",
+                                    tint = BackgroundDark
+                                )
+                            }
+                        },
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // tune this
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanPrimary,
+                            unfocusedBorderColor = CyanPrimary
+                        ),
+                        container = {
+                            OutlinedTextFieldDefaults.Container(
+                                enabled = true,
+                                isError = false,
+                                interactionSource = interactionSource,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                                            focusedBorderColor = CyanPrimary,
+                                                            unfocusedBorderColor = CyanPrimary
+                                                        ),
+                                shape = RoundedCornerShape(50.dp),
+                                focusedBorderThickness = FocusedBorderThickness,
+                                unfocusedBorderThickness = UnfocusedBorderThickness,
+                            )
+                        }
+                    )
+                }
             )
             Spacer(modifier = Modifier.width(5.dp))
+            var filterMenuExpanded by remember { mutableStateOf(false) }
             Box {
-                Box(
+                IconButton(
+                    onClick = { filterMenuExpanded = true },
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(50.dp)
                         .clip(CircleShape)
-                        .background(CyanPrimary)
-                        .clickable {
-                            focusManager.clearFocus()
-                            viewModel.onSearch()
-                        },
-                    contentAlignment = Alignment.Center
+                        .background(Color.Transparent)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.magglass),
-                        contentDescription = "Search",
-                        tint = BackgroundDark
+                        painter = if (viewModel.isMusicSearch) painterResource(R.drawable.youtube_music) else painterResource(R.drawable.youtube),
+                        contentDescription = "Filter",
+                        tint = CyanPrimary
+                    )
+                }
+                DropdownMenu(
+                    expanded = filterMenuExpanded,
+                    onDismissRequest = { filterMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("YouTube") },
+                        onClick = {
+                            viewModel.isMusicSearch = false
+                            viewModel.onSearch()
+                            filterMenuExpanded = false
+                        },
+                        leadingIcon = if (!viewModel.isMusicSearch) {
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.magglass),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = AquaAccent
+                                )
+                            }
+                        } else null
+                    )
+                    DropdownMenuItem(
+                        text = { Text("YouTube Music") },
+                        onClick = {
+                            viewModel.isMusicSearch = true
+                            viewModel.onSearch()
+                            filterMenuExpanded = false
+                        },
+                        leadingIcon = if (viewModel.isMusicSearch) {
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.magglass),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = AquaAccent
+                                )
+                            }
+                        } else null
                     )
                 }
             }
@@ -250,6 +343,7 @@ fun SearchScreen(
                             items(viewModel.results) { item ->
                                 SearchResultRow(
                                     item = item,
+                                    isMusic = viewModel.isMusicSearch,
                                     onDownload = {
                                         onResultSelected("https://www.youtube.com/watch?v=${item.videoId}")
                                         onBack()
@@ -299,6 +393,7 @@ fun SearchScreen(
 @Composable
 fun SearchResultRow(
     item: SearchResultItem,
+    isMusic: Boolean,
     onDownload: () -> Unit,
     onCopyUrl: () -> Unit,
     onPreview: () -> Unit
@@ -316,27 +411,39 @@ fun SearchResultRow(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .aspectRatio(16f / 9f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onPreview() }
+                    .then(
+                        if (isMusic) Modifier.height(150.dp)
+                        else Modifier.aspectRatio(16f / 9f)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = item.thumbnailUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-                Text(
-                    text = item.duration,
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
+                Box(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(6.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                )
+                        .then(
+                            if (isMusic) Modifier.fillMaxHeight().aspectRatio(1f)
+                            else Modifier.fillMaxSize()
+                        )
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onPreview() }
+                ) {
+                    AsyncImage(
+                        model = item.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    Text(
+                        text = item.duration,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(6.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(8.dp))
             // Buttons
