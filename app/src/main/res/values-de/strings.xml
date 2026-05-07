@@ -34,6 +34,11 @@
     <string name="u_settings">Aktualisierungen</string>
     <string name="d_reminder">Nicht an neue Versionen erinnern</string>
     <string name="downloads">Downloads</string>
+    <string name="set_app_settings">App-Einstellungen</string>
+    <string name="set_preview_sec">Vorschau</string>
+    <string name="set_preview">Vorschauauflösung</string>
+    <string name="set_add_songs">Songs zu Music.axs hinzufügen</string>
+    <string name="set_add_songs_desc">Nach dem Herunterladen als MP3 eine Option anzeigen, um es einer Wiedergabeliste in Music.axs hinzuzufügen</string>
 
     <!-- Search Screen -->
     <string name="search_title">Suche</string>

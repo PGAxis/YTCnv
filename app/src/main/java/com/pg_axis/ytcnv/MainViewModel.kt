@@ -432,6 +432,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 val audioStream = getAudioStream()
+                Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
 
                 downloadStream(audioStream.content, m4aPath,
                     onProgress = { progress ->

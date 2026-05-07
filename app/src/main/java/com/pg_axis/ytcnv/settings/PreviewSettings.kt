@@ -15,4 +15,5 @@ class PreviewSettings : ISettings {
     override var notifyOnFinish = true
     override var notifyOnFail = true
     override var addToMusicAxs = false
+    override var minResolution = 480
 }

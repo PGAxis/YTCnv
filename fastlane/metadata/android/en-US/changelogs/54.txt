@@ -1,0 +1,2 @@
+Added missing translations
+Added resolution selection for the Preview screen

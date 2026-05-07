@@ -34,6 +34,11 @@
     <string name="u_settings">Güncellemeler</string>
     <string name="d_reminder">Yeni sürümleri bana hatırlatma</string>
     <string name="downloads">İndirilenler</string>
+    <string name="set_app_settings">Uygulama ayarları</string>
+    <string name="set_preview_sec">Önizleme</string>
+    <string name="set_preview">Önizleme çözünürlüğü</string>
+    <string name="set_add_songs">Music.axs\'e şarkı ekle</string>
+    <string name="set_add_songs_desc">MP3 olarak indirdikten sonra Music.axs\'teki bir çalma listesine ekleme seçeneği göster</string>
 
     <!-- Search Screen -->
     <string name="search_title">Ara</string>

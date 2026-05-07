@@ -5,6 +5,7 @@ import android.provider.DocumentsContract
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
@@ -20,6 +21,9 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     val langOptions = mapOf("en" to "English", "cs" to "Čeština", "de" to "Deutch", "tr" to "Türkçe")
     var selectedLang = AppCompatDelegate.getApplicationLocales().toLanguageTags()
         .ifEmpty { Locale.getDefault().language.ifEmpty { langOptions.keys.first() } }!!
+
+    val resolutionOptions = mapOf(144 to "144p", 240 to "240p", 360 to "360p", 480 to "480p", 720 to "720p", 1080 to "1080p", 1440 to "1440p", 2160 to "4K")
+    var selectedRes by mutableIntStateOf(settings.minResolution)
 
     var mainFolder by mutableStateOf(context.getString(R.string.internal_storage))
     var finalFolder by mutableStateOf(" - ${context.getString(R.string.downloads)}")
@@ -63,11 +67,16 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
         settings.saveSettings()
     }
     fun onLanguageChange(key: String) {
-        selectedLang = langOptions.getValue(key)
+        selectedLang = key
         Log.d("Locale Change", key)
         AppCompatDelegate.setApplicationLocales(
             LocaleListCompat.forLanguageTags(key)
         )
+    }
+    fun onResolutionChange(key: Int) {
+        selectedRes = key
+        settings.minResolution = key
+        settings.saveSettings()
     }
 
     private fun getMainFolder(uri: String): String {

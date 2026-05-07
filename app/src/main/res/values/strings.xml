@@ -34,6 +34,11 @@
     <string name="u_settings">Updates</string>
     <string name="d_reminder">Don\'t remind me of new versions</string>
     <string name="downloads">Downloads</string>
+    <string name="set_app_settings">App settings</string>
+    <string name="set_preview_sec">Preview</string>
+    <string name="set_preview">Preview resolution</string>
+    <string name="set_add_songs">Add songs to Music.axs</string>
+    <string name="set_add_songs_desc">After downloading an MP3, show prompt to add it to a playlist in Music.axs</string>
 
     <!-- Search Screen -->
     <string name="search_title">Search</string>

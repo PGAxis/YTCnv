@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +19,7 @@ import kotlin.system.exitProcess
 fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
+    val application = LocalContext.current.applicationContext as Application
 
     LaunchedEffect(initialUrl) {
         if (!initialUrl.isNullOrBlank()) {
@@ -57,9 +59,8 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
         }
         composable("settings") {
             LockPortrait()
-            val context = androidx.compose.ui.platform.LocalContext.current
             val settingsViewModel = remember {
-                SettingsViewModel(mainViewModel, context.applicationContext as Application)
+                SettingsViewModel(mainViewModel, application)
             }
             SettingsScreen(
                 onBack = { navController.popBackStack() },
@@ -72,7 +73,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
                 factory = object : androidx.lifecycle.ViewModelProvider.Factory {
                     override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return PreviewViewModel(videoId) as T
+                        return PreviewViewModel(videoId, application) as T
                     }
                 }
             )

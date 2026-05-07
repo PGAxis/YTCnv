@@ -15,4 +15,5 @@ interface ISettings {
     var notifyOnFinish: Boolean
     var notifyOnFail: Boolean
     var addToMusicAxs: Boolean
+    var minResolution: Int
 }

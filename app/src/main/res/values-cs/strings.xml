@@ -34,6 +34,11 @@
     <string name="u_settings">Aktualizace</string>
     <string name="d_reminder">Neupozorňovat na nové verze</string>
     <string name="downloads">Stažené</string>
+    <string name="set_app_settings">Nastavení aplikace</string>
+    <string name="set_preview_sec">Náhled</string>
+    <string name="set_preview">Rozlišení náhledu</string>
+    <string name="set_add_songs">Přidat písničky do Music.axs</string>
+    <string name="set_add_songs_desc">Po stažení ve formátu MP3, ukázat volbu pro přidání do playlistu v Music.axs</string>
 
     <!-- Search Screen -->
     <string name="search_title">Vyhledávání</string>

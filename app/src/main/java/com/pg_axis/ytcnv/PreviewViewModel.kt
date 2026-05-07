@@ -1,18 +1,22 @@
 package com.pg_axis.ytcnv
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.pg_axis.ytcnv.settings.SettingsSave
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.StreamInfo
 
-class PreviewViewModel(val videoId: String) : ViewModel() {
+class PreviewViewModel(val videoId: String, application: Application) : AndroidViewModel(application) {
+
+    private val settings = SettingsSave.getInstance(getApplication())
 
     var isLoading by mutableStateOf(true)
     var errorMessage by mutableStateOf<String?>(null)
@@ -35,9 +39,9 @@ class PreviewViewModel(val videoId: String) : ViewModel() {
 
                 val videoOnlyStream = info.videoOnlyStreams
                     .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
-                    .filter { it.height <= 480 &&
+                    .filter { it.height <= settings.minResolution &&
                             it.format?.name?.contains("mpeg-4", ignoreCase = true) == true }
-                    .maxByOrNull { it.height }
+                    .maxByOrNull { it.height } ?: info.videoOnlyStreams.minByOrNull { it.height }
 
                 val audioOnlyStream = info.audioStreams
                     .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
@@ -51,7 +55,7 @@ class PreviewViewModel(val videoId: String) : ViewModel() {
                     // Fallback: best combined progressive stream, capped at 1080p
                     val combined = info.videoStreams
                         .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
-                        .filter { it.height <= 480 &&
+                        .filter { it.height <= settings.minResolution &&
                                 it.format?.name?.contains("mpeg-4", ignoreCase = true) == true }
                         .maxByOrNull { it.height }
                         ?: info.videoStreams

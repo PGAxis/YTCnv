@@ -17,7 +17,7 @@ object MusicAxsClient {
 
     fun isMusicAxsInstalled(context: Context): Boolean {
         return try {
-            val info = context.packageManager.getPackageInfo("com.pg_axis.musicaxs", 0)
+            val info = context.packageManager.getPackageInfo("dev.pgaxis.musicaxs", 0)
             val versionCode = info.longVersionCode
             versionCode >= MusicAxsContract.MIN_MUSICAXS_VERSION
         } catch (_: PackageManager.NameNotFoundException) { false }

@@ -2,6 +2,7 @@ package com.pg_axis.ytcnv.settings
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.gson.Gson
@@ -39,6 +40,8 @@ class SettingsSave private constructor(context: Context) : ISettings {
 
     override var addToMusicAxs by mutableStateOf(false)
 
+    override var minResolution by mutableIntStateOf(480)
+
     // ─── Extra data ───
     override var searchHistory by mutableStateOf<List<String>>(emptyList())
 
@@ -60,7 +63,8 @@ class SettingsSave private constructor(context: Context) : ISettings {
             savedFileUri = fileUri,
             notifyOnFinish = notifyOnFinish,
             notifyOnFail = notifyOnFail,
-            addToMusicAxs = addToMusicAxs
+            addToMusicAxs = addToMusicAxs,
+            minResolution = minResolution,
         )
         settingsPath.writeText(gson.toJson(settings))
     }
@@ -84,6 +88,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
                 notifyOnFinish = it.notifyOnFinish
                 notifyOnFail = it.notifyOnFail
                 addToMusicAxs = it.addToMusicAxs
+                minResolution = it.minResolution
             }
         }
         if (extraDataPath.exists()) {
@@ -109,6 +114,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
         val notifyOnFinish: Boolean = true,
         val notifyOnFail: Boolean = true,
         val addToMusicAxs: Boolean = false,
+        val minResolution: Int = 480,
     )
 
     data class ExtraData(

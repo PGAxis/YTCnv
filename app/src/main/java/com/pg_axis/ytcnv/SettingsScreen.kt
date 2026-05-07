@@ -173,22 +173,29 @@ fun SettingsScreen(
                 )
             }
 
+            SettingsGroup(title = stringResource(R.string.set_preview_sec), initiallyExpanded = false) {
+                SettingsDropdownRow(
+                    label = stringResource(R.string.set_preview),
+                    options = viewModel.resolutionOptions,
+                    selected = viewModel.selectedRes,
+                    onSelectChange = { viewModel.onResolutionChange(it as Int) }
+                )
+            }
+
             // ─── Notifications Group ───
-            SettingsGroup(title = stringResource(R.string.l_settings), initiallyExpanded = false) {
+            SettingsGroup(title = stringResource(R.string.set_app_settings), initiallyExpanded = false) {
                 // ─── Dropdown: Change language ───
                 SettingsDropdownRow(
                     label = stringResource(R.string.language),
                     options = viewModel.langOptions,
                     selected = viewModel.selectedLang,
-                    onSelectChange = { viewModel.onLanguageChange(it) }
+                    onSelectChange = { viewModel.onLanguageChange(it as String) }
                 )
-            }
 
-            if (MusicAxsClient.isMusicAxsInstalled(context)) {
-                SettingsGroup(title = "Integration", initiallyExpanded = false) {
+                if (MusicAxsClient.isMusicAxsInstalled(context)) {
                     SettingsToggleRow(
-                        label = "Add songs to Music.axs",
-                        description = "After downloading an MP3, show prompt to add it to a playlist in Music.axs",
+                        label = stringResource(R.string.set_add_songs),
+                        description = stringResource(R.string.set_add_songs_desc),
                         checked = viewModel.settings.addToMusicAxs,
                         onCheckedChange = { viewModel.onMusicAxsChanged(it) }
                     )
@@ -313,9 +320,9 @@ fun SettingsToggleRow(
 @Composable
 fun SettingsDropdownRow(
     label: String,
-    options: Map<String, String>,
-    selected: String,
-    onSelectChange: (String) -> Unit
+    options: Map<out Any, String>,
+    selected: Any,
+    onSelectChange: (Any) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -347,7 +354,7 @@ fun SettingsDropdownRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = options.entries.find { it.key == selected }?.value ?: selected,
+                    text = options.entries.find { it.key == selected }?.value ?: selected.toString(),
                     color = TextPrimary
                 )
 
