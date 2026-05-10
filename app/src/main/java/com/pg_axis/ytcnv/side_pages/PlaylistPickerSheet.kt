@@ -51,7 +51,7 @@ fun PlaylistPickerSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Add to MusicAxs playlist",
+                text = "Add to Music.axs playlist",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
