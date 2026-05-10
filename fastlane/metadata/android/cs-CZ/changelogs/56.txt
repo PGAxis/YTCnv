@@ -1,1 +1,2 @@
 Přidána plná podpora pro zařízení s Android verzí 25+
+Přechod na AXS formát nastavení

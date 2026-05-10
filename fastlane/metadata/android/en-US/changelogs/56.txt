@@ -1,1 +1,2 @@
 Added full support for Android 25+
+Switched to AXS settings format
