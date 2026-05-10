@@ -1,15 +1,15 @@
 package com.pg_axis.ytcnv.utils
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
+import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -72,13 +72,13 @@ class DownloadNotificationService : Service() {
                 val openFilePendingIntent = PendingIntent.getActivity(
                     context, 1001, openFileIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                val openFileAction = Notification.Action.Builder(
-                    Icon.createWithResource(context, R.drawable.file),
+                val openFileAction = NotificationCompat.Action.Builder(
+                    R.drawable.file,
                     context.getString(R.string.not_open_file),
                     openFilePendingIntent
                 ).build()
 
-                val notification = Notification.Builder(context, FINISH_CHANNEL_ID)
+                val notification = NotificationCompat.Builder(context, FINISH_CHANNEL_ID)
                     .setContentTitle(context.getString(R.string.not_finished))
                     .setContentText("${context.getString(R.string.not_downloaded)} $fileName")
                     .setSmallIcon(R.drawable.finish)
@@ -90,7 +90,7 @@ class DownloadNotificationService : Service() {
                 manager.notify(FINISH_NOTIFICATION_ID, notification)
             }
             else {
-                val notification = Notification.Builder(context, FINISH_CHANNEL_ID)
+                val notification = NotificationCompat.Builder(context, FINISH_CHANNEL_ID)
                     .setContentTitle(context.getString(R.string.not_finished))
                     .setContentText("${context.getString(R.string.not_downloaded)} $fileName")
                     .setSmallIcon(R.drawable.finish)
@@ -112,7 +112,7 @@ class DownloadNotificationService : Service() {
                 context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val notification = Notification.Builder(context, FAIL_CHANNEL_ID)
+            val notification = NotificationCompat.Builder(context, FAIL_CHANNEL_ID)
                 .setContentTitle(context.getString(R.string.not_failed))
                 .setContentText(errMsg)
                 .setSmallIcon(R.drawable.fail)
@@ -138,7 +138,7 @@ class DownloadNotificationService : Service() {
                 else "~%dm %02ds ${context.getString(R.string.remaining)}".format(m, s)
             } else null
 
-            val builder = Notification.Builder(context, CHANNEL_ID)
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle(context.getString(R.string.not_downloading))
                 .setContentText(if (!finale) "${context.getString(R.string.not_progress)} | $progress%" else context.getString(R.string.finalizing))
                 .setSmallIcon(R.drawable.icon)
@@ -162,31 +162,22 @@ class DownloadNotificationService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        val manager = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(NotificationManager::class.java)
 
-        manager.createNotificationChannel(
-            NotificationChannel(
-                CHANNEL_ID,
-                "YTCnv Downloads",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply { description = "Download progress notifications" }
-        )
-
-        manager.createNotificationChannel(
-            NotificationChannel(
-                FINISH_CHANNEL_ID,
-                "YTCnv Download Complete",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply { description = "Notifies when a download finishes" }
-        )
-
-        manager.createNotificationChannel(
-            NotificationChannel(
-                FAIL_CHANNEL_ID,
-                "YTCnv Download Failed",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply { description = "Notifies when a download fails" }
-        )
+            manager.createNotificationChannel(
+                NotificationChannel(CHANNEL_ID, "YTCnv Downloads", NotificationManager.IMPORTANCE_LOW)
+                    .apply { description = "Download progress notifications" }
+            )
+            manager.createNotificationChannel(
+                NotificationChannel(FINISH_CHANNEL_ID, "YTCnv Download Complete", NotificationManager.IMPORTANCE_DEFAULT)
+                    .apply { description = "Notifies when a download finishes" }
+            )
+            manager.createNotificationChannel(
+                NotificationChannel(FAIL_CHANNEL_ID, "YTCnv Download Failed", NotificationManager.IMPORTANCE_DEFAULT)
+                    .apply { description = "Notifies when a download fails" }
+            )
+        }
     }
 
 
@@ -201,7 +192,7 @@ class DownloadNotificationService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = Notification.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.not_downloading))
             .setContentText(getString(R.string.not_progress))
             .setSmallIcon(R.drawable.icon)

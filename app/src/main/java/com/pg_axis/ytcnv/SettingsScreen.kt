@@ -3,15 +3,21 @@ package com.pg_axis.ytcnv
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.ui.theme.*
+import java.io.File
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
@@ -50,7 +57,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
     val versionName = packageInfo.versionName
-    val versionCode = packageInfo.longVersionCode
+    val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        packageInfo.longVersionCode
+    } else {
+        @Suppress("DEPRECATION")
+        packageInfo.versionCode.toLong()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.initPaths()
@@ -103,6 +115,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -212,6 +225,16 @@ fun SettingsScreen(
                         onCheckedChange = { viewModel.onDontShowUpdateChanged(it) }
                     )
                 }
+            }
+
+            OutlinedButton(onClick = {
+                val log = File(context.filesDir, "crash_log.txt")
+                if (log.exists()) {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Crash Log", log.readText()))
+                }
+            }) {
+                Text("Copy crash log")
             }
         }
 

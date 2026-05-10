@@ -16,6 +16,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arthenica.ffmpegkit.FFmpegKit
@@ -119,12 +120,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun onUpdateDialogDismissed(dontShowAgain: Boolean) {
         updateInfo = null
         settings.dontShowUpdate = dontShowAgain
-        (settings as? SettingsSave)?.saveSettings()
     }
 
     fun onTermsAccepted() {
         settings.termsAccepted = true
-        (settings as? SettingsSave)?.saveSettings()
         showTermsDialog = false
     }
 
@@ -318,7 +317,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             // Start foreground service
             DownloadNotificationService.setProgressType(false)
             withContext(Dispatchers.Main) {
-                context.startForegroundService(
+                ContextCompat.startForegroundService(
+                    context,
                     Intent(context, DownloadNotificationService::class.java)
                 )
             }
@@ -352,8 +352,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = settings.downloadHistory.toMutableList()
                 updated.remove(existing)
                 updated.add(0, newItem)
-                settings.downloadHistory = updated
-                (settings as? SettingsSave)?.saveExtraData()
+                (settings as? SettingsSave)?.saveDownloadHistory(updated)
             }
 
             // Download thumbnail

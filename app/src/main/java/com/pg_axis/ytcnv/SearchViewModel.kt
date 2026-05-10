@@ -11,6 +11,7 @@ import com.pg_axis.ytcnv.settings.ISettings
 import com.pg_axis.ytcnv.settings.SettingsSave
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
@@ -35,14 +36,15 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
     fun onSearch() {
         if (searchQuery.text.isBlank()) return
 
-        endReached = false
-
         updateSearchHistory(searchQuery.text.trim())
 
         viewModelScope.launch(Dispatchers.IO) {
-            isLoading = true
-            errorMessage = null
-            results = emptyList()
+            withContext(Dispatchers.Main) {
+                endReached = false
+                isLoading = true
+                errorMessage = null
+                results = emptyList()
+            }
 
             try {
                 val contentFilters = if (isMusicSearch)
@@ -54,17 +56,17 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
                 extractor?.fetchPage()
 
                 val page = extractor?.initialPage
-                nextPage = page?.nextPage
-
                 val newItems = mapItems(page?.items)
 
-                results = newItems
-                endReached = nextPage == null
-
-            } catch (e: Exception) {
-                errorMessage = e.message
+                withContext(Dispatchers.Main) {
+                    results = newItems
+                    nextPage = page?.nextPage
+                    endReached = nextPage == null
+                }
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) { errorMessage = e.toString() }
             } finally {
-                isLoading = false
+                withContext(Dispatchers.Main) { isLoading = false }
             }
         }
     }
@@ -102,16 +104,14 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
     fun onRemoveHistoryItem(query: String) {
         val updated = settings.searchHistory.toMutableList()
         updated.remove(query)
-        settings.searchHistory = updated
-        (settings as? SettingsSave)?.saveExtraData()
+        (settings as? SettingsSave)?.saveSearchHistory(updated)
     }
 
     private fun updateSearchHistory(query: String) {
         val updated = settings.searchHistory.toMutableList()
         updated.remove(query)
         updated.add(0, query)
-        settings.searchHistory = updated
-        (settings as? SettingsSave)?.saveExtraData()
+        (settings as? SettingsSave)?.saveSearchHistory(updated)
     }
 
     private fun extractVideoId(url: String): String {

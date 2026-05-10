@@ -129,7 +129,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                 .fillMaxSize()
                 .padding(horizontal = 25.dp)
         ) {
-            // ─── Header ───
+            // --- Header ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,20 +152,20 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                 }
             }
 
-            // ─── URL Input ───
+            // --- URL Input ---
             Column {
                 Text(text = stringResource(R.string.URLIDPrompt), fontWeight = FontWeight.Bold, color = TextPrimary)
                 OutlinedTextField(
                     value = viewModel.urlEntryText,
                     onValueChange = { viewModel.onUrlChanged(it) },
-                    placeholder = { Text(text = "https://www.youtube.com/watch?v=...") },
+                    placeholder = { Text(text = "youtube.com/watch?v=...") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // ─── Format/Quality pickers ───
+            // --- Format/Quality pickers ---
             if (viewModel.downloadOptionsIsVisible) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -244,7 +244,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // ─── Action button ───
+            // --- Action button ---
             Row(modifier = Modifier.fillMaxWidth()) {
                 if (viewModel.loadButtonIsVisible) {
                     Button(
@@ -277,9 +277,9 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // ─── Progress / Status ───
-            Box(modifier = Modifier.height(80.dp)) {
-                Column {
+            // --- Progress / Status ---
+            if (viewModel.dwnldProgressIsVisible || viewModel.downloadIndicatorIsVisible || viewModel.statusLabelIsVisible) {
+                Column(modifier = Modifier.padding(bottom = 25.dp)) {
                     if (viewModel.dwnldProgressIsVisible) {
                         LinearProgressIndicator(
                             progress = { viewModel.downloadProgress },
@@ -300,15 +300,15 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                 }
             }
 
-            // ─── Divider ───
+            // --- Divider ---
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 10.dp),
                 color = DividerColor
             )
 
-            // ─── Download History ───
+            // --- Download History ---
             Card(
-                modifier = Modifier.fillMaxSize().padding(vertical = 25.dp),
+                modifier = Modifier.weight(1f).padding(vertical = 25.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = CardDark)
             ) {
@@ -357,8 +357,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                                     IconButton(onClick = {
                                         val updated = viewModel.settings.downloadHistory.toMutableList()
                                         updated.removeAll { it.urlOrId == item.urlOrId }
-                                        viewModel.settings.downloadHistory = updated
-                                        (viewModel.settings as? SettingsSave)?.saveExtraData()
+                                        (viewModel.settings as? SettingsSave)?.saveDownloadHistory(updated)
                                     }) {
                                         Icon(painter = painterResource(id = R.drawable.cross), contentDescription = "Remove", tint = TextSecondary)
                                     }
@@ -371,7 +370,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
             }
         }
 
-        // ─── Popup overlay ───
+        // --- Popup overlay ---
         if (viewModel.popupIsVisible) {
             Box(
                 modifier = Modifier

@@ -30,10 +30,10 @@ android {
 
     defaultConfig {
         applicationId = "com.pg_axis.ytcnv"
-        minSdk = 30
+        minSdk = 25
         targetSdk = 36
-        versionCode = 55
-        versionName = "3.12.2"
+        versionCode = 56
+        versionName = "3.13.0"
 
         ndk {
             //noinspection ChromeOsAbiSupport
@@ -58,6 +58,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -94,6 +95,8 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.datasource)
+    implementation(libs.axs)
+    coreLibraryDesugaring(libs.desugar)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.pg_axis.ytcnv.settings.SettingsSave
@@ -107,7 +108,8 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
             try {
                 DownloadNotificationService.setProgressType(false)
                 withContext(Dispatchers.Main) {
-                    context.startForegroundService(
+                    ContextCompat.startForegroundService(
+                        context,
                         Intent(context, DownloadNotificationService::class.java)
                     )
                 }
@@ -136,8 +138,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                     val updated = settings.downloadHistory.toMutableList()
                     updated.remove(existing)
                     updated.add(0, newItem)
-                    settings.downloadHistory = updated
-                    settings.saveExtraData()
+                    settings.saveDownloadHistory(updated)
                 }
 
                 // Download thumbnail

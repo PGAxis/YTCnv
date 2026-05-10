@@ -1,0 +1,1 @@
+Přidána plná podpora pro zařízení s Android verzí 25+

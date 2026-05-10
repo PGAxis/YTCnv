@@ -37,34 +37,27 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
 
     fun onUse4KChanged(value: Boolean) {
         settings.use4K = value
-        settings.saveSettings()
     }
     fun onQuickDwnldChanged(value: Boolean) {
         settings.quickDwnld = value
-        settings.saveSettings()
         mainViewModel.applyQuickDownloadState()
     }
     fun onDontShowUpdateChanged(value: Boolean) {
         settings.dontShowUpdate = value
-        settings.saveSettings()
     }
     fun onFolderPicked(uri: String) {
         settings.fileUri = uri
         mainFolder = getMainFolder(uri)
         finalFolder = getFinalFolder(uri)
-        settings.saveSettings()
     }
     fun onNotifyOnFinishChanged(value: Boolean) {
         settings.notifyOnFinish = value
-        settings.saveSettings()
     }
     fun onNotifyOnFailChanged(value: Boolean) {
         settings.notifyOnFail = value
-        settings.saveSettings()
     }
     fun onMusicAxsChanged(value: Boolean) {
         settings.addToMusicAxs = value
-        settings.saveSettings()
     }
     fun onLanguageChange(key: String) {
         selectedLang = key
@@ -76,7 +69,6 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     fun onResolutionChange(key: Int) {
         selectedRes = key
         settings.minResolution = key
-        settings.saveSettings()
     }
 
     private fun getMainFolder(uri: String): String {

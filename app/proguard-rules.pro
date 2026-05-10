@@ -23,6 +23,8 @@
 -keep class org.mozilla.javascript.** { *; }
 -keep class com.pg_axis.ytcnv.settings.SettingsSave { *; }
 -keep class com.pg_axis.ytcnv.settings.SettingsSave$** { *; }
+-keep class java.net.URLEncoder { *; }
+-dontwarn org.mozilla.javascript.tools.**
 -dontwarn org.mozilla.javascript.tools.**
 
 -dontwarn com.google.re2j.Matcher
