@@ -1,0 +1,122 @@
+<resources>
+    <!-- Manifest strings -->
+    <string name="app_name">YouTube Conv.axs</string>
+    <string name="open_overlay">Наложение</string>
+    <string name="share_quick_download">Быстрая загрузка</string>
+    <string name="share_loading_quality">Варианты качества загрузки…</string>
+    <string name="share_downloading_bg">Загрузка выполняется в фоне…</string>
+
+    <!-- Main Screen -->
+    <string name="title">YouTube Converter</string>
+    <string name="URLIDPrompt">Ссылка или ID ролика YouTube</string>
+    <string name="format">Формат</string>
+    <string name="quality">Качество</string>
+    <string name="choose_quality">Выберите качество</string>
+    <string name="download">Загрузить</string>
+    <string name="cancel">Отмена</string>
+    <string name="load">Загрузить метаданные</string>
+    <string name="download_history">ИСТОРИЯ ЗАГРУЗОК</string>
+    <string name="empty_history">История пуста</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Настройки</string>
+    <string name="download_dest">Изменить папку загрузки</string>
+    <string name="internal_storage">Внутренняя память</string>
+    <string name="sd_card">SD-карта</string>
+    <string name="d_settings">Настройки загрузки</string>
+    <string name="up_to_4k">Включить разрешение 2K и выше (видео)</string>
+    <string name="quick_download">Включить быструю загрузку</string>
+    <string name="n_settings">Уведомления</string>
+    <string name="n_download_finished">Уведомлять по завершении загрузки</string>
+    <string name="n_download_failed">Уведомлять при ошибке загрузки</string>
+    <string name="l_settings">Языковые настройки</string>
+    <string name="language">Язык</string>
+    <string name="u_settings">Обновления</string>
+    <string name="d_reminder">Не напоминать о новых версиях</string>
+    <string name="downloads">Загрузки</string>
+    <string name="set_app_settings">Настройки приложения</string>
+    <string name="set_preview_sec">Предпросмотр</string>
+    <string name="set_preview">Разрешение предпросмотра</string>
+    <string name="set_add_songs">Добавлять треки в Music.axs</string>
+    <string name="set_add_songs_desc">После загрузки MP3 предлагать добавить файл в плейлист в Music.axs</string>
+
+    <!-- Search Screen -->
+    <string name="search_title">Поиск</string>
+    <string name="search_prompt">Поиск на YouTube…</string>
+    <string name="search_big_prompt">Найти видео на YouTube</string>
+    <string name="copy_url">Копировать ссылку</string>
+
+    <!-- Pop-up titles -->
+    <string name="pt_no_url">Нет ссылки</string>
+    <string name="pt_unavailable">Видео недоступно</string>
+    <string name="pt_error">Ошибка</string>
+    <string name="pt_live">Прямая трансляция</string>
+    <string name="pt_finished">Готово</string>
+    <string name="pt_failed">Не удалось</string>
+    <string name="pt_canceled">Отменено</string>
+    <string name="pt_invalid_url">Недопустимая ссылка</string>
+    <string name="pt_network_error">Ошибка сети</string>
+
+    <!-- Pop-up messages -->
+    <string name="pm_no_url">Не удалось найти ID ролика YouTube в этой ссылке. Укажите корректную ссылку на YouTube</string>
+    <string name="pm_unavailable">Видео недоступно: оно скрыто, имеет возрастные ограничения или не существует</string>
+    <string name="pm_error">Неизвестная ошибка</string>
+    <string name="pm_live">Прямые трансляции нельзя загрузить</string>
+    <string name="pm_finished">Загрузка успешно завершена</string>
+    <string name="pm_failed">Не удалось добавить метаданные и сохранить файл</string>
+    <string name="pm_canceled">Загрузка отменена</string>
+    <string name="pm_invalid_url">Укажите корректную ссылку на YouTube</string>
+    <string name="pm_network_error">Устройство потеряло подключение к интернету</string>
+
+    <!-- Status label messages -->
+    <string name="sl_retrieving_metadata">Получение метаданных видео</string>
+    <string name="sl_download">Загрузка</string>
+    <string name="sl_add_metadata">Добавление метаданных</string>
+    <string name="sl_joining_a_and_v">Объединение аудио и видео</string>
+
+    <!-- Notification messages -->
+    <string name="not_finished">Загрузка завершена</string>
+    <string name="not_downloaded">Загружено</string>
+    <string name="not_failed">Ошибка загрузки</string>
+    <string name="not_downloading">Идёт загрузка</string>
+    <string name="not_progress">Загрузка выполняется…</string>
+    <string name="remaining">осталось</string>
+    <string name="finalizing">Завершение</string>
+    <string name="not_open_file">Открыть файл</string>
+
+    <!-- Title Author Dialog -->
+    <string name="tad_edit_metadata">Изменить метаданные</string>
+    <string name="tad_title">Название</string>
+    <string name="tad_author">Автор</string>
+
+    <!-- Update Dialog -->
+    <string name="ud_update_available">Доступно обновление</string>
+    <string name="ud_new_v_1">Новая версия</string>
+    <string name="ud_new_v_2">уже доступна.</string>
+    <string name="ud_no_remind">Больше не напоминать</string>
+    <string name="ud_later">Позже</string>
+
+    <!-- Terms Dialog -->
+    <string name="terms_title">Условия использования</string>
+    <string name="terms_subtitle">Прочтите и примите условия, чтобы продолжить</string>
+    <string name="terms_content">
+Используя это приложение, вы подтверждаете, что ознакомились со следующими условиями и соглашаетесь с ними:\n\n
+1. ДОПУСТИМОЕ ИСПОЛЬЗОВАНИЕ\n
+Это приложение предназначено исключительно для личного некоммерческого использования. Вы можете применять его для загрузки контента только в личных целях в пределах домашнего круга.\n\n
+2. АВТОРСКОЕ ПРАВО И ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ\n
+Вы несёте полную ответственность за соблюдение авторских прав и условий использования соответствующих платформ при загрузке контента. Коммерческое использование, распространение или монетизация загруженного контента запрещены, если у вас нет явного разрешения правообладателя или автора.\n\n
+3. ОГРАНИЧЕНИЕ ОТВЕТСТВЕННОСТИ\n
+Разработчик приложения не несёт ответственности за:\n
+• любое неправомерное использование загруженного контента;\n
+• нарушение авторских прав или иные правонарушения, связанные с использованием приложения;\n
+• ущерб, претензии или судебные иски, связанные с коммерческим использованием или монетизацией загруженного контента;\n
+• соблюдение законов в вашей юрисдикции.\n\n
+4. ОТВЕТСТВЕННОСТЬ ПОЛЬЗОВАТЕЛЯ\n
+Вы признаёте, что несёте полную ответственность за использование приложения и за загружаемый контент. Вы обязаны уважать права интеллектуальной собственности и соблюдать применимое законодательство.\n\n
+5. ОТСУТСТВИЕ ГАРАНТИЙ\n
+Приложение предоставляется «как есть» без каких-либо гарантий, явных или подразумеваемых, в том числе гарантий товарной пригодности или пригодности для определённой цели.\n\n
+Нажимая «Принять», вы подтверждаете, что прочитали и поняли эти условия и обязуетесь их соблюдать.
+    </string>
+    <string name="terms_accept">Принять</string>
+    <string name="terms_decline">Отклонить</string>
+</resources>
