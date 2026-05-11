@@ -18,7 +18,7 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     private val context = getApplication<Application>()
     val settings = SettingsSave.getInstance(context)
 
-    val langOptions = mapOf("en" to "English", "cs" to "Čeština", "de" to "Deutch", "tr" to "Türkçe")
+    val langOptions = mapOf("en" to "English", "cs" to "Čeština", "de" to "Deutch", "tr" to "Türkçe", "ru" to "Русский")
     var selectedLang = AppCompatDelegate.getApplicationLocales().toLanguageTags()
         .ifEmpty { Locale.getDefault().language.ifEmpty { langOptions.keys.first() } }!!
 
