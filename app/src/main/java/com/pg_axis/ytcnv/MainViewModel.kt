@@ -314,15 +314,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         try {
-            // Start foreground service
-            DownloadNotificationService.setProgressType(false)
-            withContext(Dispatchers.Main) {
-                ContextCompat.startForegroundService(
-                    context,
-                    Intent(context, DownloadNotificationService::class.java)
-                )
-            }
-
+            Log.d("URL", "https://www.youtube.com/watch?v=$cleanedUrl")
             val streamInfo = StreamInfo.getInfo(
                 ServiceList.YouTube,
                 "https://www.youtube.com/watch?v=$cleanedUrl"
@@ -337,6 +329,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 settings.isDownloadRunning = false
                 DownloadNotificationService.setProgressType(false)
                 return@withContext
+            }
+
+            DownloadNotificationService.setProgressType(false)
+            withContext(Dispatchers.Main) {
+                ContextCompat.startForegroundService(
+                    context,
+                    Intent(context, DownloadNotificationService::class.java)
+                )
             }
 
             var author = StringUtils.cleanAuthor(streamInfo.uploaderName ?: "")
@@ -578,10 +578,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
                     "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
-                            "-c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
+                            "-c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
                             "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
                 } else {
-                    "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
+                    "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
                             "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
                 }
 
@@ -654,8 +654,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         } finally {
             deleteFiles()
-            stopService()
             DownloadNotificationService.setProgressType(false)
+            stopService()
             settings.isDownloadRunning = false
         }
     }

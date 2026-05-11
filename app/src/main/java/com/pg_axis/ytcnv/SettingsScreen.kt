@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.ui.theme.*
 import java.io.File
+import java.time.LocalDateTime
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
@@ -63,6 +64,8 @@ fun SettingsScreen(
         @Suppress("DEPRECATION")
         packageInfo.versionCode.toLong()
     }
+
+    var logsOpened by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.initPaths()
@@ -226,16 +229,14 @@ fun SettingsScreen(
                     )
                 }
             }
+        }
 
-            OutlinedButton(onClick = {
-                val log = File(context.filesDir, "crash_log.txt")
-                if (log.exists()) {
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Crash Log", log.readText()))
-                }
-            }) {
-                Text("Copy crash log")
-            }
+        OutlinedButton(
+            onClick = { logsOpened = true },
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+        ) {
+            Text("Open crash logs", fontSize = 12.sp)
         }
 
         // ─── Version label ───
@@ -246,6 +247,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(8.dp)
+        )
+    }
+
+    if (logsOpened) {
+        CrashLogsDialog(
+            context = context,
+            onDismiss = { logsOpened = false }
         )
     }
 }
@@ -406,4 +414,75 @@ fun SettingsDropdownRow(
             }
         }
     }
+}
+
+@Composable
+fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
+    val logs = remember {
+        File(context.filesDir, "crash_logs")
+            .listFiles()
+            ?.sortedByDescending { it.lastModified() }
+            ?: emptyList()
+    }
+    val clipboard = remember {
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    }
+    var copiedFile by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardDark,
+        title = { Text("Crash Logs", color = TextPrimary, fontWeight = FontWeight.Bold) },
+        text = {
+            if (logs.isEmpty()) {
+                Text("No crash logs found.", color = TextSecondary)
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    logs.forEach { file ->
+                        val label = file.nameWithoutExtension.toLongOrNull()
+                            ?.let { millis ->
+                                LocalDateTime.ofInstant(
+                                    java.time.Instant.ofEpochMilli(millis),
+                                    java.time.ZoneId.systemDefault()
+                                ).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                            }
+                            ?: file.name
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = label,
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = {
+                                clipboard.setPrimaryClip(
+                                    ClipData.newPlainText("Crash Log", file.readText())
+                                )
+                                copiedFile = file.name
+                            }) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (copiedFile == file.name) R.drawable.check
+                                        else R.drawable.copy
+                                    ),
+                                    contentDescription = "Copy",
+                                    tint = if (copiedFile == file.name) CyanPrimary else CyanLight,
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = CyanPrimary)
+            }
+        }
+    )
 }

@@ -1,0 +1,3 @@
+Přidána podpora pro odkazy na YouTube Shorts
+Aplikace již nepadá po zadání neplatné adresy URL
+Na obrazovce Nastavení přidána možnost „Kopírovat záznamy o chybách“

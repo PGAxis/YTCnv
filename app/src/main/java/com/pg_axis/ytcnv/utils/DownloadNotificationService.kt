@@ -178,6 +178,16 @@ class DownloadNotificationService : Service() {
                     .apply { description = "Notifies when a download fails" }
             )
         }
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(getString(R.string.not_downloading))
+            .setContentText(getString(R.string.not_progress))
+            .setSmallIcon(R.drawable.icon)
+            .setOngoing(true)
+            .setProgress(100, 0, true)
+            .build()
+
+        startForeground(NOTIFICATION_ID, notification)
     }
 
 
@@ -203,6 +213,10 @@ class DownloadNotificationService : Service() {
 
         startForeground(NOTIFICATION_ID, notification)
         return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
