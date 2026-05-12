@@ -1,3 +1,4 @@
 Added support for YouTube Shorts links
 The app no longer crashes after invalid URL is passed
 Added "Copy crash logs" option in the Settings screen
+Added Russian translation
