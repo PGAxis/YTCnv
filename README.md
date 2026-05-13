@@ -65,6 +65,7 @@ The prebuilt AAR included in this repository was built from that fork with no mo
 - [Smart exception](https://github.com/tanersener/smart-exception)
 - [Coil](https://github.com/coil-kt/coil) — image loading
 - [Gson](https://github.com/google/gson) — JSON serialization
+- [AXS](https://github.com/PGAxis/AxsFileFormat) - Settings handling
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) — UI
 
 ## License
