@@ -1,0 +1,1 @@
+Dokončen přehod na AXS formát nastavení

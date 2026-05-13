@@ -352,7 +352,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = settings.downloadHistory.toMutableList()
                 updated.remove(existing)
                 updated.add(0, newItem)
-                (settings as? SettingsSave)?.saveDownloadHistory(updated)
+                Log.d("History update", "$updated")
+                settings.downloadHistory = updated
             }
 
             // Download thumbnail

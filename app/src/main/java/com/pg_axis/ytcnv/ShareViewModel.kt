@@ -138,7 +138,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                     val updated = settings.downloadHistory.toMutableList()
                     updated.remove(existing)
                     updated.add(0, newItem)
-                    settings.saveDownloadHistory(updated)
+                    settings.downloadHistory = updated
                 }
 
                 // Download thumbnail

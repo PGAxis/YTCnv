@@ -6,12 +6,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.gson.Gson
-import dev.pgaxis.axs.AxsArray
 import dev.pgaxis.axs.AxsBoundObject
 import dev.pgaxis.axs.AxsFile
-import dev.pgaxis.axs.AxsObject
-import dev.pgaxis.axs.AxsString
-import dev.pgaxis.axs.toDataClass
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
@@ -33,6 +29,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     // --- AXS setup ---
     private val axsFile = AxsFile(axsPath)
     private lateinit var boundSettings: AxsBoundObject<SettingsClass>
+    private lateinit var boundExtraData: AxsBoundObject<ExtraData>
 
     // --- Setting fun ---
     private fun <V : Any> setting(
@@ -63,6 +60,20 @@ class SettingsSave private constructor(context: Context) : ISettings {
         }
     }
 
+    private fun <V : Any> extraData(
+        initial: V,
+        prop: KMutableProperty1<ExtraData, V>
+    ): ReadWriteProperty<Any?, V> = object : ReadWriteProperty<Any?, V> {
+        private var state by mutableStateOf(initial)
+
+        override fun getValue(thisRef: Any?, property: KProperty<*>): V = state
+
+        override fun setValue(thisRef: Any?, property: KProperty<*>, value: V) {
+            state = value
+            if (::boundExtraData.isInitialized) boundExtraData.setValue(prop, value)
+        }
+    }
+
     // --- Settings ---
     override var use4K by setting(false, SettingsClass::use4kDownload)
     override var quickDwnld by setting(true, SettingsClass::quickDownload)
@@ -75,56 +86,14 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var minResolution by intSetting(480, SettingsClass::minResolution)
 
     // --- Extra data ---
-    override var searchHistory by mutableStateOf<List<String>>(emptyList())
-    override var downloadHistory by mutableStateOf<List<HistoryItem>>(emptyList())
+    override var searchHistory by extraData(emptyList(), ExtraData::searchHistory)
+    override var downloadHistory by extraData(emptyList(), ExtraData::downloadHistory)
 
     // --- Singleton variables ---
     override var isDownloadRunning = false
     override var alreadyShown = false
     override var iHaveId = false
     override var id = ""
-
-    // --- Save/load extra data ---
-    fun saveSearchHistory(history: List<String>) {
-        searchHistory = history
-        if (axsFile.get("ExtraData.searchHistory") != null)
-            axsFile.delete("ExtraData.searchHistory", recursive = true)
-        axsFile.createArray("ExtraData.searchHistory")
-        history.forEachIndexed { index, item ->
-            axsFile.set("ExtraData.searchHistory.$index", item)
-        }
-    }
-
-    fun saveDownloadHistory(history: List<HistoryItem>) {
-        downloadHistory = history
-        if (axsFile.get("ExtraData.downloadHistory") != null)
-            axsFile.delete("ExtraData.downloadHistory", recursive = true)
-        axsFile.createArray("ExtraData.downloadHistory")
-        history.forEachIndexed { index, item ->
-            axsFile.createObject("ExtraData.downloadHistory.$index")
-            axsFile.set("ExtraData.downloadHistory.$index.title", item.title)
-            axsFile.set("ExtraData.downloadHistory.$index.urlOrId", item.urlOrId)
-        }
-    }
-
-    private fun loadExtraData() {
-        try {
-            downloadHistory = (axsFile.get("ExtraData.downloadHistory") as? AxsArray)
-                ?.items
-                ?.filterIsInstance<AxsObject>()
-                ?.map { it.toDataClass(HistoryItem("", "")) }
-                ?: emptyList()
-
-            searchHistory = (axsFile.get("ExtraData.searchHistory") as? AxsArray)
-                ?.items
-                ?.filterIsInstance<AxsString>()
-                ?.map { it.value }
-                ?: emptyList()
-        } catch (_: Exception) {
-            searchHistory = emptyList()
-            downloadHistory = emptyList()
-        }
-    }
 
     // --- Data classes ---
     data class SettingsClass(
@@ -145,8 +114,8 @@ class SettingsSave private constructor(context: Context) : ISettings {
     )
 
     data class ExtraData(
-        val searchHistory: List<String> = emptyList(),
-        val downloadHistory: List<HistoryItem> = emptyList()
+        var searchHistory: List<String> = emptyList(),
+        var downloadHistory: List<HistoryItem> = emptyList()
     )
 
     init {
@@ -181,18 +150,15 @@ class SettingsSave private constructor(context: Context) : ISettings {
         minResolution = s.minResolution
 
         // Migrate extra data
-        if (axsFile.get("ExtraData.downloadHistory") == null && oldExtraDataPath.exists()) {
-            try {
-                gson.fromJson(oldExtraDataPath.readText(), ExtraData::class.java)?.let {
-                    saveSearchHistory(it.searchHistory)
-                    saveDownloadHistory(it.downloadHistory.map { item ->
-                        HistoryItem(item.title, item.urlOrId)
-                    })
-                }
-            } catch (_: Exception) {}
-        } else {
-            loadExtraData()
-        }
+        val initialExtraData = if (axsFile.get("ExtraData") == null && oldExtraDataPath.exists()) {
+            gson.fromJson(oldExtraDataPath.readText(), ExtraData::class.java) ?: ExtraData()
+        } else ExtraData()
+
+        boundExtraData = axsFile.bind(initialExtraData)
+
+        val e = boundExtraData.get()
+        searchHistory = e.searchHistory
+        downloadHistory = e.downloadHistory
 
         // Clean up old files after migration
         oldSettingsPath.delete()

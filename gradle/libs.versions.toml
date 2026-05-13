@@ -19,7 +19,7 @@ smartexception = "0.2.1"
 appcompat = "1.7.1"
 media3 = "1.10.1"
 desugar = "2.1.5"
-axs = "1.0.7"
+axs = "1.0.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

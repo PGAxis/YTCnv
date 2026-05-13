@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.dialogs.TermsDialog
 import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.dialogs.UpdateDialog
-import com.pg_axis.ytcnv.settings.*
 import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 import com.pg_axis.ytcnv.ui.theme.BackgroundDark
 import com.pg_axis.ytcnv.ui.theme.BorderColor
@@ -357,7 +356,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                                     IconButton(onClick = {
                                         val updated = viewModel.settings.downloadHistory.toMutableList()
                                         updated.removeAll { it.urlOrId == item.urlOrId }
-                                        (viewModel.settings as? SettingsSave)?.saveDownloadHistory(updated)
+                                        viewModel.settings.downloadHistory = updated
                                     }) {
                                         Icon(painter = painterResource(id = R.drawable.cross), contentDescription = "Remove", tint = TextSecondary)
                                     }

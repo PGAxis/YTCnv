@@ -8,7 +8,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pg_axis.ytcnv.settings.ISettings
-import com.pg_axis.ytcnv.settings.SettingsSave
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,14 +103,14 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
     fun onRemoveHistoryItem(query: String) {
         val updated = settings.searchHistory.toMutableList()
         updated.remove(query)
-        (settings as? SettingsSave)?.saveSearchHistory(updated)
+        settings.searchHistory = updated
     }
 
     private fun updateSearchHistory(query: String) {
         val updated = settings.searchHistory.toMutableList()
         updated.remove(query)
         updated.add(0, query)
-        (settings as? SettingsSave)?.saveSearchHistory(updated)
+        settings.searchHistory = updated
     }
 
     private fun extractVideoId(url: String): String {
