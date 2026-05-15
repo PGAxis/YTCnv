@@ -119,4 +119,10 @@ By clicking "Accept", you confirm that you have read, understood, and agree to b
     </string>
     <string name="terms_accept">Accept</string>
     <string name="terms_decline">Decline</string>
+
+    <!-- Playlist picker -->
+    <string name="pp_add_to">Add to Music.axs playlist</string>
+    <string name="pp_song_count">%1$s songs</string>
+    <string name="pp_added_to">Added to %1$s</string>
+    <string name="pp_failed">Failed to add song</string>
 </resources>

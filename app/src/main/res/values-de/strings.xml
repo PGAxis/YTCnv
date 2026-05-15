@@ -119,4 +119,10 @@ Durch Klicken auf "Akzeptieren" bestätigen Sie, dass Sie diese Nutzungsbedingun
     </string>
     <string name="terms_accept">Akzeptieren</string>
     <string name="terms_decline">Ablehnen</string>
+
+    <!-- Playlist picker -->
+    <string name="pp_add_to">Zu Music.axs-Playlist hinzufügen</string>
+    <string name="pp_song_count">%1$s Songs</string>
+    <string name="pp_added_to">Hinzugefügt zu %1$s</string>
+    <string name="pp_failed">Song konnte nicht hinzugefügt werden</string>
 </resources>

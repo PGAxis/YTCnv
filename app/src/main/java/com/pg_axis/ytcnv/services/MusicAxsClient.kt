@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -15,10 +16,12 @@ import kotlin.coroutines.resume
 
 object MusicAxsClient {
 
+    @Suppress("DEPRECATION")
     fun isMusicAxsInstalled(context: Context): Boolean {
         return try {
             val info = context.packageManager.getPackageInfo("dev.pgaxis.musicaxs", 0)
-            val versionCode = info.longVersionCode
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                info.longVersionCode else info.versionCode.toLong()
             versionCode >= MusicAxsContract.MIN_MUSICAXS_VERSION
         } catch (_: PackageManager.NameNotFoundException) { false }
     }

@@ -27,6 +27,15 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
         }
     }
 
+    var lastNavTime = remember { 0L }
+    fun popBack() {
+        val now = System.currentTimeMillis()
+        if (now - lastNavTime > 500) {
+            lastNavTime = now
+            navController.popBackStack()
+        }
+    }
+
     NavHost(navController = navController, startDestination = "main") {
         composable("main") {
             LockPortrait()
@@ -51,7 +60,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
                 }
             )
             SearchScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { popBack() },
                 onResultSelected = { url -> mainViewModel.urlEntryText = url },
                 onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
                 viewModel = searchViewModel
@@ -63,7 +72,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
                 SettingsViewModel(mainViewModel, application)
             }
             SettingsScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { popBack() },
                 viewModel = settingsViewModel
             )
         }
@@ -78,7 +87,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
                 }
             )
             PreviewScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { popBack() },
                 viewModel = previewViewModel
             )
         }

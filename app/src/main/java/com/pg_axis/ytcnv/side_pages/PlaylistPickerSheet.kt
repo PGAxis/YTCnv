@@ -22,9 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pg_axis.ytcnv.R
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +53,7 @@ fun PlaylistPickerSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Add to Music.axs playlist",
+                text = stringResource(R.string.pp_add_to),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
@@ -67,16 +69,18 @@ fun PlaylistPickerSheet(
                 }
             } else {
                 playlistList.forEach { playlist ->
+                    val addedTo = stringResource(R.string.pp_added_to, playlist.name)
+                    val failed = stringResource(R.string.pp_failed)
                     ListItem(
                         headlineContent = { Text(playlist.name) },
-                        supportingContent = { Text("${playlist.songCount} songs") },
+                        supportingContent = { Text(stringResource(R.string.pp_song_count, playlist.songCount)) },
                         modifier = Modifier.clickable {
                             CoroutineScope(Dispatchers.IO).launch {
                                 val success = MusicAxsClient.addSongToPlaylist(context, songUri, playlist.id)
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(
                                         context,
-                                        if (success) "Added to ${playlist.name}" else "Failed to add song",
+                                        if (success) addedTo else failed,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }

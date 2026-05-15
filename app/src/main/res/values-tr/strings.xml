@@ -120,4 +120,10 @@ Türkçe çeviri: Ahmet Çeliker tarafından sağlanmıştır.
     </string>
     <string name="terms_accept">Kabul Et</string>
     <string name="terms_decline">Reddet</string>
+
+    <!-- Playlist picker -->
+    <string name="pp_add_to">Music.axs çalma listesine ekle</string>
+    <string name="pp_song_count">%1$s şarkı</string>
+    <string name="pp_added_to">%1$s listesine eklendi</string>
+    <string name="pp_failed">Şarkı eklenemedi</string>
 </resources>

@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 
 object MusicAxsContract {
-    const val AUTHORITY = "dev.pgaxis.musicaxs.provider" //com.pg_axis.musicaxs
+    const val AUTHORITY = "dev.pgaxis.musicaxs.provider"
     const val MIN_MUSICAXS_VERSION = 6L  // bump when contract changes
     const val MIN_YTCNV_VERSION = 53L
 

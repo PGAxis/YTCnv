@@ -1,0 +1,1 @@
+Opraveno načítání historie z AXS formátu nastavení

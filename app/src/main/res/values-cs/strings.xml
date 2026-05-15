@@ -119,4 +119,10 @@ Kliknutím na tlačítko "Přijmout" potvrzujete, že jste si přečetli, porozu
     </string>
     <string name="terms_accept">Přijmout</string>
     <string name="terms_decline">Odmítnout</string>
+
+    <!-- Playlist picker -->
+    <string name="pp_add_to">Přidat do playlistu Music.axs</string>
+    <string name="pp_song_count">%1$s písní</string>
+    <string name="pp_added_to">Přidáno do %1$s</string>
+    <string name="pp_failed">Nepodařilo se přidat skladbu</string>
 </resources>

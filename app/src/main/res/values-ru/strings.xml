@@ -119,4 +119,10 @@
     </string>
     <string name="terms_accept">Принять</string>
     <string name="terms_decline">Отклонить</string>
+
+    <!-- Playlist picker -->
+    <string name="pp_add_to">Добавить в плейлист Music.axs</string>
+    <string name="pp_song_count">%1$s песен</string>
+    <string name="pp_added_to">Добавлено в %1$s</string>
+    <string name="pp_failed">Не удалось добавить песню</string>
 </resources>
