@@ -5,7 +5,7 @@ A simple, open-source YouTube downloader for Android. Download YouTube videos as
 <div align=center>
 
 <p align=center>
-  <a href="https://apt.izzysoft.de/packages/com.pg_axis.ytcnv"><img src="https://izzyondroid.org/assets/static/IzzyOnDroidButtonGreyBorder_nofont.png" height="80" alt="Get it at IzzyOnDroid"/></a>
+  <a href="https://apt.izzysoft.de/packages/com.pg_axis.ytcnv"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidButtonGreyBorder_nofont.png" height="80" alt="Get it at IzzyOnDroid"></a>
 </p>
 
 <p align=center>
