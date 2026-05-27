@@ -35,7 +35,8 @@
     <string name="d_reminder">Don\'t remind me of new versions</string>
     <string name="downloads">Downloads</string>
     <string name="set_app_settings">App settings</string>
-    <string name="set_preview_sec">Preview</string>
+    <string name="set_scr_customization">Customization</string>
+    <string name="set_scr_theme">Color Theme</string>
     <string name="set_preview">Preview resolution</string>
     <string name="set_add_songs">Add songs to Music.axs</string>
     <string name="set_add_songs_desc">After downloading an MP3, show prompt to add it to a playlist in Music.axs</string>
@@ -125,4 +126,13 @@ By clicking "Accept", you confirm that you have read, understood, and agree to b
     <string name="pp_song_count">%1$s songs</string>
     <string name="pp_added_to">Added to %1$s</string>
     <string name="pp_failed">Failed to add song</string>
+
+    <!-- Settings view model -->
+    <string name="set_vm_cyan">Cyan</string>
+    <string name="set_vm_ember">Ember</string>
+    <string name="set_vm_aether">Aether</string>
+    <string name="set_vm_phosphor">Phosphor</string>
+    <string name="set_vm_chalk">Chalk</string>
+    <string name="set_vm_sunshine">Sunshine</string>
+    <string name="set_vm_grayscale">Grayscale</string>
 </resources>

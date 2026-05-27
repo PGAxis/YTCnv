@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.pg_axis.ytcnv.ui.theme.*
 import com.pg_axis.ytcnv.R
 
 @Composable
@@ -23,20 +22,20 @@ fun TermsDialog(
     Dialog(onDismissRequest = { /* Prevent dismissal by tapping outside */ }) {
         Card(
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = CardDark)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = stringResource(R.string.terms_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 
                 Text(
                     text = stringResource(R.string.terms_subtitle),
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -50,7 +49,7 @@ fun TermsDialog(
                 ) {
                     Text(
                         text = stringResource(R.string.terms_content),
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 13.sp
                     )
                 }
@@ -63,7 +62,7 @@ fun TermsDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDecline) {
-                        Text(stringResource(R.string.terms_decline), color = TextSecondary)
+                        Text(stringResource(R.string.terms_decline), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = onAccept) {

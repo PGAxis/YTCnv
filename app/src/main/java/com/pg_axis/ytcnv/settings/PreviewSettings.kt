@@ -1,5 +1,7 @@
 package com.pg_axis.ytcnv.settings
 
+import com.pg_axis.ytcnv.services.Theme
+
 class PreviewSettings : ISettings {
     override var use4K = false
     override var quickDwnld = true
@@ -16,4 +18,5 @@ class PreviewSettings : ISettings {
     override var notifyOnFail = true
     override var addToMusicAxs = false
     override var minResolution = 480
+    override var theme = Theme.CYAN
 }

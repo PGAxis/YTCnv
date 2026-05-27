@@ -2,7 +2,6 @@ package com.pg_axis.ytcnv
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Application
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -28,26 +27,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.services.MusicAxsClient
+import com.pg_axis.ytcnv.services.Theme
 import com.pg_axis.ytcnv.ui.theme.*
 import java.io.File
 import java.time.LocalDateTime
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true)
-fun SettingsPreview() {
-    val mainModel = remember { MainViewModel(Application()) }
-    val viewModel = remember { SettingsViewModel(mainModel, Application()) }
-    YTCnvTheme {
-        SettingsScreen({}, viewModel)
-    }
-}
 
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
@@ -89,7 +81,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         // ─── Header ───
@@ -104,14 +96,14 @@ fun SettingsScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.back),
                     contentDescription = "Back",
-                    tint = CyanLight
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
                 text = stringResource(R.string.settings_title),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -126,7 +118,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = CardDark)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Column(
                     modifier = Modifier
@@ -141,15 +133,15 @@ fun SettingsScreen(
                             folderPickerLauncher.launch(intent)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = CyanPrimary,
-                            contentColor = BackgroundDark
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.background
                         )
                     ) {
                         Text(stringResource(R.string.download_dest))
                     }
                     Text(
                         text = viewModel.mainFolder + viewModel.finalFolder,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -189,7 +181,14 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsGroup(title = stringResource(R.string.set_preview_sec), initiallyExpanded = false) {
+            SettingsGroup(title = stringResource(R.string.set_scr_customization), initiallyExpanded = false) {
+                SettingsDropdownRow(
+                    label = stringResource(R.string.set_scr_theme),
+                    options = viewModel.themeOptions,
+                    selected = viewModel.selectedTheme,
+                    onSelectChange = { viewModel.onThemeChanged(it as Theme) }
+                )
+
                 SettingsDropdownRow(
                     label = stringResource(R.string.set_preview),
                     options = viewModel.resolutionOptions,
@@ -242,7 +241,7 @@ fun SettingsScreen(
         // ─── Version label ───
         Text(
             text = "$versionName ($versionCode)",
-            color = Gray500,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -269,7 +268,7 @@ fun SettingsGroup(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardDark)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column {
             Row(
@@ -281,7 +280,7 @@ fun SettingsGroup(
             ) {
                 Text(
                     text = title,
-                    color = CyanLight,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     modifier = Modifier.weight(1f)
@@ -293,7 +292,7 @@ fun SettingsGroup(
                         else R.drawable.expand_more
                     ),
                     contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = CyanLight
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -325,12 +324,12 @@ fun SettingsToggleRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(label, fontSize = 15.sp, color = TextPrimary)
+            Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
             if (description != null) {
                 Text(
                     description,
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -338,10 +337,10 @@ fun SettingsToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = BackgroundDark,
-                checkedTrackColor = CyanPrimary,
-                uncheckedThumbColor = TextSecondary,
-                uncheckedTrackColor = SurfaceVariantDark
+                checkedThumbColor = MaterialTheme.colorScheme.background,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         )
     }
@@ -351,11 +350,21 @@ fun SettingsToggleRow(
 @Composable
 fun SettingsDropdownRow(
     label: String,
+    description: String? = null,
     options: Map<out Any, String>,
     selected: Any,
     onSelectChange: (Any) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+
+    val minDropdownWidth = remember(options) {
+        val maxPx = options.values.maxOfOrNull { text ->
+            textMeasurer.measure(text, TextStyle(fontSize = 16.sp)).size.width
+        } ?: 0
+        with(density) { maxPx.toDp() + 32.dp }
+    }
 
     Row(
         modifier = Modifier
@@ -363,11 +372,16 @@ fun SettingsDropdownRow(
             .padding(horizontal = 20.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            color = TextPrimary,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            if (description != null) {
+                Text(
+                    description,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
@@ -378,7 +392,7 @@ fun SettingsDropdownRow(
                     .wrapContentWidth()
                     .border(
                         width = 2.dp,
-                        color = if (expanded) CyanPrimary else SurfaceVariantDark,
+                        color = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 4.dp, vertical = 4.dp),
@@ -386,7 +400,7 @@ fun SettingsDropdownRow(
             ) {
                 Text(
                     text = options.entries.find { it.key == selected }?.value ?: selected.toString(),
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))
@@ -394,17 +408,18 @@ fun SettingsDropdownRow(
                 Icon(
                     painter = painterResource(if (expanded) R.drawable.expand_less else R.drawable.expand_more),
                     contentDescription = null,
-                    tint = if (expanded) CyanPrimary else TextSecondary,
+                    tint = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
                     modifier = Modifier.height(15.dp)
                 )
             }
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.widthIn(min = minDropdownWidth).background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 options.forEach { (backendValue, displayLabel) ->
                     DropdownMenuItem(
-                        text = { Text(displayLabel, color = TextPrimary) },
+                        text = { Text(displayLabel, color = MaterialTheme.colorScheme.onSecondaryContainer) },
                         onClick = {
                             onSelectChange(backendValue)
                             expanded = false
@@ -431,11 +446,11 @@ fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = CardDark,
-        title = { Text("Crash Logs", color = TextPrimary, fontWeight = FontWeight.Bold) },
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        title = { Text("Crash Logs", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold) },
         text = {
             if (logs.isEmpty()) {
-                Text("No crash logs found.", color = TextSecondary)
+                Text("No crash logs found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     logs.forEach { file ->
@@ -454,7 +469,7 @@ fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
                         ) {
                             Text(
                                 text = label,
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 13.sp,
                                 modifier = Modifier.weight(1f)
                             )
@@ -470,7 +485,7 @@ fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
                                         else R.drawable.copy
                                     ),
                                     contentDescription = "Copy",
-                                    tint = if (copiedFile == file.name) CyanPrimary else CyanLight,
+                                    tint = if (copiedFile == file.name) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
@@ -481,7 +496,7 @@ fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = CyanPrimary)
+                Text("Close", color = MaterialTheme.colorScheme.primary)
             }
         }
     )

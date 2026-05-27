@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -29,6 +30,7 @@ object MusicAxsClient {
     data class PlaylistInfo(val id: Long, val name: String, val songCount: Int)
 
     fun getPlaylists(context: Context): List<PlaylistInfo> {
+        Log.d("MusicAxsProvider", "YTCnv side - getPlaylists called, isInstalled: ${isMusicAxsInstalled(context)}")
         return try {
             context.contentResolver.query(
                 MusicAxsContract.Playlists.URI,

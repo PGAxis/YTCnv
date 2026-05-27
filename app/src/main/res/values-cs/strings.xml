@@ -35,7 +35,8 @@
     <string name="d_reminder">Neupozorňovat na nové verze</string>
     <string name="downloads">Stažené</string>
     <string name="set_app_settings">Nastavení aplikace</string>
-    <string name="set_preview_sec">Náhled</string>
+    <string name="set_scr_customization">Přizpůsobení</string>
+    <string name="set_scr_theme">Barevný motiv</string>
     <string name="set_preview">Rozlišení náhledu</string>
     <string name="set_add_songs">Přidat písničky do Music.axs</string>
     <string name="set_add_songs_desc">Po stažení ve formátu MP3, ukázat volbu pro přidání do playlistu v Music.axs</string>
@@ -125,4 +126,13 @@ Kliknutím na tlačítko "Přijmout" potvrzujete, že jste si přečetli, porozu
     <string name="pp_song_count">%1$s písní</string>
     <string name="pp_added_to">Přidáno do %1$s</string>
     <string name="pp_failed">Nepodařilo se přidat skladbu</string>
+
+    <!-- Settings view model -->
+    <string name="set_vm_cyan">Azurová</string>
+    <string name="set_vm_ember">Žár</string>
+    <string name="set_vm_aether">Nebesa</string>
+    <string name="set_vm_phosphor">Fosfor</string>
+    <string name="set_vm_chalk">Křída</string>
+    <string name="set_vm_sunshine">Slunění</string>
+    <string name="set_vm_grayscale">Stupně šedi</string>
 </resources>

@@ -16,7 +16,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
+import com.pg_axis.ytcnv.ui.theme.*
+import com.pg_axis.ytcnv.services.Theme
+import com.pg_axis.ytcnv.settings.SettingsSave
 import com.pg_axis.ytcnv.utils.NewPipeDownloader
 import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.localization.Localization
@@ -53,7 +57,17 @@ class MainActivity : AppCompatActivity() {
         val sharedUrl = extractSharedUrl(intent)
 
         setContent {
-            YTCnvTheme {
+            val settings = remember { SettingsSave.getInstance(this) }
+            val colorScheme = when (settings.theme) {
+                Theme.CYAN -> YTCnvCyanScheme
+                Theme.GRAYSCALE -> YTCnvGrayscaleScheme
+                Theme.EMBER -> YTCnvEmberScheme
+                Theme.AETHER -> YTCnvAetherScheme
+                Theme.PHOSPHOR -> YTCnvPhosphorScheme
+                Theme.CHALK -> YTCnvChalkScheme
+                Theme.SUNSHINE -> YTCnvSoleilScheme
+            }
+            YTCnvTheme(colorScheme = colorScheme) {
                 AppNavigation(initialUrl = sharedUrl, onFinish = { finish() })
             }
         }
@@ -75,7 +89,7 @@ class MainActivity : AppCompatActivity() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun YTCnvPreview() {
-    YTCnvTheme {
+    YTCnvTheme(colorScheme = YTCnvCyanScheme) {
         MainScreen(viewModel = MainViewModel(Application()), {}, {}, {})
     }
 }

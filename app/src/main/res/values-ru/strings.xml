@@ -35,7 +35,8 @@
     <string name="d_reminder">Не напоминать о новых версиях</string>
     <string name="downloads">Загрузки</string>
     <string name="set_app_settings">Настройки приложения</string>
-    <string name="set_preview_sec">Предпросмотр</string>
+    <string name="set_scr_customization">Настройка</string>
+    <string name="set_scr_theme">Цветовая тема</string>
     <string name="set_preview">Разрешение предпросмотра</string>
     <string name="set_add_songs">Добавлять треки в Music.axs</string>
     <string name="set_add_songs_desc">После загрузки MP3 предлагать добавить файл в плейлист в Music.axs</string>
@@ -125,4 +126,13 @@
     <string name="pp_song_count">%1$s песен</string>
     <string name="pp_added_to">Добавлено в %1$s</string>
     <string name="pp_failed">Не удалось добавить песню</string>
+
+    <!-- Settings view model -->
+    <string name="set_vm_cyan">Циан</string>
+    <string name="set_vm_ember">Жар</string>
+    <string name="set_vm_aether">Эфир</string>
+    <string name="set_vm_phosphor">Фосфор</string>
+    <string name="set_vm_chalk">Мел</string>
+    <string name="set_vm_sunshine">Солнце</string>
+    <string name="set_vm_grayscale">Оттенки серого</string>
 </resources>

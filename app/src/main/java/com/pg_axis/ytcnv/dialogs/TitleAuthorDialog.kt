@@ -10,7 +10,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.pg_axis.ytcnv.ui.theme.*
 import com.pg_axis.ytcnv.R
 
 @Composable
@@ -26,14 +25,14 @@ fun TitleAuthorDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = CardDark)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = stringResource(R.string.tad_edit_metadata),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 OutlinedTextField(
@@ -55,7 +54,7 @@ fun TitleAuthorDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel), color = TextSecondary)
+                        Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = { onConfirm(title, author) }) {

@@ -35,7 +35,8 @@
     <string name="d_reminder">Nicht an neue Versionen erinnern</string>
     <string name="downloads">Downloads</string>
     <string name="set_app_settings">App-Einstellungen</string>
-    <string name="set_preview_sec">Vorschau</string>
+    <string name="set_scr_customization">Anpassung</string>
+    <string name="set_scr_theme">Farbschema</string>
     <string name="set_preview">Vorschauauflösung</string>
     <string name="set_add_songs">Songs zu Music.axs hinzufügen</string>
     <string name="set_add_songs_desc">Nach dem Herunterladen als MP3 eine Option anzeigen, um es einer Wiedergabeliste in Music.axs hinzuzufügen</string>
@@ -125,4 +126,13 @@ Durch Klicken auf "Akzeptieren" bestätigen Sie, dass Sie diese Nutzungsbedingun
     <string name="pp_song_count">%1$s Songs</string>
     <string name="pp_added_to">Hinzugefügt zu %1$s</string>
     <string name="pp_failed">Song konnte nicht hinzugefügt werden</string>
+
+    <!-- Settings view model -->
+    <string name="set_vm_cyan">Cyan</string>
+    <string name="set_vm_ember">Glut</string>
+    <string name="set_vm_aether">Äther</string>
+    <string name="set_vm_phosphor">Phosphor</string>
+    <string name="set_vm_chalk">Kreide</string>
+    <string name="set_vm_sunshine">Sonnenschein</string>
+    <string name="set_vm_grayscale">Graustufen</string>
 </resources>

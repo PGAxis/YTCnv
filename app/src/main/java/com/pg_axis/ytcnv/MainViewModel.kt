@@ -23,10 +23,9 @@ import com.arthenica.ffmpegkit.FFmpegKit
 import com.pg_axis.ytcnv.dialogs.*
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.settings.*
-import com.pg_axis.ytcnv.ui.theme.PopupDefault
-import com.pg_axis.ytcnv.ui.theme.PopupError
 import com.pg_axis.ytcnv.ui.theme.PopupSuccess
-import com.pg_axis.ytcnv.ui.theme.TextSecondary
+import com.pg_axis.ytcnv.ui.theme.PopupError
+import com.pg_axis.ytcnv.ui.theme.PopupDefault
 import com.pg_axis.ytcnv.utils.DownloadNotificationService
 import com.pg_axis.ytcnv.utils.DownloadUtils
 import com.pg_axis.ytcnv.utils.FileSaver
@@ -397,7 +396,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 statusLabelText = buildAnnotatedString {
                     append(context.getString(R.string.sl_download))
                     append(" ")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = TextSecondary)) {
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                         append(title)
                     }
                 }
@@ -493,7 +492,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         applyQuickDownloadState()
                         showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
                         urlEntryText = ""
-                        if (savedUri != null && MusicAxsClient.isMusicAxsInstalled(context) && settings.addToMusicAxs) {
+                        if (savedUri != null && MusicAxsClient.isMusicAxsInstalled(context) && MusicAxsClient.getPlaylists(context).isNotEmpty() && settings.addToMusicAxs) {
                             lastDownloadedSongUri = savedUri
                             showPlaylistPicker = true
                         }

@@ -1,7 +1,6 @@
 package com.pg_axis.ytcnv
 
 import android.annotation.SuppressLint
-import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,31 +54,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.dialogs.TermsDialog
 import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.dialogs.UpdateDialog
 import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
-import com.pg_axis.ytcnv.ui.theme.BackgroundDark
-import com.pg_axis.ytcnv.ui.theme.BorderColor
-import com.pg_axis.ytcnv.ui.theme.CardDark
-import com.pg_axis.ytcnv.ui.theme.CyanLight
-import com.pg_axis.ytcnv.ui.theme.DividerColor
-import com.pg_axis.ytcnv.ui.theme.SurfaceVariantDark
-import com.pg_axis.ytcnv.ui.theme.TextPrimary
-import com.pg_axis.ytcnv.ui.theme.TextSecondary
-import com.pg_axis.ytcnv.ui.theme.YTCnvTheme
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MainScreenPreview() {
-    YTCnvTheme {
-        MainScreen(viewModel = MainViewModel(Application()), {}, {}, {})
-    }
-}
 
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,7 +74,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(BackgroundDark)
+        .background(MaterialTheme.colorScheme.background)
         .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         if (viewModel.showTitleAuthorDialog) {
@@ -140,20 +121,20 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                     text = stringResource(R.string.title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = onOpenSearch, shape = CutCornerShape(0.dp)) {
-                    Icon(painter = painterResource(id = R.drawable.magglass), contentDescription = "Search", tint = CyanLight)
+                    Icon(painter = painterResource(id = R.drawable.magglass), contentDescription = "Search", tint = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(onClick = onOpenSettings, shape = CutCornerShape(0.dp)) {
-                    Icon(painter = painterResource(id = R.drawable.settings), contentDescription = "Settings", tint = CyanLight)
+                    Icon(painter = painterResource(id = R.drawable.settings), contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
                 }
             }
 
             // --- URL Input ---
             Column {
-                Text(text = stringResource(R.string.URLIDPrompt), fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text(text = stringResource(R.string.URLIDPrompt), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 OutlinedTextField(
                     value = viewModel.urlEntryText,
                     onValueChange = { viewModel.onUrlChanged(it) },
@@ -251,8 +232,8 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         enabled = viewModel.loadButtonIsEnabled,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SurfaceVariantDark,
-                            contentColor = CyanLight
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) { Text(text = stringResource(R.string.load)) }
                 }
@@ -267,8 +248,8 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         onClick = { viewModel.onCancelClicked() },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SurfaceVariantDark,
-                            contentColor = CyanLight
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) { Text(text = stringResource(R.string.cancel)) }
                 }
@@ -293,7 +274,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                             text = viewModel.statusLabelText,
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -302,14 +283,14 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
             // --- Divider ---
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 10.dp),
-                color = DividerColor
+                color = MaterialTheme.colorScheme.outlineVariant
             )
 
             // --- Download History ---
             Card(
                 modifier = Modifier.weight(1f).padding(vertical = 25.dp),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardDark)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Column(modifier = Modifier.fillMaxHeight().padding(15.dp)) {
                     Text(
@@ -317,7 +298,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         fontSize = 15.sp,
-                        color = CyanLight
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -329,7 +310,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         ) {
                             Text(
                                 text = stringResource(R.string.empty_history),
-                                color = TextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp),
@@ -347,7 +328,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                                 ) {
                                     Text(
                                         text = item.title,
-                                        color = TextSecondary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier
                                             .weight(1f)
                                             .clickable { viewModel.onHistoryItemTapped(item.urlOrId) },
@@ -358,10 +339,10 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                                         updated.removeAll { it.urlOrId == item.urlOrId }
                                         viewModel.settings.downloadHistory = updated
                                     }) {
-                                        Icon(painter = painterResource(id = R.drawable.cross), contentDescription = "Remove", tint = TextSecondary)
+                                        Icon(painter = painterResource(id = R.drawable.cross), contentDescription = "Remove", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
-                                HorizontalDivider(color = BorderColor, modifier = Modifier.padding(horizontal = 8.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(horizontal = 8.dp))
                             }
                         }
                     }
@@ -386,7 +367,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = viewModel.popupTitle,
-                            color = TextPrimary,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
                             modifier = Modifier
@@ -396,7 +377,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         )
                         Text(
                             text = viewModel.popupMessage,
-                            color = TextPrimary,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 15.sp,
                             modifier = Modifier.padding(bottom = 5.dp)
                         )

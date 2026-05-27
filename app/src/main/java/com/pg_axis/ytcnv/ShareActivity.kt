@@ -16,6 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pg_axis.ytcnv.services.Theme
+import com.pg_axis.ytcnv.settings.SettingsSave
 import com.pg_axis.ytcnv.ui.theme.*
 import com.pg_axis.ytcnv.utils.NewPipeDownloader
 import org.schabi.newpipe.extractor.NewPipe
@@ -38,7 +40,17 @@ class ShareActivity : ComponentActivity() {
         )
 
         setContent {
-            YTCnvTheme {
+            val settings = remember { SettingsSave.getInstance(this) }
+            val colorScheme = when (settings.theme) {
+                Theme.CYAN -> YTCnvCyanScheme
+                Theme.GRAYSCALE -> YTCnvGrayscaleScheme
+                Theme.EMBER -> YTCnvEmberScheme
+                Theme.AETHER -> YTCnvAetherScheme
+                Theme.PHOSPHOR -> YTCnvPhosphorScheme
+                Theme.CHALK -> YTCnvChalkScheme
+                Theme.SUNSHINE -> YTCnvSoleilScheme
+            }
+            YTCnvTheme(colorScheme = colorScheme) {
                 ShareBottomSheet(
                     viewModel = viewModel,
                     rawUrl = url,
@@ -62,7 +74,7 @@ fun ShareBottomSheet(
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = sheetState,
-        containerColor = CardDark,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     ) {
         Column(
@@ -75,7 +87,7 @@ fun ShareBottomSheet(
             // ─── Title ───
             Text(
                 text = stringResource(R.string.share_quick_download),
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 modifier = Modifier.fillMaxWidth(),
@@ -85,7 +97,7 @@ fun ShareBottomSheet(
             // ─── URL preview ───
             Text(
                 text = rawUrl,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -97,8 +109,8 @@ fun ShareBottomSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = CyanPrimary, strokeWidth = 2.dp)
-                        Text(stringResource(R.string.share_loading_quality), color = TextSecondary, fontSize = 14.sp)
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp)
+                        Text(stringResource(R.string.share_loading_quality), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                 }
 
@@ -114,16 +126,16 @@ fun ShareBottomSheet(
                                 onClick = { viewModel.onFormatChanged(index) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (selected) CyanPrimary else CardDark
+                                    containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
                                 ),
                                 border = androidx.compose.foundation.BorderStroke(
                                     width = 2.dp,
-                                    color = if (selected) CyanPrimary else AquaAccent
+                                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                 )
                             ) {
                                 Text(
                                     text = label,
-                                    color = if (selected) BackgroundDark else CyanLight,
+                                    color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primary,
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
@@ -143,26 +155,26 @@ fun ShareBottomSheet(
                                 value = selectedLabel,
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text(stringResource(R.string.quality), color = TextSecondary) },
+                                label = { Text(stringResource(R.string.quality), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = CyanPrimary,
-                                    unfocusedBorderColor = AquaAccent,
-                                    focusedTextColor = TextPrimary,
-                                    unfocusedTextColor = TextPrimary
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                                    focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
-                                containerColor = CardDark
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 viewModel.qualityOptions.values.forEachIndexed { index, label ->
                                     DropdownMenuItem(
-                                        text = { Text(label, color = TextPrimary) },
+                                        text = { Text(label, color = MaterialTheme.colorScheme.onPrimary) },
                                         onClick = {
                                             viewModel.qualityIndex = index
                                             expanded = false
@@ -177,9 +189,9 @@ fun ShareBottomSheet(
                     Button(
                         onClick = { viewModel.startDownload(onDone = onDismiss) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text(stringResource(R.string.download), color = BackgroundDark, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.download), color = MaterialTheme.colorScheme.background, fontWeight = FontWeight.Bold)
                     }
                 }
             }

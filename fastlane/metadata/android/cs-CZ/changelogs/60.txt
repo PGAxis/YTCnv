@@ -1,0 +1,5 @@
+Opravy chyb:
+- Změna režimu vyhledávání neskryla historii vyhledávání
+
+Přídavky:
+- Jsou k dispozici barevné motivy

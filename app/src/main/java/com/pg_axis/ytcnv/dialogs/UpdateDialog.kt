@@ -33,7 +33,7 @@ fun UpdateDialog(
     var dontShowAgain by remember { mutableStateOf(false) }
 
     val changelogText = buildAnnotatedString {
-        withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = TextPrimary)) {
+        withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)) {
             append("Change log\n\n")
         }
         val cleaned = updateInfo.changelog
@@ -45,19 +45,19 @@ fun UpdateDialog(
     Dialog(onDismissRequest = { onDismiss(dontShowAgain) }) {
         Card(
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = CardDark)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = stringResource(R.string.ud_update_available),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
                     text = "${stringResource(R.string.ud_new_v_1)} (${updateInfo.version}) ${stringResource(R.string.ud_new_v_2)}",
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -71,7 +71,7 @@ fun UpdateDialog(
                 ) {
                     Text(
                         text = changelogText,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 13.sp
                     )
                 }
@@ -88,12 +88,12 @@ fun UpdateDialog(
                         onCheckedChange = { dontShowAgain = it },
                         colors = CheckboxDefaults.colors(
                             checkedColor = CyanPrimary,
-                            uncheckedColor = TextSecondary
+                            uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                     Text(
                         text = stringResource(R.string.ud_no_remind),
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -104,7 +104,7 @@ fun UpdateDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = { onDismiss(dontShowAgain) }) {
-                        Text(stringResource(R.string.ud_later), color = TextSecondary)
+                        Text(stringResource(R.string.ud_later), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(

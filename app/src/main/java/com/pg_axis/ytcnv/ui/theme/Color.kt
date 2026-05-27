@@ -2,8 +2,7 @@ package com.pg_axis.ytcnv.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ─── Grays (kept from original) ───
-val Gray100 = Color(0xFFE1E1E1)
+// Grays
 val Gray200 = Color(0xFFC8C8C8)
 val Gray300 = Color(0xFFACACAC)
 val Gray400 = Color(0xFF919191)
@@ -13,39 +12,87 @@ val Gray900 = Color(0xFF212121)
 val Gray950 = Color(0xFF141414)
 val OffBlack = Color(0xFF1F1F1F)
 
-// ─── Backgrounds ───
-val BackgroundDark = Color(0xFF0D1117)
-val SurfaceDark = Color(0xFF161B22)
-val SurfaceVariantDark = Color(0xFF1E2A35)
-val CardDark = Color(0xFF1A2332)
+// Backgrounds
+val BackgroundCyanDark = Color(0xFF0D1117)
+val SurfaceCyanDark = Color(0xFF161B22)
+val SurfaceVariantCyanDark = Color(0xFF1E2A35)
+val CardCyanDark = Color(0xFF1A2332)
 
-// ─── Blues / Cyans / Aquas (replacing Primary/PrimaryDark/Tertiary) ───
+//Blues / Cyans / Aquas
 val CyanPrimary = Color(0xFF00BCD4)
-val CyanLight = Color(0xFF4DD0E1)
-val AquaAccent = Color(0xFF00E5FF)
 val BlueSecondary = Color(0xFF1565C0)
 val BlueTertiary = Color(0xFF0288D1)
-val BlueLight = Color(0xFF29B6F6)
-val MidnightBlue = Color(0xFF0A1628)
 
-// ─── Text ───
-val TextPrimary = Color(0xFFE8F4FD)
-val TextSecondary = Color(0xFFB0BEC5)
-val TextOnButton = Color(0xFFB2EBF2)
+// Text
+val TextWhitePrimary = Color(0xFFE8E8E8)
+val TextDarkPrimary = Color(0xFF1A1A1A)
+val TextCyanSecondary = Color(0xFFB0B0B0)
 
-// ─── Dividers / Borders ───
-val DividerColor = Color(0xFF00ACC1)
-val BorderColor = Color(0xFF1E3A4A)
+// Dividers / Borders
+val DividerCyanColor = Color(0xFF00ACC1)
+val BorderCyanColor = Color(0xFF1E3A4A)
 
-// ─── Popup backgrounds ───
+// Popup backgrounds
 val PopupDefault = Color(0xFF1E3A4A)
 val PopupSuccess = Color(0xFF1B5E20)
 val PopupError = Color(0xFF7F0000)
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Ember theme colors
+val EmberPrimary = Color(0xFFFFB347)
+val EmberSecondary = Color(0xFFE07B39)
+val EmberTertiary = Color(0xFFFF8C00)
+val EmberBackground = Color(0xFF0F0A00)
+val EmberSurface = Color(0xFF1A1100)
+val EmberSurfaceVariant = Color(0xFF2A1F00)
+val EmberCard = Color(0xFF221800)
+val EmberBorder = Color(0xFF3D2B00)
+val EmberDivider = Color(0xFFFF8C00)
+val TextEmberSecondary = Color(0xFFBBA080)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Aether theme colors
+val AetherPrimary = Color(0xFFA78BFA)
+val AetherSecondary = Color(0xFF7C3AED)
+val AetherTertiary = Color(0xFFC4B5FD)
+val AetherBackground = Color(0xFF09060F)
+val AetherSurface = Color(0xFF120D1E)
+val AetherSurfaceVariant = Color(0xFF1E1630)
+val AetherCard = Color(0xFF170F28)
+val AetherBorder = Color(0xFF3D2B6B)
+val AetherDivider = Color(0xFF6D28D9)
+val TextAetherSecondary = Color(0xFF9E8FB2)
+
+// Phosphor theme colors
+val PhosphorPrimary = Color(0xFF4FFFB0)
+val PhosphorSecondary = Color(0xFF00897B)
+val PhosphorTertiary = Color(0xFFA7F3D0)
+val PhosphorBackground = Color(0xFF060F0B)
+val PhosphorSurface = Color(0xFF0D1F18)
+val PhosphorSurfaceVariant = Color(0xFF142E22)
+val PhosphorCard = Color(0xFF101C17)
+val PhosphorBorder = Color(0xFF1E4D38)
+val PhosphorDivider = Color(0xFF00695C)
+val TextPhosphorSecondary = Color(0xFF7EC8AD)
+
+// Chalk theme colors
+val ChalkPrimary = Color(0xFF6B4226)
+val ChalkSecondary = Color(0xFF9C6B4E)
+val ChalkTertiary = Color(0xFFB8896E)
+val ChalkBackground = Color(0xFFF7F4F0)
+val ChalkSurface = Color(0xFFEEEAE4)
+val ChalkSurfaceVariant = Color(0xFFE5DFD7)
+val ChalkCard = Color(0xFFEAE4DC)
+val ChalkBorder = Color(0xFFC9B9A8)
+val ChalkDivider = Color(0xFF9C6B4E)
+val TextChalkSecondary = Color(0xFF8C7B6E)
+
+// Soleil theme colors
+val SoleilPrimary = Color(0xFFE65100)
+val SoleilSecondary = Color(0xFFBF360C)
+val SoleilTertiary = Color(0xFFFF8F00)
+val SoleilBackground = Color(0xFFFFFDF5)
+val SoleilSurface = Color(0xFFFFF8E1)
+val SoleilSurfaceVariant = Color(0xFFFFECB3)
+val SoleilCard = Color(0xFFFFF4C2)
+val SoleilBorder = Color(0xFFFFD54F)
+val SoleilDivider = Color(0xFFFF6D00)
+val TextSoleilSecondary = Color(0xFF8D6E00)

@@ -1,5 +1,7 @@
 package com.pg_axis.ytcnv.settings
 
+import com.pg_axis.ytcnv.services.Theme
+
 interface ISettings {
     var use4K: Boolean
     var quickDwnld: Boolean
@@ -16,4 +18,5 @@ interface ISettings {
     var notifyOnFail: Boolean
     var addToMusicAxs: Boolean
     var minResolution: Int
+    var theme: Theme
 }

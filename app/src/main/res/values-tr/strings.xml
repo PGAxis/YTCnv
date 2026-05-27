@@ -35,7 +35,8 @@
     <string name="d_reminder">Yeni sürümleri bana hatırlatma</string>
     <string name="downloads">İndirilenler</string>
     <string name="set_app_settings">Uygulama ayarları</string>
-    <string name="set_preview_sec">Önizleme</string>
+    <string name="set_scr_customization">Özelleştirme</string>
+    <string name="set_scr_theme">Renk Teması</string>
     <string name="set_preview">Önizleme çözünürlüğü</string>
     <string name="set_add_songs">Music.axs\'e şarkı ekle</string>
     <string name="set_add_songs_desc">MP3 olarak indirdikten sonra Music.axs\'teki bir çalma listesine ekleme seçeneği göster</string>
@@ -126,4 +127,13 @@ Türkçe çeviri: Ahmet Çeliker tarafından sağlanmıştır.
     <string name="pp_song_count">%1$s şarkı</string>
     <string name="pp_added_to">%1$s listesine eklendi</string>
     <string name="pp_failed">Şarkı eklenemedi</string>
+
+    <!-- Settings view model -->
+    <string name="set_vm_cyan">Camgöbeği</string>
+    <string name="set_vm_ember">Kor</string>
+    <string name="set_vm_aether">Eter</string>
+    <string name="set_vm_phosphor">Fosfor</string>
+    <string name="set_vm_chalk">Tebeşir</string>
+    <string name="set_vm_sunshine">Güneş Işığı</string>
+    <string name="set_vm_grayscale">Gri Tonları</string>
 </resources>

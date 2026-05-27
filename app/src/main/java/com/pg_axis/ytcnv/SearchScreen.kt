@@ -39,44 +39,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.pg_axis.ytcnv.settings.PreviewSettings
-import com.pg_axis.ytcnv.ui.theme.*
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true)
-fun SearchPreview() {
-    val viewModel = remember {
-        SearchViewModel(PreviewSettings()).apply {
-            results = listOf(
-                SearchResultItem(
-                    title = "How to Build Android Apps with Jetpack Compose",
-                    videoId = "abc123",
-                    uploader = "Android Developers",
-                    duration = "15:42",
-                    thumbnailUrl = "https://picsum.photos/seed/1/320/180",
-                    url = "https://youtube.com/watch?v=abc123"
-                ),
-                SearchResultItem(
-                    title = "Kotlin Coroutines Deep Dive - Full Course",
-                    videoId = "def456",
-                    uploader = "Tech Academy",
-                    duration = "1:23:15",
-                    thumbnailUrl = "https://picsum.photos/seed/2/320/180",
-                    url = "https://youtube.com/watch?v=def456"
-                )
-            )
-            isLoading = false
-            errorMessage = null
-        }
-    }
-    YTCnvTheme {
-        SearchScreen({}, {}, {}, viewModel)
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SourceLockedOrientationActivity")
@@ -101,7 +66,7 @@ fun SearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .clickable(indication = null, interactionSource = remember {
                 MutableInteractionSource()
@@ -119,14 +84,14 @@ fun SearchScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.back),
                     contentDescription = "Back",
-                    tint = CyanLight
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
                 text = stringResource(R.string.search_title),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.primary
             )
         }
         // ─── Search bar ───
@@ -142,7 +107,7 @@ fun SearchScreen(
                 onValueChange = { viewModel.onQueryChanged(it) },
                 singleLine = true,
                 cursorBrush = SolidColor(Color.White),
-                textStyle = LocalTextStyle.current.copy(color = TextPrimary),
+                textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.primary),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     focusManager.clearFocus()
@@ -161,14 +126,14 @@ fun SearchScreen(
                         visualTransformation = VisualTransformation.None,
                         interactionSource = interactionSource,
                         placeholder = {
-                            Text(stringResource(R.string.search_prompt), color = TextSecondary)
+                            Text(stringResource(R.string.search_prompt), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
                         trailingIcon = {
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(CyanPrimary)
+                                    .background(MaterialTheme.colorScheme.primary)
                                     .clickable {
                                         focusManager.clearFocus()
                                         viewModel.onSearch()
@@ -178,14 +143,14 @@ fun SearchScreen(
                                 Icon(
                                     painter = painterResource(R.drawable.magglass),
                                     contentDescription = "Search",
-                                    tint = BackgroundDark
+                                    tint = MaterialTheme.colorScheme.background
                                 )
                             }
                         },
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // tune this
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanPrimary,
-                            unfocusedBorderColor = CyanPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.primary
                         ),
                         container = {
                             OutlinedTextFieldDefaults.Container(
@@ -193,9 +158,9 @@ fun SearchScreen(
                                 isError = false,
                                 interactionSource = interactionSource,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                                            focusedBorderColor = CyanPrimary,
-                                                            unfocusedBorderColor = CyanPrimary
-                                                        ),
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                                ),
                                 shape = RoundedCornerShape(50.dp),
                                 focusedBorderThickness = FocusedBorderThickness,
                                 unfocusedBorderThickness = UnfocusedBorderThickness,
@@ -217,17 +182,19 @@ fun SearchScreen(
                     Icon(
                         painter = if (viewModel.isMusicSearch) painterResource(R.drawable.youtube_music) else painterResource(R.drawable.youtube),
                         contentDescription = "Filter",
-                        tint = CyanPrimary
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 DropdownMenu(
                     expanded = filterMenuExpanded,
-                    onDismissRequest = { filterMenuExpanded = false }
+                    onDismissRequest = { filterMenuExpanded = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("YouTube") },
+                        text = { Text("YouTube", color = MaterialTheme.colorScheme.onSecondaryContainer) },
                         onClick = {
                             viewModel.isMusicSearch = false
+                            focusManager.clearFocus()
                             viewModel.onSearch()
                             filterMenuExpanded = false
                         },
@@ -237,15 +204,16 @@ fun SearchScreen(
                                     painter = painterResource(R.drawable.magglass),
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = AquaAccent
+                                    tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         } else null
                     )
                     DropdownMenuItem(
-                        text = { Text("YouTube Music") },
+                        text = { Text("YouTube Music", color = MaterialTheme.colorScheme.onSecondaryContainer) },
                         onClick = {
                             viewModel.isMusicSearch = true
+                            focusManager.clearFocus()
                             viewModel.onSearch()
                             filterMenuExpanded = false
                         },
@@ -255,7 +223,7 @@ fun SearchScreen(
                                     painter = painterResource(R.drawable.magglass),
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = AquaAccent
+                                    tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         } else null
@@ -272,7 +240,7 @@ fun SearchScreen(
                     .padding(horizontal = 16.dp)
                     .heightIn(max = (300 * historyHeightFraction).dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = CardDark)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 LazyColumn (contentPadding = PaddingValues(0.dp), modifier = Modifier.fillMaxWidth()) {
                     items(viewModel.settings.searchHistory) { term ->
@@ -285,7 +253,7 @@ fun SearchScreen(
                         ) {
                             Text(
                                 text = term,
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.weight(1f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -297,12 +265,12 @@ fun SearchScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.cross),
                                     contentDescription = "Remove",
-                                    tint = TextSecondary,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
-                        HorizontalDivider(color = BorderColor)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                     }
                 }
             }
@@ -315,13 +283,13 @@ fun SearchScreen(
                 viewModel.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = CyanPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 viewModel.errorMessage != null -> {
                     Text(
                         text = viewModel.errorMessage!!,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(24.dp),
@@ -331,7 +299,7 @@ fun SearchScreen(
                 viewModel.results.isEmpty() -> {
                     Text(
                         text = stringResource(R.string.search_big_prompt),
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -368,7 +336,7 @@ fun SearchScreen(
                                     ) {
                                         if (viewModel.isLoadingMore) {
                                             CircularProgressIndicator(
-                                                color = CyanPrimary
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                         else {
@@ -376,7 +344,7 @@ fun SearchScreen(
                                                 onClick = { viewModel.onLoadMore() },
                                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                                             ) {
-                                                Text(text = "Load more", color = CyanLight, fontSize = 12.sp)
+                                                Text(text = "Load more", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
                                             }
                                         }
                                     }
@@ -467,7 +435,7 @@ fun SearchResultRow(
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text(stringResource(R.string.copy_url), fontSize = 12.sp, color = CyanLight)
+                    Text(stringResource(R.string.copy_url), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -475,7 +443,7 @@ fun SearchResultRow(
         // Title
         Text(
             text = item.title,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             maxLines = 2,
@@ -485,11 +453,11 @@ fun SearchResultRow(
         // Uploader
         Text(
             text = item.uploader,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
     }
-    HorizontalDivider(color = BorderColor, thickness = 4.dp, modifier = Modifier.padding(horizontal = 16.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 4.dp, modifier = Modifier.padding(horizontal = 16.dp))
 }

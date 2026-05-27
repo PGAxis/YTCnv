@@ -11,12 +11,24 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
+import com.pg_axis.ytcnv.services.Theme
 import com.pg_axis.ytcnv.settings.SettingsSave
 import java.util.Locale
 
 class SettingsViewModel(val mainViewModel: MainViewModel, application: Application) : AndroidViewModel(application) {
     private val context = getApplication<Application>()
     val settings = SettingsSave.getInstance(context)
+
+    val themeOptions = mapOf(
+        Theme.CYAN to context.getString(R.string.set_vm_cyan),
+        Theme.EMBER to context.getString(R.string.set_vm_ember),
+        Theme.AETHER to context.getString(R.string.set_vm_aether),
+        Theme.PHOSPHOR to context.getString(R.string.set_vm_phosphor),
+        Theme.CHALK to context.getString(R.string.set_vm_chalk),
+        Theme.SUNSHINE to context.getString(R.string.set_vm_sunshine),
+        Theme.GRAYSCALE to context.getString(R.string.set_vm_grayscale)
+    )
+    var selectedTheme by mutableStateOf(settings.theme)
 
     val langOptions = mapOf("en" to "English", "cs" to "Čeština", "de" to "Deutch", "tr" to "Türkçe", "ru" to "Русский")
     var selectedLang = AppCompatDelegate.getApplicationLocales().toLanguageTags()
@@ -69,6 +81,10 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     fun onResolutionChange(key: Int) {
         selectedRes = key
         settings.minResolution = key
+    }
+    fun onThemeChanged(key: Theme) {
+        selectedTheme = key
+        settings.theme = key
     }
 
     private fun getMainFolder(uri: String): String {

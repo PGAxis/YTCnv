@@ -1,0 +1,5 @@
+Bug fixes:
+- Changing the search mode would not hide the search history
+
+Additions:
+- Color themes now exist

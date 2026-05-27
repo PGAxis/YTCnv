@@ -1,11 +1,12 @@
 package com.pg_axis.ytcnv.settings
 
 import android.content.Context
+import androidx.annotation.Keep
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.gson.Gson
+import com.pg_axis.ytcnv.services.Theme
 import dev.pgaxis.axs.AxsBoundObject
 import dev.pgaxis.axs.AxsFile
 import kotlin.properties.ReadWriteProperty
@@ -84,6 +85,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var notifyOnFail by setting(true, SettingsClass::notifyOnFail)
     override var addToMusicAxs by setting(false, SettingsClass::addToMusicAxs)
     override var minResolution by intSetting(480, SettingsClass::minResolution)
+    override var theme by setting(Theme.CYAN, SettingsClass::theme)
 
     // --- Extra data ---
     override var searchHistory by extraData(emptyList(), ExtraData::searchHistory)
@@ -96,6 +98,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var id = ""
 
     // --- Data classes ---
+    @Keep
     data class SettingsClass(
         var use4kDownload: Boolean = false,
         var quickDownload: Boolean = true,
@@ -106,13 +109,16 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var notifyOnFail: Boolean = true,
         var addToMusicAxs: Boolean = false,
         var minResolution: Int = 480,
+        var theme: Theme = Theme.CYAN,
     )
 
+    @Keep
     data class HistoryItem(
         var title: String = "",
         var urlOrId: String = ""
     )
 
+    @Keep
     data class ExtraData(
         var searchHistory: List<String> = emptyList(),
         var downloadHistory: List<HistoryItem> = emptyList()
@@ -121,21 +127,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     init {
         axsFile.open()
 
-        // One-time migration from JSON
-        val oldSettingsPath = context.filesDir.resolve("settings.json")
-        val oldExtraDataPath = context.filesDir.resolve("extra_data.json")
-        val gson = Gson()
-
-        val initialSettings = if (axsFile.get("SettingsClass") == null && oldSettingsPath.exists()) {
-            gson.fromJson(oldSettingsPath.readText(), SettingsClass::class.java)?.copy(
-                savedFileUri = gson.fromJson(oldSettingsPath.readText(), SettingsClass::class.java)?.savedFileUri ?: ""
-            ) ?: SettingsClass()
-        } else SettingsClass()
-
-        // Create ExtraData object if it doesn't exist
-        if (axsFile.get("ExtraData") == null) axsFile.createObject("ExtraData")
-
-        boundSettings = axsFile.bind(initialSettings)
+        boundSettings = axsFile.bind(SettingsClass())
 
         // Load settings into delegates
         val s = boundSettings.get()
@@ -148,20 +140,12 @@ class SettingsSave private constructor(context: Context) : ISettings {
         notifyOnFail = s.notifyOnFail
         addToMusicAxs = s.addToMusicAxs
         minResolution = s.minResolution
+        theme = s.theme
 
-        // Migrate extra data
-        val initialExtraData = if (axsFile.get("ExtraData") == null && oldExtraDataPath.exists()) {
-            gson.fromJson(oldExtraDataPath.readText(), ExtraData::class.java) ?: ExtraData()
-        } else ExtraData()
-
-        boundExtraData = axsFile.bind(initialExtraData)
+        boundExtraData = axsFile.bind(ExtraData())
 
         val e = boundExtraData.get()
         searchHistory = e.searchHistory
         downloadHistory = e.downloadHistory
-
-        // Clean up old files after migration
-        oldSettingsPath.delete()
-        oldExtraDataPath.delete()
     }
 }
