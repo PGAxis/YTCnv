@@ -11,7 +11,7 @@ composeBom = "2026.05.01"
 gson = "2.14.0"
 splashscreen = "1.2.0"
 navigation = "2.9.8"
-newpipe-extractor = "v0.26.2"
+newpipe-extractor = "v0.26.1"
 coil = "2.7.0"
 documentfile = "1.1.0"
 okhttp = "5.3.2"
@@ -19,7 +19,7 @@ smartexception = "0.2.1"
 appcompat = "1.7.1"
 media3 = "1.10.1"
 desugar = "2.1.5"
-axs = "1.0.14"
+axs = "1.0.20"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

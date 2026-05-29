@@ -1,0 +1,2 @@
+Bug fixes:
+- The app now has a fallback for muxed streams

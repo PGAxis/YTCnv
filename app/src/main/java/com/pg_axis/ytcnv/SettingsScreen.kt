@@ -162,6 +162,12 @@ fun SettingsScreen(
                     checked = viewModel.settings.quickDwnld,
                     onCheckedChange = { viewModel.onQuickDwnldChanged(it) }
                 )
+
+                SettingsToggleRow(
+                    label = stringResource(R.string.muxed_fallback),
+                    checked = viewModel.settings.muxedFallback,
+                    onCheckedChange = { viewModel.onMuxedChanged(it) }
+                )
             }
 
             // ─── Notifications Group ───

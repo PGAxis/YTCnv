@@ -26,6 +26,7 @@
     <string name="d_settings">İndirme Ayarları</string>
     <string name="up_to_4k">2K ve üzeri çözünürlükleri etkinleştir (video)</string>
     <string name="quick_download">Hızlı indirmeyi etkinleştir</string>
+    <string name="muxed_fallback">Mux akışı yedeklemesini kullan</string>
     <string name="n_settings">Bildirimler</string>
     <string name="n_download_finished">İndirme tamamlandığında bildirim gönder</string>
     <string name="n_download_failed">İndirme başarısız olduğunda bildirim gönder</string>
@@ -57,6 +58,7 @@
     <string name="pt_canceled">İptal edildi</string>
     <string name="pt_invalid_url">Geçersiz URL</string>
     <string name="pt_network_error">Ağ hatası</string>
+    <string name="pt_no_streams">Kullanılabilir akış yok</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">URL ayrıştırıcı, bu bağlantıda bir YouTube kimliği bulamadı. Lütfen bir YouTube URL\'si girin</string>
@@ -68,6 +70,7 @@
     <string name="pm_canceled">İndirme iptal edildi</string>
     <string name="pm_invalid_url">Lütfen geçerli bir YouTube URL\'si girin</string>
     <string name="pm_network_error">Cihazın internet bağlantısı kesildi</string>
+    <string name="pm_no_streams">Bu video için kullanılabilir akış bulunamadı. Mux akışı yedeklemesini (daha düşük kalite) kullanmak istiyorsanız, ayarlardan etkinleştirin</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Video meta verileri alınıyor</string>

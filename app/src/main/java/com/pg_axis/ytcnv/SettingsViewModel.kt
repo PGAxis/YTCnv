@@ -54,6 +54,9 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
         settings.quickDwnld = value
         mainViewModel.applyQuickDownloadState()
     }
+    fun onMuxedChanged(value: Boolean) {
+        settings.muxedFallback = value
+    }
     fun onDontShowUpdateChanged(value: Boolean) {
         settings.dontShowUpdate = value
     }

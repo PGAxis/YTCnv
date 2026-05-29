@@ -26,6 +26,7 @@
     <string name="d_settings">Настройки загрузки</string>
     <string name="up_to_4k">Включить разрешение 2K и выше (видео)</string>
     <string name="quick_download">Включить быструю загрузку</string>
+    <string name="muxed_fallback">Использовать мультиплексированный поток как запасной</string>
     <string name="n_settings">Уведомления</string>
     <string name="n_download_finished">Уведомлять по завершении загрузки</string>
     <string name="n_download_failed">Уведомлять при ошибке загрузки</string>
@@ -57,6 +58,7 @@
     <string name="pt_canceled">Отменено</string>
     <string name="pt_invalid_url">Недопустимая ссылка</string>
     <string name="pt_network_error">Ошибка сети</string>
+    <string name="pt_no_streams">Нет доступных потоков</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Не удалось найти ID ролика YouTube в этой ссылке. Укажите корректную ссылку на YouTube</string>
@@ -68,6 +70,7 @@
     <string name="pm_canceled">Загрузка отменена</string>
     <string name="pm_invalid_url">Укажите корректную ссылку на YouTube</string>
     <string name="pm_network_error">Устройство потеряло подключение к интернету</string>
+    <string name="pm_no_streams">Для этого видео нет доступных потоков. Если вы хотите использовать мультиплексированный поток (более низкое качество), включите его в настройках</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Получение метаданных видео</string>

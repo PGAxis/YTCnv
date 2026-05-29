@@ -5,6 +5,7 @@ import com.pg_axis.ytcnv.services.Theme
 class PreviewSettings : ISettings {
     override var use4K = false
     override var quickDwnld = true
+    override var muxedFallback = false
     override var downloadHistory = emptyList<SettingsSave.HistoryItem>()
     override var searchHistory = emptyList<String>()
     override var fileUri = ""

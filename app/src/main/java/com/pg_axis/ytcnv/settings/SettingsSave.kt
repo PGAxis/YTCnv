@@ -78,6 +78,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     // --- Settings ---
     override var use4K by setting(false, SettingsClass::use4kDownload)
     override var quickDwnld by setting(true, SettingsClass::quickDownload)
+    override var muxedFallback by setting(false, SettingsClass::muxedFallback)
     override var dontShowUpdate by setting(false, SettingsClass::dontShowUpdatePopup)
     override var termsAccepted by setting(false, SettingsClass::termsAccepted)
     override var fileUri by setting("", SettingsClass::savedFileUri)
@@ -102,6 +103,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     data class SettingsClass(
         var use4kDownload: Boolean = false,
         var quickDownload: Boolean = true,
+        var muxedFallback: Boolean = false,
         var dontShowUpdatePopup: Boolean = false,
         var termsAccepted: Boolean = false,
         var savedFileUri: String = "",

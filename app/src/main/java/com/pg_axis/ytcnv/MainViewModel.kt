@@ -102,6 +102,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var videoOptions = mapOf<Int, VideoStream>()
     private var downloadJob: Job? = null
     private var pendingOnConfirm: ((String, String) -> Unit)? = null
+    private var muxedFallbackStream: VideoStream? = null
     var updateInfo by mutableStateOf<UpdateInfo?>(null)
 
     var showTermsDialog by mutableStateOf(!settings.termsAccepted)
@@ -136,8 +137,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         formatPickerSelectedIndex = index
         if (audioOptions.isNotEmpty() && videoOptions.isNotEmpty()) {
             qualityPickerItemsSource = when (index) {
-                0 -> audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
-                1 -> videoOptions.entries.map { QualityOption(it.key.toDouble(), "${it.key}p") }
+                0 -> when {
+                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
+                    else -> audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
+                }
+                1 -> when {
+                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
+                    else -> videoOptions.entries.map { QualityOption(it.key.toDouble(), "${it.key}p") }
+                }
                 else -> emptyList()
             }
             qualityPickerSelectedIndex = 0
@@ -208,8 +215,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     .distinctBy { it.averageBitrate }
             }
 
-            audioOptions = audioStreams.associateBy { it.averageBitrate.toDouble() }
-
             // Build video options
             val use4K = settings.use4K
             val videoStreams = streamInfo.videoOnlyStreams
@@ -220,6 +225,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 .sortedByDescending { it.height }
                 .distinctBy { it.height }
 
+            muxedFallbackStream = if (audioStreams.isEmpty() || videoStreams.isEmpty()) {
+                if (settings.muxedFallback) {
+                    streamInfo.videoStreams.maxByOrNull { it.height }
+                        ?: throw Exception("No streams available for this video.")
+                } else {
+                    throw Exception("No streams available for this video.")
+                }
+            } else {
+                null
+            }
+
+            audioOptions = audioStreams.associateBy { it.averageBitrate.toDouble() }
             videoOptions = videoStreams.associateBy { it.height }
 
             withContext(Dispatchers.Main) {
@@ -230,7 +247,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 downloadOptionsIsVisible = true
                 qualityPickerIsVisible = true
                 formatPickerSelectedIndex = 0
-                qualityPickerItemsSource = audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
+                qualityPickerItemsSource = when {
+                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
+                    else -> audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
+                }
                 qualityPickerSelectedIndex = 0
                 downloadButtonIsVisible = true
                 cancelButtonIsVisible = false
@@ -255,6 +275,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         showPopup(context.getString(R.string.pt_network_error), context.getString(R.string.pm_network_error), 2)
                         if (settings.notifyOnFail) {
                             DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_network_error))
+                        }
+                    }
+                    e.message?.contains("streams available for this video") == true -> {
+                        showPopup(context.getString(R.string.pt_no_streams), context.getString(R.string.pm_no_streams), 2)
+                        if (settings.notifyOnFail) {
+                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_no_streams))
                         }
                     }
                     else -> {
@@ -397,7 +423,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     append(context.getString(R.string.sl_download))
                     append(" ")
                     withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(title)
+                        append(confirmedTitle)
                     }
                 }
                 downloadIndicatorIsVisible = false
@@ -412,7 +438,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             if (selectedFormat == 0) {
                 // ─── MP3 ───
-                fun getAudioStream(): AudioStream {
+                fun getAudioStream(): AudioStream? {
                     val audioStream = if (isQuick) {
                         streamInfo.audioStreams
                             .filter { it.format?.name?.contains("m4a", ignoreCase = true) == true && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
@@ -425,32 +451,53 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                                 .filter { it.format?.name?.contains("m4a", ignoreCase = true) == true && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
                                 .minByOrNull { abs(it.averageBitrate - selectedBitrate.toInt()) }
                         } else null
-                    } ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }!!
+                    } ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }
 
                     return audioStream
                 }
 
                 val audioStream = getAudioStream()
-                Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
+                val muxed = if (settings.muxedFallback) muxedFallbackStream ?: streamInfo.videoStreams.maxByOrNull { it.height } else null
+                val inputForFFmpeg: String
 
-                downloadStream(audioStream.content, m4aPath,
-                    onProgress = { progress ->
-                        downloadProgress = progress
-                        val percent = (progress * 100).toInt()
-                        val now = System.currentTimeMillis()
-                        if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                            lastNotifiedPercent = percent
-                            lastNotifiedTime = now
-                            DownloadNotificationService.updateProgress(
-                                context,
-                                percent
-                            )
+                if (audioStream != null) {
+                    inputForFFmpeg = m4aPath
+                    Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
+                    downloadStream(audioStream.content, m4aPath,
+                        onProgress = { progress ->
+                            downloadProgress = progress
+                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val now = System.currentTimeMillis()
+                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
+                                lastNotifiedPercent = percent
+                                lastNotifiedTime = now
+                                DownloadNotificationService.updateProgress(context, percent)
+                            }
+                        },
+                        urlRefresher = { getAudioStream()?.content ?: audioStream.content }
+                    )
+                } else if (muxed != null) {
+                    inputForFFmpeg = mp4Path
+                    Log.d("YTCnv", "Falling back to muxed stream: ${muxed.content}")
+                    downloadStream(muxed.content, mp4Path,
+                        onProgress = { progress ->
+                            downloadProgress = progress
+                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val now = System.currentTimeMillis()
+                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
+                                lastNotifiedPercent = percent
+                                lastNotifiedTime = now
+                                DownloadNotificationService.updateProgress(context, percent)
+                            }
+                        },
+                        urlRefresher = {
+                            StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$cleanedUrl")
+                                .videoStreams.maxByOrNull { it.height }?.content ?: muxed.content
                         }
-                    },
-                    urlRefresher = {
-                        getAudioStream().content
-                    }
-                )
+                    )
+                } else {
+                    throw Exception("No audio streams available for this video.")
+                }
 
                 withContext(Dispatchers.Main) {
                     dwnldProgressIsVisible = false
@@ -460,23 +507,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     statusLabelText = AnnotatedString(context.getString(R.string.sl_add_metadata))
                 }
 
-                //FileSaver.saveM4a(context, "$title.m4a", m4aPath, settings.fileUri.ifBlank { null })  YTmI9rP5YUw
-
                 val ffmpegCmd = buildString {
-                    append("-y -i \"$m4aPath\" ")
-                    if (hasThumbnail) {
-                        append("-i \"$imagePath\" ")
-                    }
+                    append("-y -i \"$inputForFFmpeg\" ")
+                    if (hasThumbnail) append("-i \"$imagePath\" ")
                     append("-map 0:a ")
-                    if (hasThumbnail) {
-                        append("-map 1:v ")
-                    }
+                    if (hasThumbnail) append("-map 1:v ")
                     append("-c:a libmp3lame -b:a 128k -ac 2 -af anull ")
                     if (hasThumbnail) {
                         append("-c:v mjpeg -disposition:v attached_pic ")
                         append("-metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover\" ")
                     }
-                    append("-metadata title=\"$title\" -metadata artist=\"$author\" ")
+                    append("-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" ")
                     append("-threads 1 \"$semiOutputAudio\"")
                 }
 
@@ -484,7 +525,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val ffmpegResult = runFFmpeg(ffmpegCmd)
 
                 if (ffmpegResult) {
-                    val savedUri = FileSaver.saveAudio(context, "$title.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
+                    val savedUri = FileSaver.saveAudio(context, "${title}.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
                     if (settings.notifyOnFinish) {
                         DownloadNotificationService.showFinishNotification(context, "$title.mp3")
                     }
@@ -506,14 +547,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         }
                     }
                 }
-
             } else {
                 // ─── MP4 ───
-                fun getAudioStream(): AudioStream {
-                    return streamInfo.audioStreams.filter{ it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null }.maxByOrNull{ it.averageBitrate } ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }!!
+                fun getAudioStream(): AudioStream? {
+                    return streamInfo.audioStreams
+                        .filter { it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null }
+                        .maxByOrNull { it.averageBitrate }
+                        ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }
                 }
 
-                fun getVideoStream(): VideoStream {
+                fun getVideoStream(): VideoStream? {
                     val videoStream = if (isQuick) {
                         if (settings.use4K)
                             streamInfo.videoOnlyStreams.maxByOrNull { it.height }
@@ -529,83 +572,158 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                                 .filter { it.format?.name?.contains("mpeg-4", ignoreCase = true) == true || settings.use4K }
                                 .firstOrNull { it.height == selectedHeight }
                         } else null
-                    } ?: streamInfo.videoOnlyStreams.maxByOrNull { it.height }!!
+                    } ?: streamInfo.videoOnlyStreams.maxByOrNull { it.height }
 
                     return videoStream
                 }
 
-                val audioStream = getAudioStream()
-                val videoStream = getVideoStream()
+                val videoOnlyStream = getVideoStream()
+                val muxed = if (settings.muxedFallback) muxedFallbackStream ?: streamInfo.videoStreams.maxByOrNull { it.height } else null
 
-                val isMoreThan1080p = videoStream.height > 1080
-
-                // Download audio and video in parallel
-                withContext(Dispatchers.IO) {
-                    val audioJob = launch { downloadStream(audioStream.content, m4aPath, onProgress = {}, urlRefresher = { getAudioStream().content }) }
-                    val videoJob = launch {
-                        downloadStream(videoStream.content, mp4Path,
-                            onProgress = { progress ->
-                                downloadProgress = progress
-                                val percent = (progress * 100).toInt()
-                                val now = System.currentTimeMillis()
-                                if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                    lastNotifiedPercent = percent
-                                    lastNotifiedTime = now
-                                    DownloadNotificationService.updateProgress(
-                                        context,
-                                        percent
-                                    )
-                                }
-                            },
-                            urlRefresher = {
-                                getVideoStream().content
+                if (videoOnlyStream != null) {
+                    // existing parallel download + mux path
+                    val audioStream = getAudioStream()
+                    withContext(Dispatchers.IO) {
+                        val audioJob = launch {
+                            if (audioStream != null) {
+                                downloadStream(
+                                    audioStream.content,
+                                    m4aPath,
+                                    onProgress = {},
+                                    urlRefresher = {
+                                        getAudioStream()?.content ?: audioStream.content
+                                    })
+                            } else if (muxed != null) {
+                                // download muxed just for its audio track
+                                downloadStream(
+                                    muxed.content,
+                                    m4aPath,
+                                    onProgress = {},
+                                    urlRefresher = {
+                                        StreamInfo.getInfo(
+                                            ServiceList.YouTube,
+                                            "https://www.youtube.com/watch?v=$cleanedUrl"
+                                        )
+                                            .videoStreams.maxByOrNull { it.height }?.content
+                                            ?: muxed.content
+                                    })
+                            } else {
+                                throw Exception("No audio streams available for this video.")
                             }
-                        )
+                        }
+                        val videoJob = launch {
+                            downloadStream(
+                                videoOnlyStream.content, mp4Path,
+                                onProgress = { progress ->
+                                    downloadProgress = progress
+                                    val percent = (progress * 100).toInt().coerceAtMost(100)
+                                    val now = System.currentTimeMillis()
+                                    if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
+                                        lastNotifiedPercent = percent
+                                        lastNotifiedTime = now
+                                        DownloadNotificationService.updateProgress(context, percent)
+                                    }
+                                },
+                                urlRefresher = { getVideoStream()?.content ?: videoOnlyStream.content }
+                            )
+                        }
+                        audioJob.join()
+                        videoJob.join()
                     }
-                    audioJob.join()
-                    videoJob.join()
-                }
 
-                withContext(Dispatchers.Main) {
-                    dwnldProgressIsVisible = false
-                    DownloadNotificationService.setProgressType(false)
-                    DownloadNotificationService.updateProgress(context, 0, finale = true)
-                    downloadIndicatorIsVisible = true
-                    statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
-                }
+                    val isMoreThan1080p = videoOnlyStream.height > 1080
 
-                //FileSaver.saveM4a(context, "$title.m4a", m4aPath, settings.fileUri.ifBlank { null })
-
-                val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
-                    "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
-                            "-c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
-                            "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
-                } else {
-                    "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
-                            "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
-                }
-
-                Log.d("FFmpegCommand", ffmpegArgs)
-                val ffmpegResult = runFFmpeg(ffmpegArgs)
-
-                if (ffmpegResult) {
-                    FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
-                    if (settings.notifyOnFinish) {
-                        DownloadNotificationService.showFinishNotification(context, "$title.mp4")
-                    }
                     withContext(Dispatchers.Main) {
-                        applyQuickDownloadState()
-                        showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
-                        urlEntryText = ""
+                        dwnldProgressIsVisible = false
+                        DownloadNotificationService.setProgressType(false)
+                        DownloadNotificationService.updateProgress(context, 0, finale = true)
+                        downloadIndicatorIsVisible = true
+                        statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        applyQuickDownloadState()
-                        showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
+
+                    val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
+                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
+                                "-c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
+                                "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
+                    } else {
+                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
+                                "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
+                    }
+
+                    Log.d("FFmpegCommand", ffmpegArgs)
+                    val ffmpegResult = runFFmpeg(ffmpegArgs)
+
+                    if (ffmpegResult) {
+                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                        if (settings.notifyOnFinish) {
+                            DownloadNotificationService.showFinishNotification(context, "$title.mp4")
+                        }
+                        withContext(Dispatchers.Main) {
+                            applyQuickDownloadState()
+                            showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
+                            urlEntryText = ""
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            applyQuickDownloadState()
+                            showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
+                            if (settings.notifyOnFail) {
+                                DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
+                            }
                         }
                     }
+                } else if (muxed != null) {
+                    DownloadUtils.downloadStream(muxed.content, mp4Path,
+                        onProgress = { progress ->
+                            downloadProgress = progress
+                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val now = System.currentTimeMillis()
+                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
+                                lastNotifiedPercent = percent
+                                lastNotifiedTime = now
+                                DownloadNotificationService.updateProgress(context, percent)
+                            }
+                        },
+                        urlRefresher = {
+                            StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$cleanedUrl")
+                                .videoStreams.maxByOrNull { it.height }?.content ?: muxed.content
+                        }
+                    )
+                    val ffmpegArgs = "-y -i \"$mp4Path\" -c copy " +
+                            "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
+
+                    withContext(Dispatchers.Main) {
+                        dwnldProgressIsVisible = false
+                        DownloadNotificationService.setProgressType(false)
+                        DownloadNotificationService.updateProgress(context, 0, finale = true)
+                        downloadIndicatorIsVisible = true
+                        statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
+                    }
+
+                    Log.d("FFmpegCommand", ffmpegArgs)
+                    val ffmpegResult = runFFmpeg(ffmpegArgs)
+
+                    if (ffmpegResult) {
+                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                        if (settings.notifyOnFinish) {
+                            DownloadNotificationService.showFinishNotification(context, "$title.mp4")
+                        }
+                        withContext(Dispatchers.Main) {
+                            applyQuickDownloadState()
+                            showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
+                            urlEntryText = ""
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            applyQuickDownloadState()
+                            showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
+                            if (settings.notifyOnFail) {
+                                DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
+                            }
+                        }
+                    }
+                } else {
+                    throw Exception("No video streams available for this video.")
                 }
             }
 
@@ -644,8 +762,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_network_error))
                         }
                     }
+                    e.message?.contains("streams available for this video") == true -> {
+                        showPopup(context.getString(R.string.pt_no_streams), context.getString(R.string.pm_no_streams), 2)
+                        if (settings.notifyOnFail) {
+                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_no_streams))
+                        }
+                    }
                     else -> {
                         showPopup(context.getString(R.string.pt_error), e.message ?: context.getString(R.string.pm_error), 2)
+                        Log.d("DownloadError", e.stackTraceToString())
                         if (settings.notifyOnFail) {
                             DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_error))
                         }

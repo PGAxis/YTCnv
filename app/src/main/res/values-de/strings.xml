@@ -26,6 +26,7 @@
     <string name="d_settings">Download-Einstellungen</string>
     <string name="up_to_4k">2K und höher aktivieren (Video)</string>
     <string name="quick_download">Schnelldownload aktivieren</string>
+    <string name="muxed_fallback">Muxed-Stream-Fallback verwenden</string>
     <string name="n_settings">Benachrichtigungen</string>
     <string name="n_download_finished">Benachrichtigen wenn Download abgeschlossen</string>
     <string name="n_download_failed">Benachrichtigen wenn Download fehlschlägt</string>
@@ -57,6 +58,7 @@
     <string name="pt_canceled">Abgebrochen</string>
     <string name="pt_invalid_url">Ungültige URL</string>
     <string name="pt_network_error">Netzwerkfehler</string>
+    <string name="pt_no_streams">Keine Streams verfügbar</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Der URL-Parser konnte keine YouTube-ID in dieser URL finden. Bitte gib eine gültige YouTube-URL ein.</string>
@@ -68,6 +70,7 @@
     <string name="pm_canceled">Der Download wurde abgebrochen</string>
     <string name="pm_invalid_url">Bitte gib eine gültige YouTube-URL ein</string>
     <string name="pm_network_error">Das Gerät hat die Internetverbindung verloren</string>
+    <string name="pm_no_streams">Für dieses Video sind keine Streams verfügbar. Um den Muxed-Stream-Fallback (niedrigere Qualität) zu verwenden, aktiviere ihn in den Einstellungen</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Video-Metadaten werden abgerufen</string>

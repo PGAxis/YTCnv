@@ -26,6 +26,7 @@
     <string name="d_settings">Nastavení Stahování</string>
     <string name="up_to_4k">Povolit 2K a výš (video)</string>
     <string name="quick_download">Povolit rychlé stáhnutí</string>
+    <string name="muxed_fallback">Použít záložní muxovaný stream</string>
     <string name="n_settings">Upozornění</string>
     <string name="n_download_finished">Upozornit když stahování úspěšně skončí</string>
     <string name="n_download_failed">Upozornit když se stahování nepovede</string>
@@ -57,6 +58,7 @@
     <string name="pt_canceled">Přerušení</string>
     <string name="pt_invalid_url">Neplatná URL</string>
     <string name="pt_network_error">Chyba sítě</string>
+    <string name="pt_no_streams">Žádné streamy nejsou dostupné</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Analyzátor URL adresy nenašel YouTube ID. Zadejte prosím platnou YouTube URL adresu.</string>
@@ -68,6 +70,7 @@
     <string name="pm_canceled">Stahování bylo přerušeno</string>
     <string name="pm_invalid_url">Prosím zadejte platnou YouTube URL adresu</string>
     <string name="pm_network_error">Zařízení se odpojilo od internetu</string>
+    <string name="pm_no_streams">Pro toto video nejsou dostupné žádné streamy. Pokud chcete použít záložní muxovaný stream (nižší kvalita), zapněte ho v nastavení</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Načítání metadat videa</string>

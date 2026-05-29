@@ -5,6 +5,7 @@ import com.pg_axis.ytcnv.services.Theme
 interface ISettings {
     var use4K: Boolean
     var quickDwnld: Boolean
+    var muxedFallback: Boolean
     var downloadHistory: List<SettingsSave.HistoryItem>
     var searchHistory: List<String>
     var fileUri: String

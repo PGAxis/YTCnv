@@ -1,0 +1,2 @@
+Opravy chyb:
+- Aplikace nyní nabízí záložní muxované streamy
