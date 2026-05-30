@@ -1,4 +1,5 @@
 A simple, open-source YouTube downloader for Android.
+This app uses NewPipe Extractor to fetch downloadable YouTube streams
 
 Features:
 
@@ -10,3 +11,25 @@ Features:
 - Custom download destination via folder picker
 - Share YouTube links directly from the YouTube app
 - Dark theme
+
+
+By using this application, you acknowledge and agree to the following terms:
+
+1. PERMITTED USE
+This application is intended for personal, non-commercial use only. You may use this application to download content solely for private purposes within your household.
+
+2. COPYRIGHT AND INTELLECTUAL PROPERTY
+You are solely responsible for ensuring that any content you download complies with applicable copyright laws and the terms of service of the respective content platforms. Commercial use, redistribution, or monetization of downloaded content is strictly prohibited unless you have obtained explicit permission from the copyright holder or content creator.
+
+3. LIMITATION OF LIABILITY
+The developer of this application assumes no responsibility or liability for:
+• Any misuse of downloaded content
+• Copyright infringement or other legal violations resulting from your use of this application
+• Any damages, claims, or legal actions arising from the commercial use or monetization of downloaded content
+• Compliance with applicable laws in your jurisdiction
+
+4. USER RESPONSIBILITY
+You acknowledge that you are solely responsible for your use of this application and any content you download. It is your obligation to respect intellectual property rights and comply with all applicable laws.
+
+5. NO WARRANTY
+This application is provided "as is" without warranty of any kind, either express or implied, including but not limited to warranties of merchantability or fitness for a particular purpose.
