@@ -10,8 +10,8 @@ kotlin {
 android {
     namespace = "com.pg_axis.ytcnv"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
+        version = release(37) {
+            minorApiLevel = 0
         }
     }
 
@@ -31,9 +31,9 @@ android {
     defaultConfig {
         applicationId = "com.pg_axis.ytcnv"
         minSdk = 25
-        targetSdk = 36
-        versionCode = 61
-        versionName = "3.14.1"
+        targetSdk = 37
+        versionCode = 62
+        versionName = "3.14.2"
 
         ndk {
             //noinspection ChromeOsAbiSupport

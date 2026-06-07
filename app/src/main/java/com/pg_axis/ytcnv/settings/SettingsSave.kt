@@ -135,6 +135,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
         val s = boundSettings.get()
         use4K = s.use4kDownload
         quickDwnld = s.quickDownload
+        muxedFallback = s.muxedFallback
         dontShowUpdate = s.dontShowUpdatePopup
         termsAccepted = s.termsAccepted
         fileUri = s.savedFileUri

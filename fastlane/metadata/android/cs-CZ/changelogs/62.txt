@@ -1,0 +1,2 @@
+Opravy chyb:
+- Nastavení pro užití záložních muxovaných streamů se nyní uloží
