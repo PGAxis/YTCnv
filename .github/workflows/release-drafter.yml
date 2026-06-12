@@ -61,12 +61,10 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: "YT Convert ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }}) - ${{ steps.commit.outputs.title }}"
-          target_commitish: ${{ github.sha }}
+          target_commitish: "main"
           draft: true
           files: ""
           body: |
-            Previous tag: ${{ steps.prev_tag.outputs.prev_tag || 'none' }}
-
             ### Change log
 
             ${{ steps.commit.outputs.message }}
