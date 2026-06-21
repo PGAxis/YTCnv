@@ -48,10 +48,14 @@ jobs:
         id: commit
         if: steps.check.outputs.exists == 'false'
         run: |
-          echo "title=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
+          FULL=$(git log -1 --pretty=%B)
+          TITLE=$(echo "$FULL" | head -n1)
+          REST=$(echo "$FULL" | tail -n +2)
+          REST=$(echo "$REST" | sed '/./,$!d')
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
           {
             echo "message<<EOF"
-            git log -1 --pretty=%B
+            echo "$REST"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
