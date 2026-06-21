@@ -1,0 +1,5 @@
+Opravy chyb:
+- Návrat na předchozí stránku již nezobrazuje šedou obrazovku
+
+Co je nového:
+- Videa lze ukládat do jiné složky než audio

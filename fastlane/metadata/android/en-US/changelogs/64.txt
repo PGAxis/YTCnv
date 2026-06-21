@@ -1,0 +1,5 @@
+Bug fixes:
+- Going back a page now can't show gray screen
+
+Additions:
+- Videos can be saved to a different folder than audio

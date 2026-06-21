@@ -82,6 +82,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var dontShowUpdate by setting(false, SettingsClass::dontShowUpdatePopup)
     override var termsAccepted by setting(false, SettingsClass::termsAccepted)
     override var fileUri by setting("", SettingsClass::savedFileUri)
+    override var fileVidUri by setting("", SettingsClass::savedFileVidUri)
     override var notifyOnFinish by setting(true, SettingsClass::notifyOnFinish)
     override var notifyOnFail by setting(true, SettingsClass::notifyOnFail)
     override var addToMusicAxs by setting(false, SettingsClass::addToMusicAxs)
@@ -107,6 +108,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var dontShowUpdatePopup: Boolean = false,
         var termsAccepted: Boolean = false,
         var savedFileUri: String = "",
+        var savedFileVidUri: String = "",
         var notifyOnFinish: Boolean = true,
         var notifyOnFail: Boolean = true,
         var addToMusicAxs: Boolean = false,
@@ -139,6 +141,7 @@ class SettingsSave private constructor(context: Context) : ISettings {
         dontShowUpdate = s.dontShowUpdatePopup
         termsAccepted = s.termsAccepted
         fileUri = s.savedFileUri
+        fileVidUri = s.savedFileVidUri
         notifyOnFinish = s.notifyOnFinish
         notifyOnFail = s.notifyOnFail
         addToMusicAxs = s.addToMusicAxs

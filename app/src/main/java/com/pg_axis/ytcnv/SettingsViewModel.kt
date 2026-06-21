@@ -38,12 +38,19 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     var selectedRes by mutableIntStateOf(settings.minResolution)
 
     var mainFolder by mutableStateOf(context.getString(R.string.internal_storage))
-    var finalFolder by mutableStateOf(" - ${context.getString(R.string.downloads)}")
+    var finalFolder by mutableStateOf(context.getString(R.string.downloads))
+
+    var mainVidFolder by mutableStateOf(context.getString(R.string.internal_storage))
+    var finalVidFolder by mutableStateOf(context.getString(R.string.downloads))
 
     fun initPaths() {
         if (!settings.fileUri.isBlank()) {
             mainFolder = getMainFolder(settings.fileUri)
             finalFolder = getFinalFolder(settings.fileUri)
+        }
+        if (!settings.fileVidUri.isBlank()) {
+            mainVidFolder = getMainFolder(settings.fileVidUri)
+            finalVidFolder = getFinalFolder(settings.fileVidUri)
         }
     }
 
@@ -64,6 +71,11 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
         settings.fileUri = uri
         mainFolder = getMainFolder(uri)
         finalFolder = getFinalFolder(uri)
+    }
+    fun onVidFolderPicked(uri: String) {
+        settings.fileVidUri = uri
+        mainVidFolder = getMainFolder(uri)
+        finalVidFolder = getFinalFolder(uri)
     }
     fun onNotifyOnFinishChanged(value: Boolean) {
         settings.notifyOnFinish = value
@@ -99,6 +111,6 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     }
 
     private fun getFinalFolder(uri: String): String {
-        return " - ${uri.toUri().lastPathSegment?.substringAfterLast(":")?.substringAfterLast("/")?: uri.toUri().toString()}"
+        return uri.toUri().lastPathSegment?.substringAfterLast(":")?.substringAfterLast("/")?: uri.toUri().toString()
     }
 }

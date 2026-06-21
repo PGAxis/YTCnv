@@ -9,6 +9,9 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.services.Theme
-import com.pg_axis.ytcnv.ui.theme.*
 import java.io.File
 import java.time.LocalDateTime
 
@@ -74,6 +76,20 @@ fun SettingsScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
                 viewModel.onFolderPicked(uri.toString())
+            }
+        }
+    }
+
+    val folderVidPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                viewModel.onVidFolderPicked(uri.toString())
             }
         }
     }
@@ -127,23 +143,82 @@ fun SettingsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                            folderPickerLauncher.launch(intent)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.background
-                        )
+                    Text(stringResource(R.string.download_dest))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.download_dest))
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                                    folderPickerLauncher.launch(intent)
+                                },
+                                shape = CutCornerShape(5.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.audio),
+                                    contentDescription = "Audio file picker",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 15.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+
+                            Text(
+                                text = viewModel.mainFolder,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = viewModel.finalFolder,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                                    folderVidPickerLauncher.launch(intent)
+                                },
+                                shape = CutCornerShape(5.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.video),
+                                    contentDescription = "Video file picker",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 15.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+
+                            Text(
+                                text = viewModel.mainVidFolder,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = viewModel.finalVidFolder,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+                        }
                     }
-                    Text(
-                        text = viewModel.mainFolder + viewModel.finalFolder,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp
-                    )
                 }
             }
 
@@ -267,20 +342,20 @@ fun SettingsScreen(
 fun SettingsGroup(
     title: String,
     initiallyExpanded: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    var isExpanded by remember { mutableStateOf(initiallyExpanded) }
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded }
+                    .clickable { expanded = !expanded }
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -292,20 +367,20 @@ fun SettingsGroup(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(
-                        id = if (isExpanded) R.drawable.expand_less
-                        else R.drawable.expand_more
-                    ),
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.primary
+                    painterResource(if (expanded) R.drawable.expand_less else R.drawable.expand_more),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            // Content
-            if (isExpanded) {
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Column(
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    modifier = Modifier.padding(4.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     content()

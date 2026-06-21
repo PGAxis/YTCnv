@@ -9,6 +9,7 @@ class PreviewSettings : ISettings {
     override var downloadHistory = emptyList<SettingsSave.HistoryItem>()
     override var searchHistory = emptyList<String>()
     override var fileUri = ""
+    override var fileVidUri = ""
     override var isDownloadRunning = false
     override var iHaveId = false
     override var id = ""

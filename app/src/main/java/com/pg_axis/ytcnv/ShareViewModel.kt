@@ -341,7 +341,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         }
 
                         if (DownloadUtils.runFFmpeg(ffmpegArgs)) {
-                            FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                            FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                             if (settings.notifyOnFinish)
                                 DownloadNotificationService.showFinishNotification(context, "$title.mp4")
                         } else {
@@ -375,7 +375,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                                 "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
 
                         if (DownloadUtils.runFFmpeg(ffmpegArgs)) {
-                            FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                            FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                             if (settings.notifyOnFinish)
                                 DownloadNotificationService.showFinishNotification(context, "$title.mp4")
                         } else {

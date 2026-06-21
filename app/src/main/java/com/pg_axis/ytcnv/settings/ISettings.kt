@@ -9,6 +9,7 @@ interface ISettings {
     var downloadHistory: List<SettingsSave.HistoryItem>
     var searchHistory: List<String>
     var fileUri: String
+    var fileVidUri: String
     var isDownloadRunning: Boolean
     var iHaveId: Boolean
     var id: String

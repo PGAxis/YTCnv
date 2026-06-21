@@ -654,7 +654,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val ffmpegResult = runFFmpeg(ffmpegArgs)
 
                     if (ffmpegResult) {
-                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                         if (settings.notifyOnFinish) {
                             DownloadNotificationService.showFinishNotification(context, "$title.mp4")
                         }
@@ -704,7 +704,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val ffmpegResult = runFFmpeg(ffmpegArgs)
 
                     if (ffmpegResult) {
-                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileUri.ifBlank { null })
+                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                         if (settings.notifyOnFinish) {
                             DownloadNotificationService.showFinishNotification(context, "$title.mp4")
                         }

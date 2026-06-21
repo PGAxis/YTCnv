@@ -27,11 +27,8 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
         }
     }
 
-    var lastNavTime = remember { 0L }
     fun popBack() {
-        val now = System.currentTimeMillis()
-        if (now - lastNavTime > 500) {
-            lastNavTime = now
+        if (navController.previousBackStackEntry != null) {
             navController.popBackStack()
         }
     }
