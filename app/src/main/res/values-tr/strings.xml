@@ -100,31 +100,6 @@
     <string name="ud_no_remind">Bir daha hatırlatma</string>
     <string name="ud_later">Daha sonra</string>
 
-    <!-- Terms Dialog -->
-    <string name="terms_title">Şartlar ve Koşullar</string>
-    <string name="terms_subtitle">Devam etmek için lütfen okuyup kabul edin</string>
-    <string name="terms_content">
-Bu uygulamayı kullanarak aşağıdaki şartları kabul etmiş sayılırsınız:\n\n
-1. İZİN VERİLEN KULLANIM\n
-Bu uygulama yalnızca kişisel, ticari olmayan kullanım içindir. Uygulamayı yalnızca eviniz içinde özel amaçlarla içerik indirmek için kullanabilirsiniz.\n\n
-2. TELİF HAKKI VE FİKRİ MÜLKİYET\n
-İndirdiğiniz herhangi bir içeriğin yürürlükteki telif hakkı yasalarına ve ilgili içerik platformlarının hizmet şartlarına uygun olmasını sağlamak tamamen sizin sorumluluğunuzdadır. İndirilen içeriklerin ticari kullanımı, yeniden dağıtımı veya para kazanma amacıyla kullanılması; telif hakkı sahibi veya içerik oluşturucusundan açık izin alınmadıkça kesinlikle yasaktır.\n\n
-3. SORUMLULUĞUN SINIRLANDIRILMASI\n
-Bu uygulamanın geliştiricisi aşağıdakiler için hiçbir sorumluluk veya yükümlülük kabul etmez:\n
-• İndirilen içeriğin herhangi bir kötüye kullanımı\n
-• Bu uygulamanın kullanımından kaynaklanan telif hakkı ihlali veya diğer yasal ihlaller\n
-• İndirilen içeriklerin ticari kullanımı veya gelir elde etme amacıyla kullanımından kaynaklanan herhangi bir zarar, talep veya yasal işlem\n
-• Bulunduğunuz yargı bölgesindeki geçerli yasalara uyum\n\n
-4. KULLANICI SORUMLULUĞU\n
-Bu uygulamayı kullanmanızdan ve indirdiğiniz tüm içeriklerden yalnızca sizin sorumlu olduğunuzu kabul edersiniz. Fikri mülkiyet haklarına saygı göstermek ve tüm geçerli yasalara uymak sizin yükümlülüğünüzdür.\n\n
-5. GARANTİ YOK\n
-Bu uygulama, satılabilirlik veya belirli bir amaca uygunluk garantileri dahil ancak bunlarla sınırlı olmamak üzere, açık veya zımni hiçbir garanti olmaksızın “olduğu gibi” sunulmaktadır.\n\n
-“Kabul Et” seçeneğine tıklayarak, bu şartlar ve koşulları okuduğunuzu, anladığınızı ve bunlara bağlı olmayı kabul ettiğinizi onaylamış olursunuz.\n\n
-Türkçe çeviri: Ahmet Çeliker tarafından sağlanmıştır.
-    </string>
-    <string name="terms_accept">Kabul Et</string>
-    <string name="terms_decline">Reddet</string>
-
     <!-- Playlist picker -->
     <string name="pp_add_to">Music.axs çalma listesine ekle</string>
     <string name="pp_song_count">%1$s şarkı</string>

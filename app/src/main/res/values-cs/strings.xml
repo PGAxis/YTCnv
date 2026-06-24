@@ -100,30 +100,6 @@
     <string name="ud_no_remind">Neupozorňovat znovu</string>
     <string name="ud_later">Později</string>
 
-    <!-- Terms Dialog -->
-    <string name="terms_title">Podmínky použití</string>
-    <string name="terms_subtitle">Přečtěte si prosím a potvrďte pro pokračování</string>
-    <string name="terms_content">
-Používáním této aplikace berete na vědomí a souhlasíte s následujícími podmínkami:\n\n
-1. POVOLENÉ POUŽITÍ\n
-Tato aplikace je určena výhradně pro osobní, nekomerční použití. Aplikaci můžete používat ke stahování obsahu pouze pro soukromé účely v rámci vaší domácnosti.\n\n
-2. AUTORSKÁ PRÁVA A DUŠEVNÍ VLASTNICTVÍ\n
-Nesete plnou odpovědnost za to, aby jakýkoliv obsah, který stáhnete, byl v souladu s platnými zákony o autorských právech a s podmínkami služeb příslušných platforem s obsahem. Komerční použití, redistribuce nebo zpeněžení staženého obsahu je přísně zakázáno, pokud jste nezískali výslovné povolení od držitele autorských práv nebo tvůrce obsahu.\n\n
-3. OMEZENÍ ODPOVĚDNOSTI\n
-Vývojář této aplikace nepřebírá žádnou odpovědnost za:\n
-• Jakékoliv zneužití staženého obsahu\n
-• Porušení autorských práv nebo jiné právní přestupky vyplývající z vašeho použití této aplikace\n
-• Jakékoliv škody, nároky nebo právní kroky vzniklé z komerčního použití nebo zpeněžení staženého obsahu\n
-• Dodržování platných zákonů ve vaší jurisdikci\n\n
-4. ODPOVĚDNOST UŽIVATELE\n
-Uznáváte, že nesete plnou odpovědnost za používání této aplikace a jakýkoliv obsah, který stáhnete. Je vaší povinností respektovat práva duševního vlastnictví a dodržovat všechny platné zákony.\n\n
-5. BEZ ZÁRUKY\n
-Tato aplikace je poskytována "tak jak je" bez jakékoliv záruky, ať už výslovné nebo předpokládané, včetně, ale nejen, záruk prodejnosti nebo vhodnosti pro konkrétní účel.\n\n
-Kliknutím na tlačítko "Přijmout" potvrzujete, že jste si přečetli, porozuměli a souhlasíte s těmito podmínkami použití.
-    </string>
-    <string name="terms_accept">Přijmout</string>
-    <string name="terms_decline">Odmítnout</string>
-
     <!-- Playlist picker -->
     <string name="pp_add_to">Přidat do playlistu Music.axs</string>
     <string name="pp_song_count">%1$s písní</string>

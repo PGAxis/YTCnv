@@ -105,8 +105,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var muxedFallbackStream: VideoStream? = null
     var updateInfo by mutableStateOf<UpdateInfo?>(null)
 
-    var showTermsDialog by mutableStateOf(!settings.termsAccepted)
-
     // ─── Actions ───
     suspend fun checkForUpdates(context: Context) {
         val info = UpdateChecker.checkForUpdates(context, settings)
@@ -120,15 +118,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun onUpdateDialogDismissed(dontShowAgain: Boolean) {
         updateInfo = null
         settings.dontShowUpdate = dontShowAgain
-    }
-
-    fun onTermsAccepted() {
-        settings.termsAccepted = true
-        showTermsDialog = false
-    }
-
-    fun onTermsDeclined() {
-        showTermsDialog = false
     }
 
     fun onUrlChanged(value: String) { urlEntryText = value }

@@ -56,7 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pg_axis.ytcnv.dialogs.TermsDialog
 import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.dialogs.UpdateDialog
 import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
@@ -64,7 +63,7 @@ import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onTermsDeclined: () -> Unit) {
+fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
     val settings = viewModel.settings
     val context = LocalContext.current
 
@@ -86,21 +85,11 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
             )
         }
 
-        if (viewModel.showTermsDialog) {
-            TermsDialog(
-                onAccept = { viewModel.onTermsAccepted() },
-                onDecline = {
-                    viewModel.onTermsDeclined()
-                    onTermsDeclined()
-                }
+        viewModel.updateInfo?.let { info ->
+            UpdateDialog(
+                updateInfo = info,
+                onDismiss = { dontShowAgain -> viewModel.onUpdateDialogDismissed(dontShowAgain) }
             )
-        } else {
-            viewModel.updateInfo?.let { info ->
-                UpdateDialog(
-                    updateInfo = info,
-                    onDismiss = { dontShowAgain -> viewModel.onUpdateDialogDismissed(dontShowAgain) }
-                )
-            }
         }
 
         // Main content

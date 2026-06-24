@@ -100,30 +100,6 @@
     <string name="ud_no_remind">Don\'t remind me again</string>
     <string name="ud_later">Later</string>
 
-    <!-- Terms Dialog -->
-    <string name="terms_title">Terms and Conditions</string>
-    <string name="terms_subtitle">Please read and accept to continue</string>
-    <string name="terms_content">
-By using this application, you acknowledge and agree to the following terms:\n\n
-1. PERMITTED USE\n
-This application is intended for personal, non-commercial use only. You may use this application to download content solely for private purposes within your household.\n\n
-2. COPYRIGHT AND INTELLECTUAL PROPERTY\n
-You are solely responsible for ensuring that any content you download complies with applicable copyright laws and the terms of service of the respective content platforms. Commercial use, redistribution, or monetization of downloaded content is strictly prohibited unless you have obtained explicit permission from the copyright holder or content creator.\n\n
-3. LIMITATION OF LIABILITY\n
-The developer of this application assumes no responsibility or liability for:\n
-• Any misuse of downloaded content\n
-• Copyright infringement or other legal violations resulting from your use of this application\n
-• Any damages, claims, or legal actions arising from the commercial use or monetization of downloaded content\n
-• Compliance with applicable laws in your jurisdiction\n\n
-4. USER RESPONSIBILITY\n
-You acknowledge that you are solely responsible for your use of this application and any content you download. It is your obligation to respect intellectual property rights and comply with all applicable laws.\n\n
-5. NO WARRANTY\n
-This application is provided "as is" without warranty of any kind, either express or implied, including but not limited to warranties of merchantability or fitness for a particular purpose.\n\n
-By clicking "Accept", you confirm that you have read, understood, and agree to be bound by these terms and conditions.
-    </string>
-    <string name="terms_accept">Accept</string>
-    <string name="terms_decline">Decline</string>
-
     <!-- Playlist picker -->
     <string name="pp_add_to">Add to Music.axs playlist</string>
     <string name="pp_song_count">%1$s songs</string>

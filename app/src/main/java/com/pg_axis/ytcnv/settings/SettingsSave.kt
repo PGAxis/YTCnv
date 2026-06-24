@@ -80,7 +80,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var quickDwnld by setting(true, SettingsClass::quickDownload)
     override var muxedFallback by setting(false, SettingsClass::muxedFallback)
     override var dontShowUpdate by setting(false, SettingsClass::dontShowUpdatePopup)
-    override var termsAccepted by setting(false, SettingsClass::termsAccepted)
     override var fileUri by setting("", SettingsClass::savedFileUri)
     override var fileVidUri by setting("", SettingsClass::savedFileVidUri)
     override var notifyOnFinish by setting(true, SettingsClass::notifyOnFinish)
@@ -106,7 +105,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var quickDownload: Boolean = true,
         var muxedFallback: Boolean = false,
         var dontShowUpdatePopup: Boolean = false,
-        var termsAccepted: Boolean = false,
         var savedFileUri: String = "",
         var savedFileVidUri: String = "",
         var notifyOnFinish: Boolean = true,
@@ -139,7 +137,6 @@ class SettingsSave private constructor(context: Context) : ISettings {
         quickDwnld = s.quickDownload
         muxedFallback = s.muxedFallback
         dontShowUpdate = s.dontShowUpdatePopup
-        termsAccepted = s.termsAccepted
         fileUri = s.savedFileUri
         fileVidUri = s.savedFileVidUri
         notifyOnFinish = s.notifyOnFinish

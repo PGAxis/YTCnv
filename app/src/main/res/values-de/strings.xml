@@ -100,30 +100,6 @@
     <string name="ud_no_remind">Nicht erneut erinnern</string>
     <string name="ud_later">Später</string>
 
-    <!-- Terms Dialog -->
-    <string name="terms_title">Nutzungsbedingungen</string>
-    <string name="terms_subtitle">Bitte lesen und akzeptieren Sie, um fortzufahren</string>
-    <string name="terms_content">
-Durch die Nutzung dieser Anwendung erkennen Sie die folgenden Bedingungen an und stimmen ihnen zu:\n\n
-1. ZULÄSSIGE NUTZUNG\n
-Diese Anwendung ist ausschließlich für den persönlichen, nicht-kommerziellen Gebrauch bestimmt. Sie dürfen diese Anwendung nur zum Herunterladen von Inhalten für private Zwecke innerhalb Ihres Haushalts verwenden.\n\n
-2. URHEBERRECHT UND GEISTIGES EIGENTUM\n
-Sie tragen die alleinige Verantwortung dafür, dass alle von Ihnen heruntergeladenen Inhalte den geltenden Urheberrechtsgesetzen und den Nutzungsbedingungen der jeweiligen Inhaltsplattformen entsprechen. Die kommerzielle Nutzung, Weiterverbreitung oder Monetarisierung heruntergeladener Inhalte ist strengstens untersagt, es sei denn, Sie haben eine ausdrückliche Genehmigung vom Urheberrechtsinhaber oder Inhaltsersteller erhalten.\n\n
-3. HAFTUNGSBESCHRÄNKUNG\n
-Der Entwickler dieser Anwendung übernimmt keine Verantwortung oder Haftung für:\n
-• Jeglichen Missbrauch heruntergeladener Inhalte\n
-• Urheberrechtsverletzungen oder andere Rechtsverstöße, die sich aus Ihrer Nutzung dieser Anwendung ergeben\n
-• Jegliche Schäden, Ansprüche oder rechtliche Schritte, die sich aus der kommerziellen Nutzung oder Monetarisierung heruntergeladener Inhalte ergeben\n
-• Die Einhaltung geltender Gesetze in Ihrer Rechtsordnung\n\n
-4. VERANTWORTUNG DES NUTZERS\n
-Sie erkennen an, dass Sie die alleinige Verantwortung für Ihre Nutzung dieser Anwendung und alle von Ihnen heruntergeladenen Inhalte tragen. Es ist Ihre Pflicht, die Rechte an geistigem Eigentum zu respektieren und alle geltenden Gesetze einzuhalten.\n\n
-5. KEINE GEWÄHRLEISTUNG\n
-Diese Anwendung wird "wie besehen" ohne jegliche Gewährleistung bereitgestellt, weder ausdrücklich noch stillschweigend, einschließlich, aber nicht beschränkt auf Gewährleistungen der Marktgängigkeit oder Eignung für einen bestimmten Zweck.\n\n
-Durch Klicken auf "Akzeptieren" bestätigen Sie, dass Sie diese Nutzungsbedingungen gelesen, verstanden haben und sich verpflichten, an sie gebunden zu sein.
-    </string>
-    <string name="terms_accept">Akzeptieren</string>
-    <string name="terms_decline">Ablehnen</string>
-
     <!-- Playlist picker -->
     <string name="pp_add_to">Zu Music.axs-Playlist hinzufügen</string>
     <string name="pp_song_count">%1$s Songs</string>

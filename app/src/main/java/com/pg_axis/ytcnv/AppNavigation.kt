@@ -13,10 +13,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import kotlin.system.exitProcess
 
 @Composable
-fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
+fun AppNavigation(initialUrl: String? = null) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
     val application = LocalContext.current.applicationContext as Application
@@ -39,11 +38,7 @@ fun AppNavigation(initialUrl: String? = null, onFinish: () -> Unit) {
             MainScreen(
                 viewModel = mainViewModel,
                 onOpenSearch = { navController.navigate("search") },
-                onOpenSettings = { navController.navigate("settings") },
-                onTermsDeclined = {
-                    onFinish()
-                    exitProcess(0)
-                }
+                onOpenSettings = { navController.navigate("settings") }
             )
         }
         composable("search") {

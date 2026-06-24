@@ -14,7 +14,6 @@ interface ISettings {
     var iHaveId: Boolean
     var id: String
     var dontShowUpdate: Boolean
-    var termsAccepted: Boolean
     var alreadyShown: Boolean
     var notifyOnFinish: Boolean
     var notifyOnFail: Boolean

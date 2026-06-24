@@ -26,12 +26,15 @@ A simple, open-source YouTube downloader for Android. Download YouTube videos as
 - **Quick download** mode — download without manually picking quality
 - **Manual quality selection** — pick audio bitrate or video resolution
 - YouTube **search** with thumbnails, duration, and channel name
+- Separated **YouTube** and **YouTube Music** searches
 - **Download history** — tap any past download to re-download it
 - Search history
-- Custom download destination via folder picker
+- Custom download destination via folder picker (different for audio and video)
 - Share YouTube links directly from the YouTube app
 - Update notifications via GitHub Releases
-- Dark theme
+- Different colored themes
+- Add songs downloaded from this app to any playlist in Music.axs
+- Support for different languages
 
 ## Building
 
