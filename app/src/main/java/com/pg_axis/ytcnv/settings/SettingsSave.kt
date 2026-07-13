@@ -117,6 +117,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
     @Keep
     data class HistoryItem(
         var title: String = "",
+        var metadataTitle: String = "",
+        var metadataAuthor: String = "",
+        var isMp3: Boolean? = null,
         var urlOrId: String = ""
     )
 

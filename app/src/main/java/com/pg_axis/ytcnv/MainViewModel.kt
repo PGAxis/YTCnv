@@ -302,6 +302,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             cancelButtonIsVisible = true
             downloadIndicatorIsVisible = true
             statusLabelIsVisible = true
+            downloadProgress = 0f
             statusLabelText = AnnotatedString(context.getString(R.string.sl_retrieving_metadata))
         }
 
@@ -359,17 +360,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             var title = cleanedTitle
             val unalteredTitle = streamInfo.name?.trim() ?: title
 
-            // Update history
-            withContext(Dispatchers.Main) {
-                val existing = settings.downloadHistory.find { it.urlOrId == cleanedUrl }
-                val newItem = SettingsSave.HistoryItem(unalteredTitle, cleanedUrl)
-                val updated = settings.downloadHistory.toMutableList()
-                updated.remove(existing)
-                updated.add(0, newItem)
-                Log.d("History update", "$updated")
-                settings.downloadHistory = updated
-            }
-
             // Download thumbnail
             val thumbnailUrl = streamInfo.thumbnails.maxByOrNull { it.height }?.url
             var hasThumbnail = false
@@ -378,12 +368,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val ext = detectImageExtension(bytes)
                 val tempThumbnail = File(context.cacheDir, "tempThumbnail.$ext").absolutePath
                 File(tempThumbnail).writeBytes(bytes)
+                if (ext == "jpg") {
+                    File(tempThumbnail).renameTo(File(imagePath))
+                    hasThumbnail = File(imagePath).exists()
+                } else {
+                    val ffmpegComd = "-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\""
+                    Log.d("FFmpegCommand", ffmpegComd)
+                    val result = runFFmpeg(ffmpegComd)
 
-                val ffmpegComd = "-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\""
-                Log.d("FFmpegCommand", ffmpegComd)
-                val result = runFFmpeg(ffmpegComd)
-
-                hasThumbnail = result && File(imagePath).exists()
+                    hasThumbnail = result && File(imagePath).exists()
+                }
 
                 if (File(tempThumbnail).exists()) File(tempThumbnail).delete()
             }
@@ -404,8 +398,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
             }
-            title = StringUtils.cleanTitle(confirmedTitle, confirmedAuthor).first
-            author = StringUtils.cleanAuthor(confirmedAuthor)
+            title = if (confirmedTitle.filter { it !in "/\\:*?\"<>|" } == confirmedTitle) confirmedTitle else StringUtils.cleanTitle(confirmedTitle, confirmedAuthor).first
+
+            val selectedFormat = formatPickerSelectedIndex
+
+            // Update history
+            withContext(Dispatchers.Main) {
+                val existing = settings.downloadHistory.find { it.urlOrId == cleanedUrl }
+                val newItem = SettingsSave.HistoryItem(title = unalteredTitle, metadataTitle = confirmedTitle, metadataAuthor = confirmedAuthor, isMp3 = selectedFormat == 0, urlOrId = cleanedUrl)
+                val updated = settings.downloadHistory.toMutableList()
+                updated.remove(existing)
+                updated.add(0, newItem)
+                Log.d("History update", "$updated")
+                settings.downloadHistory = updated
+            }
 
             withContext(Dispatchers.Main) {
                 statusLabelText = buildAnnotatedString {
@@ -421,7 +427,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 DownloadNotificationService.startTimer()
             }
 
-            val selectedFormat = formatPickerSelectedIndex
             var lastNotifiedPercent = -1
             var lastNotifiedTime = 0L
 

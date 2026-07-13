@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -63,7 +63,12 @@ import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    onOpenSearch: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenHistory: () -> Unit
+) {
     val settings = viewModel.settings
     val context = LocalContext.current
 
@@ -275,26 +280,41 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                 color = MaterialTheme.colorScheme.outlineVariant
             )
 
+            Spacer(modifier = Modifier.weight(1f))
+
             // --- Download History ---
             Card(
-                modifier = Modifier.weight(1f).padding(vertical = 25.dp),
+                modifier = Modifier.padding(vertical = 25.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
-                Column(modifier = Modifier.fillMaxHeight().padding(15.dp)) {
-                    Text(
-                        text = stringResource(R.string.download_history),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Column(modifier = Modifier.padding(15.dp)) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.download_history),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 30.dp)
+                                .align(Alignment.Center),
+                            textAlign = TextAlign.Center,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        IconButton(onClick = onOpenHistory, modifier = Modifier.size(30.dp).align(Alignment.CenterEnd), shape = RoundedCornerShape(0.dp)) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.arrow_right),
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (settings.downloadHistory.isEmpty()) {
                         Box(
-                            modifier = Modifier.fillMaxHeight().weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -308,7 +328,7 @@ fun MainScreen(viewModel: MainViewModel, onOpenSearch: () -> Unit, onOpenSetting
                         }
                     } else {
                         LazyColumn {
-                            items(settings.downloadHistory) { item ->
+                            items(settings.downloadHistory.take(3)) { item ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()

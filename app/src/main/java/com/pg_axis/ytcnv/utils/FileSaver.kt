@@ -38,11 +38,14 @@ object FileSaver {
         val folderUri = folderUriString.toUri()
         val pickedDir = DocumentFile.fromTreeUri(context, folderUri)
             ?: throw IllegalStateException("Could not access chosen folder")
+
         val newFile = pickedDir.createFile(mimeType, fileName)
             ?: throw IllegalStateException("Could not create file in chosen folder")
+
         context.contentResolver.openOutputStream(newFile.uri)?.use { out ->
             File(inputFilePath).inputStream().use { it.copyTo(out) }
         }
+
         return newFile.uri
     }
 

@@ -49,6 +49,8 @@ class ShareActivity : ComponentActivity() {
                 Theme.PHOSPHOR -> YTCnvPhosphorScheme
                 Theme.CHALK -> YTCnvChalkScheme
                 Theme.SUNSHINE -> YTCnvSoleilScheme
+                Theme.BORDO ->YTCnvBordoScheme
+                Theme.VOID -> YTCnvVoidScheme
             }
             YTCnvTheme(colorScheme = colorScheme) {
                 ShareBottomSheet(

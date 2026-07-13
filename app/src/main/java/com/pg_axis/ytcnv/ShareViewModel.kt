@@ -155,7 +155,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                 // Update download history
                 withContext(Dispatchers.Main) {
                     val existing = settings.downloadHistory.find { it.urlOrId == cleanedUrl }
-                    val newItem = SettingsSave.HistoryItem(info.name?.trim() ?: title, cleanedUrl)
+                    val newItem = SettingsSave.HistoryItem(title = info.name?.trim() ?: title, metadataTitle = title, metadataAuthor = title, isMp3 = formatIndex == 0, urlOrId = cleanedUrl)
                     val updated = settings.downloadHistory.toMutableList()
                     updated.remove(existing)
                     updated.add(0, newItem)

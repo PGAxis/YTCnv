@@ -66,6 +66,8 @@ class MainActivity : AppCompatActivity() {
                 Theme.PHOSPHOR -> YTCnvPhosphorScheme
                 Theme.CHALK -> YTCnvChalkScheme
                 Theme.SUNSHINE -> YTCnvSoleilScheme
+                Theme.BORDO ->YTCnvBordoScheme
+                Theme.VOID -> YTCnvVoidScheme
             }
             YTCnvTheme(colorScheme = colorScheme) {
                 AppNavigation(initialUrl = sharedUrl)
@@ -90,6 +92,6 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun YTCnvPreview() {
     YTCnvTheme(colorScheme = YTCnvCyanScheme) {
-        MainScreen(viewModel = MainViewModel(Application()), {}, {})
+        MainScreen(viewModel = MainViewModel(Application()), {}, {}, {})
     }
 }

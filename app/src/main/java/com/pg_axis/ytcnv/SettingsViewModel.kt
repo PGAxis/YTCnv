@@ -24,6 +24,8 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
         Theme.EMBER to context.getString(R.string.set_vm_ember),
         Theme.AETHER to context.getString(R.string.set_vm_aether),
         Theme.PHOSPHOR to context.getString(R.string.set_vm_phosphor),
+        Theme.BORDO to context.getString(R.string.set_vm_bordo),
+        Theme.VOID to context.getString(R.string.set_vm_void),
         Theme.CHALK to context.getString(R.string.set_vm_chalk),
         Theme.SUNSHINE to context.getString(R.string.set_vm_sunshine),
         Theme.GRAYSCALE to context.getString(R.string.set_vm_grayscale)

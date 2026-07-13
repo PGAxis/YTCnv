@@ -15,8 +15,11 @@
     <string name="download">İndir</string>
     <string name="cancel">İptal</string>
     <string name="load">Meta verileri yükle</string>
-    <string name="download_history">İndirme Geçmişi</string>
+    <string name="download_history_caps">İndirme Geçmişi</string>
+    <string name="download_history">İndirme geçmişi</string>
+    <string name="metadata">Meta veriler:</string>
     <string name="empty_history">Geçmiş boş</string>
+    <string name="rm_from_history">Geçmişten kaldır</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Ayarlar</string>
@@ -114,4 +117,6 @@
     <string name="set_vm_chalk">Tebeşir</string>
     <string name="set_vm_sunshine">Güneş Işığı</string>
     <string name="set_vm_grayscale">Gri Tonları</string>
+    <string name="set_vm_bordo">Bordo</string>
+    <string name="set_vm_void">Boşluk</string>
 </resources>

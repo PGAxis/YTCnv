@@ -15,8 +15,11 @@
     <string name="download">Download</string>
     <string name="cancel">Cancel</string>
     <string name="load">Load metadata</string>
-    <string name="download_history">DOWNLOAD HISTORY</string>
+    <string name="download_history_caps">DOWNLOAD HISTORY</string>
+    <string name="download_history">Download history</string>
+    <string name="metadata">Metadata:</string>
     <string name="empty_history">History is empty</string>
+    <string name="rm_from_history">Remove from history</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
@@ -114,4 +117,6 @@
     <string name="set_vm_chalk">Chalk</string>
     <string name="set_vm_sunshine">Sunshine</string>
     <string name="set_vm_grayscale">Grayscale</string>
+    <string name="set_vm_bordo">Bordó</string>
+    <string name="set_vm_void">Void</string>
 </resources>

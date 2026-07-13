@@ -15,8 +15,11 @@
     <string name="download">Stáhnout</string>
     <string name="cancel">Přerušit</string>
     <string name="load">Načíst metadata</string>
-    <string name="download_history">HISTORIE STAHOVÁNÍ</string>
+    <string name="download_history_caps">HISTORIE STAHOVÁNÍ</string>
+    <string name="download_history">Historie stahování</string>
+    <string name="metadata">Metadata:</string>
     <string name="empty_history">Historie je prázdná</string>
+    <string name="rm_from_history">Odebrat z historie</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Nastavení</string>
@@ -114,4 +117,6 @@
     <string name="set_vm_chalk">Křída</string>
     <string name="set_vm_sunshine">Slunění</string>
     <string name="set_vm_grayscale">Stupně šedi</string>
+    <string name="set_vm_bordo">Bordó</string>
+    <string name="set_vm_void">Prázdnota</string>
 </resources>

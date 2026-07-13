@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.pg_axis.ytcnv.side_pages.HistoryScreen
 
 @Composable
 fun AppNavigation(initialUrl: String? = null) {
@@ -38,7 +39,8 @@ fun AppNavigation(initialUrl: String? = null) {
             MainScreen(
                 viewModel = mainViewModel,
                 onOpenSearch = { navController.navigate("search") },
-                onOpenSettings = { navController.navigate("settings") }
+                onOpenSettings = { navController.navigate("settings") },
+                onOpenHistory = { navController.navigate("history") }
             )
         }
         composable("search") {
@@ -81,6 +83,11 @@ fun AppNavigation(initialUrl: String? = null) {
             PreviewScreen(
                 onBack = { popBack() },
                 viewModel = previewViewModel
+            )
+        }
+        composable("history") {
+            HistoryScreen(
+                onBack = { popBack() }
             )
         }
     }

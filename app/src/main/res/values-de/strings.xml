@@ -15,8 +15,11 @@
     <string name="download">Herunterladen</string>
     <string name="cancel">Abbrechen</string>
     <string name="load">Metadaten laden</string>
-    <string name="download_history">DOWNLOADVERLAUF</string>
+    <string name="download_history_caps">DOWNLOADVERLAUF</string>
+    <string name="download_history">Download-Verlauf</string>
+    <string name="metadata">Metadaten:</string>
     <string name="empty_history">Verlauf ist leer</string>
+    <string name="rm_from_history">Aus dem Verlauf entfernen</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Einstellungen</string>
@@ -114,4 +117,6 @@
     <string name="set_vm_chalk">Kreide</string>
     <string name="set_vm_sunshine">Sonnenschein</string>
     <string name="set_vm_grayscale">Graustufen</string>
+    <string name="set_vm_bordo">Bordeaux</string>
+    <string name="set_vm_void">Leere</string>
 </resources>

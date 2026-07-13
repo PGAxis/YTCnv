@@ -15,8 +15,11 @@
     <string name="download">Загрузить</string>
     <string name="cancel">Отмена</string>
     <string name="load">Загрузить метаданные</string>
-    <string name="download_history">ИСТОРИЯ ЗАГРУЗОК</string>
+    <string name="download_history_caps">ИСТОРИЯ ЗАГРУЗОК</string>
+    <string name="download_history">История загрузок</string>
+    <string name="metadata">Метаданные:</string>
     <string name="empty_history">История пуста</string>
+    <string name="rm_from_history">Удалить из истории</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Настройки</string>
@@ -114,4 +117,6 @@
     <string name="set_vm_chalk">Мел</string>
     <string name="set_vm_sunshine">Солнце</string>
     <string name="set_vm_grayscale">Оттенки серого</string>
+    <string name="set_vm_bordo">Бордо</string>
+    <string name="set_vm_void">Пустота</string>
 </resources>

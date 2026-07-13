@@ -1,0 +1,2 @@
+Additions:
+- There is now a separate History screen, with the history panel on main screen only showing the last three items

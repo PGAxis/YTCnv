@@ -43,8 +43,10 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(UnstableApi::class)
@@ -120,7 +122,7 @@ fun PreviewScreen(
             currentPosition = exoPlayer.currentPosition
             duration = exoPlayer.duration.coerceAtLeast(0)
             isPlaying = exoPlayer.isPlaying
-            delay(500)
+            delay(500.milliseconds)
         }
     }
 
@@ -132,12 +134,12 @@ fun PreviewScreen(
         onDispose { exoPlayer.removeListener(listener) }
     }
 
-    var hideJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    var hideJob by remember { mutableStateOf<Job?>(null) }
     fun showControls() {
         controlsVisible = true
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
-            delay(3_000)
+            delay(3_000.milliseconds)
             controlsVisible = false
         }
     }
@@ -152,7 +154,7 @@ fun PreviewScreen(
 
     LaunchedEffect(skipIndicator) {
         if (skipIndicator != null) {
-            delay(700)
+            delay(700.milliseconds)
             skipIndicator = null
         }
     }

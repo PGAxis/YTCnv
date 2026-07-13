@@ -10,7 +10,9 @@ enum class Theme(private val displayName: String) {
     AETHER("theme_aether"),
     PHOSPHOR("theme_phosphor"),
     CHALK("theme_chalk"),
-    SUNSHINE("theme_sunshine");
+    SUNSHINE("theme_sunshine"),
+    BORDO("theme_bordo"),
+    VOID("theme_void");
 
     override fun toString(): String = displayName
 }

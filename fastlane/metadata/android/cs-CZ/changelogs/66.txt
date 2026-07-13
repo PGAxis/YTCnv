@@ -1,0 +1,2 @@
+Co je nového:
+- Nyní existuje zvlášť obraovka Historie, pričemž panel historie na hlavní obrazovce zobrazuje jen poslední 3 stažené věci
