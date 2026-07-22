@@ -141,7 +141,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun onQualityChanged(index: Int) { qualityPickerSelectedIndex = index }
     fun onClosePopupClicked() { popupIsVisible = false }
-    fun onHistoryItemTapped(urlOrId: String) { urlEntryText = urlOrId }
+    fun onHistoryItemTapped(urlOrId: String) {
+        urlEntryText = urlOrId
+        if (!settings.quickDwnld && downloadButtonIsVisible) {
+            downloadButtonIsVisible = false
+            loadButtonIsVisible = true
+            loadButtonIsEnabled = true
+        }
+    }
 
     var formatPickerSelectedIndex by mutableIntStateOf(0)
 
@@ -365,7 +372,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             var hasThumbnail = false
             if (thumbnailUrl != null) {
                 val bytes = URL(thumbnailUrl).readBytes()
-                val ext = detectImageExtension(bytes)
+                val ext = DownloadUtils.detectImageExtension(bytes)
                 val tempThumbnail = File(context.cacheDir, "tempThumbnail.$ext").absolutePath
                 File(tempThumbnail).writeBytes(bytes)
                 if (ext == "jpg") {
@@ -374,7 +381,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     val ffmpegComd = "-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\""
                     Log.d("FFmpegCommand", ffmpegComd)
-                    val result = runFFmpeg(ffmpegComd)
+                    val result = DownloadUtils.runFFmpeg(ffmpegComd, 0) { }
 
                     hasThumbnail = result && File(imagePath).exists()
                 }
@@ -427,7 +434,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 DownloadNotificationService.startTimer()
             }
 
-            var lastNotifiedPercent = -1
             var lastNotifiedTime = 0L
 
             if (selectedFormat == 0) {
@@ -457,13 +463,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (audioStream != null) {
                     inputForFFmpeg = m4aPath
                     Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
-                    downloadStream(audioStream.content, m4aPath,
+                    DownloadUtils.downloadStream(audioStream.content, m4aPath,
                         onProgress = { progress ->
                             downloadProgress = progress
-                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val percent = (progress * 100).coerceAtMost(100f)
                             val now = System.currentTimeMillis()
-                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                lastNotifiedPercent = percent
+                            if (now - lastNotifiedTime >= 500) {
                                 lastNotifiedTime = now
                                 DownloadNotificationService.updateProgress(context, percent)
                             }
@@ -473,13 +478,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 } else if (muxed != null) {
                     inputForFFmpeg = mp4Path
                     Log.d("YTCnv", "Falling back to muxed stream: ${muxed.content}")
-                    downloadStream(muxed.content, mp4Path,
+                    DownloadUtils.downloadStream(muxed.content, mp4Path,
                         onProgress = { progress ->
                             downloadProgress = progress
-                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val percent = (progress * 100).coerceAtMost(100f)
                             val now = System.currentTimeMillis()
-                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                lastNotifiedPercent = percent
+                            if (now - lastNotifiedTime >= 500) {
                                 lastNotifiedTime = now
                                 DownloadNotificationService.updateProgress(context, percent)
                             }
@@ -494,10 +498,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 withContext(Dispatchers.Main) {
-                    dwnldProgressIsVisible = false
-                    DownloadNotificationService.setProgressType(false)
-                    DownloadNotificationService.updateProgress(context, 0, finale = true)
-                    downloadIndicatorIsVisible = true
+                    DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                    DownloadNotificationService.startTimer()
                     statusLabelText = AnnotatedString(context.getString(R.string.sl_add_metadata))
                 }
 
@@ -516,7 +518,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 Log.d("FFmpegCommand", ffmpegCmd)
-                val ffmpegResult = runFFmpeg(ffmpegCmd)
+                val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegCmd, streamInfo.duration) { progress ->
+                    downloadProgress = progress
+                    val percent = (progress * 100).coerceAtMost(100f)
+                    val now = System.currentTimeMillis()
+                    if (now - lastNotifiedTime >= 500) {
+                        lastNotifiedTime = now
+                        DownloadNotificationService.updateProgress(context, percent)
+                    }
+                }
 
                 if (ffmpegResult) {
                     val savedUri = FileSaver.saveAudio(context, "${title}.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
@@ -575,12 +585,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val muxed = if (settings.muxedFallback) muxedFallbackStream ?: streamInfo.videoStreams.maxByOrNull { it.height } else null
 
                 if (videoOnlyStream != null) {
-                    // existing parallel download + mux path
+                    // parallel download + mux path
                     val audioStream = getAudioStream()
                     withContext(Dispatchers.IO) {
                         val audioJob = launch {
                             if (audioStream != null) {
-                                downloadStream(
+                                DownloadUtils.downloadStream(
                                     audioStream.content,
                                     m4aPath,
                                     onProgress = {},
@@ -589,7 +599,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                                     })
                             } else if (muxed != null) {
                                 // download muxed just for its audio track
-                                downloadStream(
+                                DownloadUtils.downloadStream(
                                     muxed.content,
                                     m4aPath,
                                     onProgress = {},
@@ -606,14 +616,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         }
                         val videoJob = launch {
-                            downloadStream(
+                            DownloadUtils.downloadStream(
                                 videoOnlyStream.content, mp4Path,
                                 onProgress = { progress ->
                                     downloadProgress = progress
-                                    val percent = (progress * 100).toInt().coerceAtMost(100)
+                                    val percent = (progress * 100).coerceAtMost(100f)
                                     val now = System.currentTimeMillis()
-                                    if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                        lastNotifiedPercent = percent
+                                    if (now - lastNotifiedTime >= 500) {
                                         lastNotifiedTime = now
                                         DownloadNotificationService.updateProgress(context, percent)
                                     }
@@ -628,24 +637,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val isMoreThan1080p = videoOnlyStream.height > 1080
 
                     withContext(Dispatchers.Main) {
-                        dwnldProgressIsVisible = false
-                        DownloadNotificationService.setProgressType(false)
-                        DownloadNotificationService.updateProgress(context, 0, finale = true)
-                        downloadIndicatorIsVisible = true
+                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                        DownloadNotificationService.startTimer()
                         statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
                     }
 
                     val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
                         "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
-                                "-c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
+                                "-c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
                                 "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
                     } else {
-                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a aac -b:a 192k -map 0:v:0 -map 1:a:0 -shortest " +
+                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
                                 "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
                     }
 
                     Log.d("FFmpegCommand", ffmpegArgs)
-                    val ffmpegResult = runFFmpeg(ffmpegArgs)
+                    val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegArgs, streamInfo.duration) { progress ->
+                        downloadProgress = progress
+                        val percent = (progress * 100).coerceAtMost(100f)
+                        val now = System.currentTimeMillis()
+                        if (now - lastNotifiedTime >= 500) {
+                            lastNotifiedTime = now
+                            DownloadNotificationService.updateProgress(context, percent)
+                        }
+                    }
 
                     if (ffmpegResult) {
                         FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
@@ -670,10 +685,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     DownloadUtils.downloadStream(muxed.content, mp4Path,
                         onProgress = { progress ->
                             downloadProgress = progress
-                            val percent = (progress * 100).toInt().coerceAtMost(100)
+                            val percent = (progress * 100).coerceAtMost(100f)
                             val now = System.currentTimeMillis()
-                            if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                lastNotifiedPercent = percent
+                            if (now - lastNotifiedTime >= 500) {
                                 lastNotifiedTime = now
                                 DownloadNotificationService.updateProgress(context, percent)
                             }
@@ -687,15 +701,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
 
                     withContext(Dispatchers.Main) {
-                        dwnldProgressIsVisible = false
-                        DownloadNotificationService.setProgressType(false)
-                        DownloadNotificationService.updateProgress(context, 0, finale = true)
-                        downloadIndicatorIsVisible = true
+                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                        DownloadNotificationService.startTimer()
                         statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
                     }
 
                     Log.d("FFmpegCommand", ffmpegArgs)
-                    val ffmpegResult = runFFmpeg(ffmpegArgs)
+                    val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegArgs, streamInfo.duration) { progress ->
+                        downloadProgress = progress
+                        val percent = (progress * 100).coerceAtMost(100f)
+                        val now = System.currentTimeMillis()
+                        if (now - lastNotifiedTime >= 500) {
+                            lastNotifiedTime = now
+                            DownloadNotificationService.updateProgress(context, percent)
+                        }
+                    }
 
                     if (ffmpegResult) {
                         FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
@@ -831,17 +851,4 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun stopService() {
         context.stopService(Intent(context, DownloadNotificationService::class.java))
     }
-
-    private suspend fun downloadStream(
-        url: String,
-        outputPath: String,
-        onProgress: (Float) -> Unit,
-        urlRefresher: (suspend () -> String)? = null
-    ) = DownloadUtils.downloadStream(url, outputPath, onProgress, urlRefresher)
-
-    private fun detectImageExtension(bytes: ByteArray): String =
-        DownloadUtils.detectImageExtension(bytes)
-
-    private suspend fun runFFmpeg(command: String): Boolean =
-        DownloadUtils.runFFmpeg(command)
 }

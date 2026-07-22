@@ -123,12 +123,12 @@ class DownloadNotificationService : Service() {
             manager.notify(FAIL_NOTIFICATION_ID, notification)
         }
 
-        fun updateProgress(context: Context, progress: Int, finale: Boolean = false) {
+        fun updateProgress(context: Context, progress: Float, finale: Boolean = false) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
             val etaText = if (progressIsRunning && progress > 0) {
                 val elapsed = System.currentTimeMillis() - (startedTime ?: System.currentTimeMillis())
-                val msPerPercent = elapsed.toFloat() / progress.toFloat()
+                val msPerPercent = elapsed.toFloat() / progress
                 val remaining = ((100 - progress) * msPerPercent).toLong()
                 val totalSec = remaining / 1000
                 val h = totalSec / 3600
@@ -140,10 +140,10 @@ class DownloadNotificationService : Service() {
 
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle(context.getString(R.string.not_downloading))
-                .setContentText(if (!finale) "${context.getString(R.string.not_progress)} | $progress%" else context.getString(R.string.finalizing))
+                .setContentText(if (!finale) "${context.getString(R.string.not_progress)} | ${progress.toInt()}%" else "${context.getString(R.string.finalizing)} | ${progress.toInt()}%")
                 .setSmallIcon(R.drawable.icon)
                 .setOngoing(true)
-                .setProgress(100, progress, !progressIsRunning)
+                .setProgress(100, progress.toInt(), !progressIsRunning)
 
             if (etaText != null) builder.setSubText(etaText)
 

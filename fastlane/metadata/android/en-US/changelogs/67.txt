@@ -1,0 +1,6 @@
+Bug fixes:
+- FFmpeg is now faster thanks to removed --enable-small flag
+- Some bytes were redownloaded when Wi-Fi disconnected and reconnected during download
+
+Additions:
+- Progress of the FFmpeg part can now be watched too

@@ -3,6 +3,7 @@ package com.pg_axis.ytcnv.side_pages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -107,7 +109,8 @@ fun HistoryItemRow(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(10.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
@@ -158,14 +161,25 @@ fun HistoryItemRow(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = title,
-                    textAlign = TextAlign.Left,
-                    fontSize = 10.sp,
+                Box(
                     modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = title,
+                        textAlign = TextAlign.Center,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    )
+                }
+                VerticalDivider(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
                 Text(
                     text = author,
@@ -174,17 +188,25 @@ fun HistoryItemRow(
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                 )
-                Text(
-                    text = when(isMp3) {
-                        true -> "MP3"
-                        false -> "MP4"
-                        else -> "N/A"
-                    },
-                    textAlign = TextAlign.Right,
-                    fontSize = 10.sp,
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                VerticalDivider(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Text(
+                        text = when(isMp3) {
+                            true -> "MP3"
+                            false -> "MP4"
+                            else -> "N/A"
+                        },
+                        textAlign = TextAlign.Center,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
     }

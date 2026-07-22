@@ -13,6 +13,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.time.Duration.Companion.milliseconds
 
 object DownloadUtils {
     @OptIn(ExperimentalAtomicApi::class)
@@ -45,13 +46,15 @@ object DownloadUtils {
         ) {
             var retries = 0
             var currentUrl = streamUrl
+            var position = start
+            var lastReportTime = 0L
+
             while (true) {
                 try {
                     val conn = URL(currentUrl).openConnection() as HttpURLConnection
-                    conn.setRequestProperty("Range", "bytes=$start-$end")
+                    conn.setRequestProperty("Range", "bytes=$position-$end")
                     conn.connect()
                     val buffer = ByteArray(32768)
-                    var position = start
                     conn.inputStream.use { input ->
                         var bytes = input.read(buffer)
                         while (bytes >= 0) {
@@ -61,8 +64,13 @@ object DownloadUtils {
                             }
                             position += bytes
                             val total = downloaded.addAndGet(bytes.toLong())
-                            withContext(Dispatchers.Main) {
-                                onProgress(total.toFloat() / totalBytes.toFloat())
+
+                            val now = System.currentTimeMillis()
+                            if (now - lastReportTime >= 100) {
+                                lastReportTime = now
+                                withContext(Dispatchers.Main) {
+                                    onProgress(total.toFloat() / totalBytes.toFloat())
+                                }
                             }
                             bytes = input.read(buffer)
                         }
@@ -70,7 +78,7 @@ object DownloadUtils {
                     return
                 } catch (e: IOException) {
                     if (++retries > maxRetries) throw e
-                    delay(1000L * retries)
+                    delay((1000 * retries).milliseconds)
                     currentUrl = urlRefresher?.invoke() ?: streamUrl
                 }
             }
@@ -90,14 +98,33 @@ object DownloadUtils {
         }
     }
 
-    suspend fun runFFmpeg(command: String): Boolean =
-        kotlinx.coroutines.suspendCancellableCoroutine { cont ->
-            val session = FFmpegKit.executeAsync(command) { session ->
+    suspend fun runFFmpeg(
+        command: String,
+        totalDurationSeconds: Long,
+        onProgress: (Float) -> Unit
+    ): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+        var lastNotifiedTime = 0L
+
+        val session = FFmpegKit.executeAsync(command,
+            { session ->
                 @Suppress("DEPRECATION")
                 cont.resume(ReturnCode.isSuccess(session.returnCode)) {}
+            },
+            null,
+            { statistics ->
+                if (totalDurationSeconds > 0) {
+                    val currentSeconds = statistics.time / 1000.0
+                    val progress = (currentSeconds / totalDurationSeconds).toFloat().coerceIn(0f, 1f)
+                    val now = System.currentTimeMillis()
+                    if (now - lastNotifiedTime >= 1000) {
+                        lastNotifiedTime = now
+                        onProgress(progress)
+                    }
+                }
             }
-            cont.invokeOnCancellation { session.cancel() }
-        }
+        )
+        cont.invokeOnCancellation { session.cancel() }
+    }
 
     fun detectImageExtension(bytes: ByteArray): String {
         return when {

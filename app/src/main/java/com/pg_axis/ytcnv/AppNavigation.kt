@@ -55,7 +55,14 @@ fun AppNavigation(initialUrl: String? = null) {
             )
             SearchScreen(
                 onBack = { popBack() },
-                onResultSelected = { url -> mainViewModel.urlEntryText = url },
+                onResultSelected = { url ->
+                    mainViewModel.urlEntryText = url
+                    if (mainViewModel.downloadButtonIsVisible && !mainViewModel.settings.quickDwnld) {
+                        mainViewModel.downloadButtonIsVisible = false
+                        mainViewModel.loadButtonIsVisible = true
+                        mainViewModel.loadButtonIsEnabled = true
+                    }
+               },
                 onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
                 viewModel = searchViewModel
             )

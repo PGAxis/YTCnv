@@ -171,7 +171,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         val ext = DownloadUtils.detectImageExtension(bytes)
                         val tempThumbnail = File(context.cacheDir, "share_thumb.$ext").absolutePath
                         File(tempThumbnail).writeBytes(bytes)
-                        val result = DownloadUtils.runFFmpeg("-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\"")
+                        val result = DownloadUtils.runFFmpeg("-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\"", 0) { }
                         hasThumbnail = result && File(imagePath).exists()
                         if (File(tempThumbnail).exists()) File(tempThumbnail).delete()
                     } catch (_: Exception) { }
@@ -179,7 +179,6 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
 
                 DownloadNotificationService.setProgressType(true)
                 DownloadNotificationService.startTimer()
-                var lastNotifiedPercent = -1
                 var lastNotifiedTime = 0L
 
                 if (formatIndex == 0) {
@@ -208,10 +207,9 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
                         downloadStream(audioStream.content, m4aPath,
                             onProgress = { progress ->
-                                val percent = (progress * 100).toInt().coerceAtMost(100)
+                                val percent = (progress * 100).coerceAtMost(100f)
                                 val now = System.currentTimeMillis()
-                                if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                    lastNotifiedPercent = percent
+                                if (now - lastNotifiedTime >= 500) {
                                     lastNotifiedTime = now
                                     DownloadNotificationService.updateProgress(context, percent)
                                 }
@@ -223,10 +221,9 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         Log.d("YTCnv", "Falling back to muxed stream: ${muxed.content}")
                         downloadStream(muxed.content, mp4Path,
                             onProgress = { progress ->
-                                val percent = (progress * 100).toInt().coerceAtMost(100)
+                                val percent = (progress * 100).coerceAtMost(100f)
                                 val now = System.currentTimeMillis()
-                                if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                    lastNotifiedPercent = percent
+                                if (now - lastNotifiedTime >= 500) {
                                     lastNotifiedTime = now
                                     DownloadNotificationService.updateProgress(context, percent)
                                 }
@@ -240,8 +237,8 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         throw Exception("No audio streams available for this video.")
                     }
 
-                    DownloadNotificationService.setProgressType(false)
-                    DownloadNotificationService.updateProgress(context, 0, finale = true)
+                    DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                    DownloadNotificationService.startTimer()
 
                     val ffmpegCmd = buildString {
                         append("-y -i \"$inputForFFmpeg\" ")
@@ -257,7 +254,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         append("-threads 1 \"$semiOutputAudio\"")
                     }
 
-                    if (DownloadUtils.runFFmpeg(ffmpegCmd)) {
+                    if (DownloadUtils.runFFmpeg(ffmpegCmd, info.duration) { }) {
                         FileSaver.saveAudio(context, "$title.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
                         if (settings.notifyOnFinish)
                             DownloadNotificationService.showFinishNotification(context, "$title.mp3")
@@ -313,10 +310,9 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                                 downloadStream(
                                     videoStream.content, mp4Path,
                                     onProgress = { progress ->
-                                        val percent = (progress * 100).toInt()
+                                        val percent = (progress * 100).coerceAtMost(100f)
                                         val now = System.currentTimeMillis()
-                                        if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                            lastNotifiedPercent = percent
+                                        if (now - lastNotifiedTime >= 500) {
                                             lastNotifiedTime = now
                                             DownloadNotificationService.updateProgress(context, percent)
                                         }
@@ -328,8 +324,8 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                             videoJob.join()
                         }
 
-                        DownloadNotificationService.setProgressType(false)
-                        DownloadNotificationService.updateProgress(context, 0, finale = true)
+                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                        DownloadNotificationService.startTimer()
 
                         val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
                             "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
@@ -340,7 +336,7 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                                     "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
                         }
 
-                        if (DownloadUtils.runFFmpeg(ffmpegArgs)) {
+                        if (DownloadUtils.runFFmpeg(ffmpegArgs, info.duration) { }) {
                             FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                             if (settings.notifyOnFinish)
                                 DownloadNotificationService.showFinishNotification(context, "$title.mp4")
@@ -354,10 +350,9 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                         downloadStream(
                             muxed.content, mp4Path,
                             onProgress = { progress ->
-                                val percent = (progress * 100).toInt()
+                                val percent = (progress * 100).coerceAtMost(100f)
                                 val now = System.currentTimeMillis()
-                                if (percent != lastNotifiedPercent && now - lastNotifiedTime >= 500) {
-                                    lastNotifiedPercent = percent
+                                if (now - lastNotifiedTime >= 500) {
                                     lastNotifiedTime = now
                                     DownloadNotificationService.updateProgress(context, percent)
                                 }
@@ -368,13 +363,13 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
                             }
                         )
 
-                        DownloadNotificationService.setProgressType(false)
-                        DownloadNotificationService.updateProgress(context, 0, finale = true)
+                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
+                        DownloadNotificationService.startTimer()
 
                         val ffmpegArgs = "-y -i \"$mp4Path\" -c copy " +
                                 "-metadata title=\"$title\" -metadata artist=\"$author\" \"$semiOutput\""
 
-                        if (DownloadUtils.runFFmpeg(ffmpegArgs)) {
+                        if (DownloadUtils.runFFmpeg(ffmpegArgs, info.duration) { }) {
                             FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
                             if (settings.notifyOnFinish)
                                 DownloadNotificationService.showFinishNotification(context, "$title.mp4")

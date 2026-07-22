@@ -1,0 +1,6 @@
+Opravy chyb:
+- FFmpeg je nyní rychlejší díky odstraněné vlajce --enable-small
+- Některé bajty byly staženy dvakrát, pokud se zařízení odpojilo a zase připojilo k Wi-Fi
+
+Co je nového:
+- Progres FFmpeg části lze nyní také sledovat
