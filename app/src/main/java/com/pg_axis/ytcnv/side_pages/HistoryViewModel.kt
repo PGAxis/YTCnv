@@ -13,4 +13,13 @@ class HistoryViewModel(application: Application): AndroidViewModel(application) 
         updated.removeAll { it.urlOrId == urlOrId }
         settings.downloadHistory = updated
     }
+
+    fun markUndownloaded(urlOrId: String) {
+        val updated = settings.downloadHistory.toMutableList()
+        val index = updated.indexOfFirst { it.urlOrId == urlOrId }
+        if (index != -1) {
+            updated[index] = updated[index].copy(downloaded = false, uri = "")
+        }
+        settings.downloadHistory = updated
+    }
 }

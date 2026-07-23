@@ -80,7 +80,7 @@ fun SearchScreen(
                 .height(60.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack, shape = CutCornerShape(0.dp)) {
+            IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
                 Icon(
                     painter = painterResource(id = R.drawable.back),
                     contentDescription = "Back",
@@ -314,7 +314,6 @@ fun SearchScreen(
                                     isMusic = viewModel.isMusicSearch,
                                     onDownload = {
                                         onResultSelected("https://www.youtube.com/watch?v=${item.videoId}")
-                                        onBack()
                                     },
                                     onCopyUrl = {
                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

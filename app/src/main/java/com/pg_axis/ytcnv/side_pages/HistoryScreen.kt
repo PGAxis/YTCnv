@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,12 +27,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,60 +43,122 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pg_axis.ytcnv.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun HistoryScreen(
     onBack: () -> Unit,
+    onResultSelected: (url: String) -> Unit,
     vm: HistoryViewModel = viewModel()
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
+    var pickerUri: String? by remember { mutableStateOf(null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
+        .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        // ─── Header ───
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-                .height(60.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
         ) {
-            IconButton(onClick = onBack, shape = CutCornerShape(0.dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.back),
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.primary
+            // ─── Header ───
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .height(60.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.download_history),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-            Text(
-                text = stringResource(R.string.download_history),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+            ) {
+                items(
+                    items = vm.settings.downloadHistory,
+                    key = { it.urlOrId }
+                ) { historyItem ->
+                    LaunchedEffect(historyItem.uri, historyItem.downloaded) {
+                        if (historyItem.downloaded && historyItem.uri.isNotEmpty()) {
+                            val isValid = withContext(Dispatchers.IO) {
+                                try {
+                                    context.contentResolver
+                                        .openFileDescriptor(historyItem.uri.toUri(), "r")
+                                        ?.use { true } ?: false
+                                } catch (_: Exception) {
+                                    false
+                                }
+                            }
+                            if (!isValid) {
+                                vm.markUndownloaded(historyItem.urlOrId)
+                            }
+                        }
+                    }
+
+                    HistoryItemRow(
+                        titleOrg = historyItem.title,
+                        title = historyItem.metadataTitle,
+                        author = historyItem.metadataAuthor,
+                        isMp3 = historyItem.isMp3,
+                        downloaded = historyItem.downloaded,
+                        onRemove = { vm.onRemove(historyItem.urlOrId) },
+                        onRedownload = { onResultSelected(historyItem.urlOrId) },
+                        onShowPicker = {
+                            val uriString = historyItem.uri
+                            if (uriString == "") {
+                                vm.markUndownloaded(historyItem.urlOrId)
+                                return@HistoryItemRow
+                            }
+                            scope.launch {
+                                val isValid = withContext(Dispatchers.IO) {
+                                    try {
+                                        context.contentResolver
+                                            .openFileDescriptor(uriString.toUri(), "r")
+                                            ?.use { true } ?: false
+                                    } catch (_: Exception) {
+                                        false
+                                    }
+                                }
+                                if (isValid) {
+                                    pickerUri = uriString
+                                } else {
+                                    vm.markUndownloaded(historyItem.urlOrId)
+                                }
+                            }
+                        }
+                    )
+                }
+            }
         }
 
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-        ) {
-            items(
-                items = vm.settings.downloadHistory,
-                key = { it.urlOrId }
-            ) { historyItem ->
-                HistoryItemRow(
-                    titleOrg = historyItem.title,
-                    title = historyItem.metadataTitle,
-                    author = historyItem.metadataAuthor,
-                    isMp3 = historyItem.isMp3,
-                    onRemove = { vm.onRemove(historyItem.urlOrId) }
-                )
-            }
+        pickerUri?.let { uri ->
+            PlaylistPickerSheet(
+                songUri = uri.toUri(),
+                onDismiss = { pickerUri = null }
+            )
         }
     }
 }
@@ -103,7 +169,10 @@ fun HistoryItemRow(
     title: String,
     author: String,
     isMp3: Boolean?,
-    onRemove: () -> Unit
+    downloaded: Boolean,
+    onRemove: () -> Unit,
+    onRedownload: () -> Unit,
+    onShowPicker: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -151,6 +220,22 @@ fun HistoryItemRow(
                                 onRemove()
                             }
                         )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.hist_scr_redownload), color = MaterialTheme.colorScheme.onSecondaryContainer) },
+                            onClick = {
+                                menuExpanded = false
+                                onRedownload()
+                            }
+                        )
+                        if (downloaded) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.pp_add_to), color = MaterialTheme.colorScheme.onSecondaryContainer) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onShowPicker()
+                                }
+                            )
+                        }
                     }
                 }
             }

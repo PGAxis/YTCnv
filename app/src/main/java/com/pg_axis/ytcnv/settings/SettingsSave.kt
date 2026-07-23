@@ -120,7 +120,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var metadataTitle: String = "",
         var metadataAuthor: String = "",
         var isMp3: Boolean? = null,
-        var urlOrId: String = ""
+        var urlOrId: String = "",
+        var downloaded: Boolean = false,
+        var uri: String = ""
     )
 
     @Keep

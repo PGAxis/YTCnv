@@ -1,0 +1,5 @@
+Opravy chyb:
+- Opravena vzácná chyba, kdy klepnutí na Stáhnout na obrazovce Vyhledávání nevrátilo uživatele zpět na hlavní obrazovku
+
+Co je nového:
+- Historie nyní nabízí možnost znovu stáhnout video a (konkrétně u MP3 souborů) přidat je do playlistu v Music.axs

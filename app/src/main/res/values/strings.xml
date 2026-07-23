@@ -51,6 +51,9 @@
     <string name="search_big_prompt">Search for a YouTube video</string>
     <string name="copy_url">Copy URL</string>
 
+    <!-- History Screen -->
+    <string name="hist_scr_redownload">Download again</string>
+
     <!-- Pop-up titles -->
     <string name="pt_no_url">No URL</string>
     <string name="pt_unavailable">Video unavailable</string>

@@ -1,0 +1,5 @@
+Bug fixes:
+- Fixed a rare issue where tapping Download on the Search screen wouldn't take you back to the main screen
+
+Additions:
+- History now has options to redownload a video and (for MP3 files specifically) add them to a playlist in Music.axs

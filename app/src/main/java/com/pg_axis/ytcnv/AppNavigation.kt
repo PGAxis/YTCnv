@@ -62,6 +62,7 @@ fun AppNavigation(initialUrl: String? = null) {
                         mainViewModel.loadButtonIsVisible = true
                         mainViewModel.loadButtonIsEnabled = true
                     }
+                    navController.navigate("main")
                },
                 onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
                 viewModel = searchViewModel
@@ -94,7 +95,16 @@ fun AppNavigation(initialUrl: String? = null) {
         }
         composable("history") {
             HistoryScreen(
-                onBack = { popBack() }
+                onBack = { popBack() },
+                onResultSelected = { url ->
+                    mainViewModel.urlEntryText = url
+                    if (mainViewModel.downloadButtonIsVisible && !mainViewModel.settings.quickDwnld) {
+                        mainViewModel.downloadButtonIsVisible = false
+                        mainViewModel.loadButtonIsVisible = true
+                        mainViewModel.loadButtonIsEnabled = true
+                    }
+                    navController.navigate("main")
+                }
             )
         }
     }

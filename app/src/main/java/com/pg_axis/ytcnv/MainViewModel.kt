@@ -412,7 +412,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             // Update history
             withContext(Dispatchers.Main) {
                 val existing = settings.downloadHistory.find { it.urlOrId == cleanedUrl }
-                val newItem = SettingsSave.HistoryItem(title = unalteredTitle, metadataTitle = confirmedTitle, metadataAuthor = confirmedAuthor, isMp3 = selectedFormat == 0, urlOrId = cleanedUrl)
+                val newItem = SettingsSave.HistoryItem(title = unalteredTitle, metadataTitle = confirmedTitle, metadataAuthor = confirmedAuthor, isMp3 = selectedFormat == 0, urlOrId = cleanedUrl, downloaded = false, uri = "")
                 val updated = settings.downloadHistory.toMutableList()
                 updated.remove(existing)
                 updated.add(0, newItem)
@@ -537,6 +537,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         applyQuickDownloadState()
                         showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
                         urlEntryText = ""
+                        if (savedUri != null) {
+                            val updated = settings.downloadHistory.toMutableList()
+                            val existingIndex = updated.indexOfFirst { it.urlOrId == cleanedUrl }
+
+                            if (existingIndex != -1) {
+                                updated[existingIndex] = updated[existingIndex].copy(
+                                    downloaded = true,
+                                    uri = savedUri.toString()
+                                )
+                            } else {
+                                val newItem = SettingsSave.HistoryItem(
+                                    title = unalteredTitle,
+                                    metadataTitle = confirmedTitle,
+                                    metadataAuthor = confirmedAuthor,
+                                    isMp3 = true,
+                                    urlOrId = cleanedUrl,
+                                    downloaded = true,
+                                    uri = savedUri.toString()
+                                )
+                                updated.add(0, newItem)
+                            }
+                            settings.downloadHistory = updated
+                        }
                         if (savedUri != null && MusicAxsClient.isMusicAxsInstalled(context) && MusicAxsClient.getPlaylists(context).isNotEmpty() && settings.addToMusicAxs) {
                             lastDownloadedSongUri = savedUri
                             showPlaylistPicker = true

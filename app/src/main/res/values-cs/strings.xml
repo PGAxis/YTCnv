@@ -51,6 +51,9 @@
     <string name="search_big_prompt">Vyhledej si YouTube video</string>
     <string name="copy_url">Zkopírovat URL</string>
 
+    <!-- History Screen -->
+    <string name="hist_scr_redownload">Stáhnout znovu</string>
+
     <!-- Pop-up titles -->
     <string name="pt_no_url">Chybí URL</string>
     <string name="pt_unavailable">Video nedostupné</string>

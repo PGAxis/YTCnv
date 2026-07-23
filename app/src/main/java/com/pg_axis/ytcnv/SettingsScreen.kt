@@ -108,7 +108,7 @@ fun SettingsScreen(
                 .height(60.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack, shape = CutCornerShape(0.dp)) {
+            IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
                 Icon(
                     painter = painterResource(id = R.drawable.back),
                     contentDescription = "Back",

@@ -51,6 +51,9 @@
     <string name="search_big_prompt">Bir YouTube videosu ara</string>
     <string name="copy_url">URL\'yi kopyala</string>
 
+    <!-- History Screen -->
+    <string name="hist_scr_redownload">Tekrar indir</string>
+
     <!-- Pop-up titles -->
     <string name="pt_no_url">URL yok</string>
     <string name="pt_unavailable">Video kullanılamıyor</string>

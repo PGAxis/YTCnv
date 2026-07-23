@@ -51,6 +51,9 @@
     <string name="search_big_prompt">Найти видео на YouTube</string>
     <string name="copy_url">Копировать ссылку</string>
 
+    <!-- History Screen -->
+    <string name="hist_scr_redownload">Скачать снова</string>
+
     <!-- Pop-up titles -->
     <string name="pt_no_url">Нет ссылки</string>
     <string name="pt_unavailable">Видео недоступно</string>
