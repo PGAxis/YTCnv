@@ -1,0 +1,5 @@
+Opravy chyb:
+- Když byla píseň přidána z této aplikace do Music.axs když neběžela, přidání písně selhalo
+
+Co je nového:
+- Automatické zpracování názvu a autora nyní rozpoznává i „featuring“ umělce

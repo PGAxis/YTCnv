@@ -5,8 +5,8 @@ import androidx.core.net.toUri
 
 object MusicAxsContract {
     const val AUTHORITY = "dev.pgaxis.musicaxs.provider"
-    const val MIN_MUSICAXS_VERSION = 6L  // bump when contract changes
-    const val MIN_YTCNV_VERSION = 53L
+    const val MIN_MUSICAXS_VERSION = 30L
+    const val MIN_YTCNV_VERSION = 69L
 
     object Playlists {
         val URI: Uri = "content://$AUTHORITY/playlists".toUri()
@@ -18,6 +18,6 @@ object MusicAxsContract {
     object Songs {
         val URI: Uri = "content://$AUTHORITY/songs".toUri()
         const val PLAYLIST_ID = "playlist_id"
-        const val SONG_ID = "song_id"
+        const val SONG_URI = "song_uri"
     }
 }

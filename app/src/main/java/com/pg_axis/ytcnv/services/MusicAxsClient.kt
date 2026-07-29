@@ -58,21 +58,20 @@ object MusicAxsClient {
         return suspendCancellableCoroutine { cont ->
             MediaScannerConnection.scanFile(context, arrayOf(path), null) { _, scannedUri ->
 
-                val songId = scannedUri?.let { ContentUris.parseId(it) }
-
-                if (songId == null) {
+                if (scannedUri == null) {
                     cont.resume(false); return@scanFile
                 }
 
                 val values = ContentValues().apply {
                     put(MusicAxsContract.Songs.PLAYLIST_ID, playlistId)
-                    put(MusicAxsContract.Songs.SONG_ID, songId)
+                    put(MusicAxsContract.Songs.SONG_URI, scannedUri.toString())
                 }
                 val insertResult = context.contentResolver.insert(MusicAxsContract.Songs.URI, values)
                 cont.resume(insertResult != null)
             }
         }
     }
+
 
     private fun resolveSystemPath(context: Context, uri: Uri): String? {
         context.contentResolver.query(uri,

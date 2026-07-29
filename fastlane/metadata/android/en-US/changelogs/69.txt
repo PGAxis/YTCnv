@@ -1,0 +1,5 @@
+Bug fixes:
+- When a song was added from this app to Music.axs when it was not running, it would fail to add the song
+
+Additions:
+- The automatic title and author handling now recognizes "featuring" artists
