@@ -11,6 +11,7 @@
     <string name="URLIDPrompt">Ссылка или ID ролика YouTube</string>
     <string name="format">Формат</string>
     <string name="quality">Качество</string>
+    <string name="choose_format">Выберите формат</string>
     <string name="choose_quality">Выберите качество</string>
     <string name="download">Загрузить</string>
     <string name="cancel">Отмена</string>
@@ -20,6 +21,12 @@
     <string name="metadata">Метаданные:</string>
     <string name="empty_history">История пуста</string>
     <string name="rm_from_history">Удалить из истории</string>
+    <string name="cancel_confirm_title">Отменить загрузку?</string>
+    <string name="cancel_confirm_message">Вы уверены, что хотите отменить эту загрузку? Весь прогресс будет потерян.</string>
+    <string name="cancel_confirm_yes">Да, отменить</string>
+    <string name="cancel_confirm_no">Продолжить</string>
+    <string name="eta_format">Осталось: %1$s</string>
+    <string name="muxing_progress">%1$s / %2$s объединено</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Настройки</string>
@@ -28,8 +35,11 @@
     <string name="sd_card">SD-карта</string>
     <string name="d_settings">Настройки загрузки</string>
     <string name="up_to_4k">Включить разрешение 2K и выше (видео)</string>
+    <string name="up_to_4k_desc">Показывает разрешения выше 1080p (2K, 4K и выше) в выборе качества, если они доступны для видео.</string>
     <string name="quick_download">Включить быструю загрузку</string>
+    <string name="quick_download_desc">Пропускает выбор формата и качества - автоматически скачивает лучший доступный вариант.</string>
     <string name="muxed_fallback">Использовать мультиплексированный поток как запасной</string>
+    <string name="muxed_fallback_desc">Если отдельные аудио- и видеопотоки недоступны, используется резервный комбинированный поток более низкого качества вместо ошибки загрузки.</string>
     <string name="n_settings">Уведомления</string>
     <string name="n_download_finished">Уведомлять по завершении загрузки</string>
     <string name="n_download_failed">Уведомлять при ошибке загрузки</string>
@@ -42,8 +52,14 @@
     <string name="set_scr_customization">Настройка</string>
     <string name="set_scr_theme">Цветовая тема</string>
     <string name="set_preview">Разрешение предпросмотра</string>
+    <string name="set_preview_desc">Разрешение, используемое при предварительном просмотре видео перед загрузкой.</string>
     <string name="set_add_songs">Добавлять треки в Music.axs</string>
-    <string name="set_add_songs_desc">После загрузки MP3 предлагать добавить файл в плейлист в Music.axs</string>
+    <string name="set_add_songs_desc">После загрузки MP3 предлагать добавить файл в плейлист в Music.axs</string><string name="audio">Аудио</string>
+    <string name="video">Видео</string>
+    <string name="default_format">Формат по умолчанию</string>
+    <string name="default_audio_codec">Аудиокодек по умолчанию</string>
+    <string name="default_video_codec">Видеокодек по умолчанию</string>
+
 
     <!-- Search Screen -->
     <string name="search_title">Поиск</string>
@@ -65,6 +81,7 @@
     <string name="pt_invalid_url">Недопустимая ссылка</string>
     <string name="pt_network_error">Ошибка сети</string>
     <string name="pt_no_streams">Нет доступных потоков</string>
+    <string name="pt_no_space">Недостаточно места</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Не удалось найти ID ролика YouTube в этой ссылке. Укажите корректную ссылку на YouTube</string>
@@ -77,6 +94,7 @@
     <string name="pm_invalid_url">Укажите корректную ссылку на YouTube</string>
     <string name="pm_network_error">Устройство потеряло подключение к интернету</string>
     <string name="pm_no_streams">Для этого видео нет доступных потоков. Если вы хотите использовать мультиплексированный поток (более низкое качество), включите его в настройках</string>
+    <string name="pm_no_space">Недостаточно свободного места. Свободно сейчас: %1$s, требуется: %2$s.</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Получение метаданных видео</string>
@@ -122,4 +140,36 @@
     <string name="set_vm_grayscale">Оттенки серого</string>
     <string name="set_vm_bordo">Бордо</string>
     <string name="set_vm_void">Пустота</string>
+
+    <!-- Partial data dialog -->
+    <string name="keep_partial_title">Сохранить незавершённую загрузку?</string>
+    <string name="keep_partial_message">Загрузка не удалась, но уже скачанная часть (%1$s, %2$s) цела. Сохранить или удалить?</string>
+    <string name="keep">Сохранить</string>
+    <string name="delete">Удалить</string>
+    <string name="fetching_sizes">Определение размера файлов…</string>
+
+    <!-- Video.kt -->
+    <string name="is_native">нативный</string>
+    <string name="converted">конвертировано</string>
+
+    <!-- Format Info -->
+    <string name="format_info_title">Информация о формате</string>
+    <string name="format_badge_licensed">Лицензированный</string>
+    <string name="format_desc_m4a">AAC — звучит лучше, чем MP3, при том же битрейте, хотя не так эффективен, как Opus. Нативно поддерживается в iOS/Android, распространён шире, чем Opus.</string>
+    <string name="format_badge_open_royalty_free">Открытый, без лицензионных отчислений</string>
+    <string name="format_desc_opus">Opus — самый эффективный из трёх на низких битрейтах, превосходит и AAC, и MP3. Аудиокодек YouTube по умолчанию, но поддерживается меньшим числом старых плееров, чем AAC или MP3.</string>
+    <string name="format_badge_universal">Универсальный</string>
+    <string name="format_desc_mp3">MP3 — самый старый и наименее эффективный из трёх, но воспроизводится на большем числе устройств, чем AAC или Opus.</string>
+    <string name="format_badge_h264">H.264</string>
+    <string name="format_desc_mp4">MP4 — контейнер с видео H.264. Более совместим, чем WebM, но обычно менее эффективен при том же качестве.</string>
+    <string name="format_desc_webm">WebM/VP9 — сжимает лучше, чем поток в MP4, при том же качестве, и является форматом YouTube по умолчанию для высоких разрешений. Поддерживается менее универсально, чем MP4.</string>
+
+    <!-- Safety margin texts -->
+    <string name="storage_margin">Запас свободного места</string>
+    <string name="storage_margin_desc">Дополнительное свободное место, которое нужно сохранять помимо самой загрузки.</string>
+    <string name="storage_margin_too_low_warning">Этот запас довольно мал — если хранилище переполнится, устройство может начать тормозить.</string>
+    <string name="margin_override_title">Недостаточно запаса</string>
+    <string name="margin_override_message">Эта загрузка поместится, если убрать запас свободного места. Свободно: %1$s, нужно без запаса: %2$s. Есть риск замедления устройства при переполнении хранилища. Убрать запас и всё равно загрузить?</string>
+    <string name="margin_override_cancel">Отмена</string>
+    <string name="margin_override_proceed">Загрузить всё равно</string>
 </resources>

@@ -11,6 +11,7 @@
     <string name="URLIDPrompt">YouTube URL or ID</string>
     <string name="format">Format</string>
     <string name="quality">Quality</string>
+    <string name="choose_format">Choose format</string>
     <string name="choose_quality">Choose quality</string>
     <string name="download">Download</string>
     <string name="cancel">Cancel</string>
@@ -20,6 +21,12 @@
     <string name="metadata">Metadata:</string>
     <string name="empty_history">History is empty</string>
     <string name="rm_from_history">Remove from history</string>
+    <string name="cancel_confirm_title">Cancel download?</string>
+    <string name="cancel_confirm_message">Are you sure you want to cancel this download? Any progress will be lost.</string>
+    <string name="cancel_confirm_yes">Yes, cancel</string>
+    <string name="cancel_confirm_no">Continue</string>
+    <string name="eta_format">ETA %1$s</string>
+    <string name="muxing_progress">%1$s / %2$s muxed</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
@@ -28,8 +35,11 @@
     <string name="sd_card">SD card</string>
     <string name="d_settings">Download Settings</string>
     <string name="up_to_4k">Enable 2K and higher (video)</string>
+    <string name="up_to_4k_desc">Shows resolutions above 1080p (2K, 4K, and higher) in the quality picker, when the video has them available.</string>
     <string name="quick_download">Enable quick download</string>
+    <string name="quick_download_desc">Skips picking a format and quality - downloads the best available option automatically.</string>
     <string name="muxed_fallback">Use muxed stream fallback</string>
+    <string name="muxed_fallback_desc">If separate audio and video streams aren\'t available, falls back to a lower-quality combined stream instead of failing the download.</string>
     <string name="n_settings">Notifications</string>
     <string name="n_download_finished">Notify when download finishes</string>
     <string name="n_download_failed">Notify when download fails</string>
@@ -42,8 +52,14 @@
     <string name="set_scr_customization">Customization</string>
     <string name="set_scr_theme">Color Theme</string>
     <string name="set_preview">Preview resolution</string>
+    <string name="set_preview_desc">Resolution used when previewing a video before downloading it.</string>
     <string name="set_add_songs">Add songs to Music.axs</string>
     <string name="set_add_songs_desc">After downloading an MP3, show prompt to add it to a playlist in Music.axs</string>
+    <string name="audio">Audio</string>
+    <string name="video">Video</string>
+    <string name="default_format">Default format</string>
+    <string name="default_audio_codec">Default audio codec</string>
+    <string name="default_video_codec">Default video codec</string>
 
     <!-- Search Screen -->
     <string name="search_title">Search</string>
@@ -65,6 +81,7 @@
     <string name="pt_invalid_url">Invalid URL</string>
     <string name="pt_network_error">Network error</string>
     <string name="pt_no_streams">No streams available</string>
+    <string name="pt_no_space">Not enough storage</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">The URL parser could not find a YouTube ID in that URL. Please enter a YouTube URL</string>
@@ -77,6 +94,7 @@
     <string name="pm_invalid_url">Please enter a valid YouTube URL</string>
     <string name="pm_network_error">The device disconnected from the internet</string>
     <string name="pm_no_streams">No video streams available for this video. If you\'d like to use the muxed stream fallback (lower quality), turn it on in settings</string>
+    <string name="pm_no_space">Not enough free storage space. Free now: %1$s, needed: %2$s.</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Retrieving video metadata</string>
@@ -122,4 +140,36 @@
     <string name="set_vm_grayscale">Grayscale</string>
     <string name="set_vm_bordo">Bordó</string>
     <string name="set_vm_void">Void</string>
+
+    <!-- Partial data dialog -->
+    <string name="keep_partial_title">Keep partial download?</string>
+    <string name="keep_partial_message">The download failed, but the %1$s (%2$s) downloaded so far is intact. Keep it, or delete it?</string>
+    <string name="keep">Keep</string>
+    <string name="delete">Delete</string>
+    <string name="fetching_sizes">Fetching file sizes…</string>
+
+    <!-- Video.kt -->
+    <string name="is_native">native</string>
+    <string name="converted">converted</string>
+
+    <!-- Format Info -->
+    <string name="format_info_title">Format Info</string>
+    <string name="format_badge_licensed">Licensed</string>
+    <string name="format_desc_m4a">AAC — sounds better than MP3 at the same bitrate, though not as efficient as Opus. Native on iOS/Android, more widely supported than Opus.</string>
+    <string name="format_badge_open_royalty_free">Open, royalty-free</string>
+    <string name="format_desc_opus">Opus — most efficient of the three at low bitrates, beating both AAC and MP3. YouTube\'s default audio codec, but supported by fewer older players than AAC or MP3.</string>
+    <string name="format_badge_universal">Universal</string>
+    <string name="format_desc_mp3">MP3 — the oldest and least efficient of the three, but plays on more devices than AAC or Opus.</string>
+    <string name="format_badge_h264">H.264</string>
+    <string name="format_desc_mp4">MP4 — a container with H.264 video. More compatible than WebM, though usually less efficient at the same quality.</string>
+    <string name="format_desc_webm">WebM/VP9 — compresses better than MP4\'s stream at the same quality, and is YouTube\'s default for higher resolutions. Less universally supported than MP4.</string>
+
+    <!-- Safety margin texts -->
+    <string name="storage_margin">Storage safety margin</string>
+    <string name="storage_margin_desc">Extra free space to keep available beyond the download itself.</string>
+    <string name="storage_margin_too_low_warning">This margin is quite small — if your device\'s storage gets too full, it may slow down.</string>
+    <string name="margin_override_title">Not enough margin</string>
+    <string name="margin_override_message">This download would fit if the safety margin were removed. Free: %1$s, needed without margin: %2$s. There\'s a risk of slowing your device down if storage gets too full. Remove the margin and download anyway?</string>
+    <string name="margin_override_cancel">Cancel</string>
+    <string name="margin_override_proceed">Download anyway</string>
 </resources>

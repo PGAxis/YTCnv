@@ -1,0 +1,15 @@
+Bug fixes:
+- Downloads could sometime stop at ~90-100% without finishing (#14)
+- File names (and titles) now don't get truncated (#13)
+
+Additions:
+- Downloaded videos can now be differentiated in search results (different title color and different "Download" button style) (#12)
+- Format dropdown now has multiple options (for audio: M4A, Opus and MP3, for video: MP4, WebM) (#10)
+- Quality dropdown now shows file size (#10)
+- Metadata are now loaded automatically (mostly noticable with "Quick download" off) (#10)
+- Users can now choose default format and codec (#10)
+- The app checks for available space on device (and eiter warns if it would be almost full after the download, or just stops the download if there is not enough) (#10)
+- The app now muxes straight to the selected destination, instead of to it's cache and copying it to the destination (#10)
+- There is an info screen to tell users about different codecs/containers and the differences (#10)
+- During download, ETA, elapsed time, percentage, downloaded and full size and the speed is visible (#9)
+- There is a confirmation dialog for canceling (to prevent accidentally canceling a download) (#10)

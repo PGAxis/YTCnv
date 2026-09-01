@@ -4,114 +4,134 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arthenica.ffmpegkit.FFmpegKit
-import com.pg_axis.ytcnv.dialogs.*
+import com.pg_axis.ytcnv.dialogs.UpdateChecker
+import com.pg_axis.ytcnv.dialogs.UpdateInfo
+import com.pg_axis.ytcnv.models.FormatOption
+import com.pg_axis.ytcnv.models.QualityOption
+import com.pg_axis.ytcnv.models.TargetFormat
+import com.pg_axis.ytcnv.models.TrackType
+import com.pg_axis.ytcnv.models.Video
+import com.pg_axis.ytcnv.models.VideoCallbacks
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.settings.*
 import com.pg_axis.ytcnv.ui.theme.PopupSuccess
 import com.pg_axis.ytcnv.ui.theme.PopupError
 import com.pg_axis.ytcnv.ui.theme.PopupDefault
 import com.pg_axis.ytcnv.utils.DownloadNotificationService
-import com.pg_axis.ytcnv.utils.DownloadUtils
-import com.pg_axis.ytcnv.utils.FileSaver
-import com.pg_axis.ytcnv.utils.StringUtils
+import com.pg_axis.ytcnv.utils.StringUtils.cleanUrl
+import com.pg_axis.ytcnv.utils.StringUtils.isValidId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.stream.AudioStream
-import org.schabi.newpipe.extractor.stream.AudioTrackType
-import org.schabi.newpipe.extractor.stream.StreamInfo
-import org.schabi.newpipe.extractor.stream.VideoStream
-import java.io.File
-import java.net.URL
-import kotlin.math.abs
 
-data class QualityOption(
-    val key: Double,
-    val displayName: String
-)
+enum class PopupType {
+    SUCCESS,
+    ERROR,
+    MESSAGE
+}
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    val settings: ISettings = try {
-        SettingsSave.getInstance(application)
-    } catch (_: Exception) {
-        PreviewSettings()
-    }
+    val settings = SettingsSave.getInstance(application)
 
     private val isQuick get() = settings.quickDwnld
     private val context get() = getApplication<Application>()
 
+    private val preferredDefaultFormat: TargetFormat
+        get() = if (settings.defaultDO.trackType == TrackType.VIDEO) settings.defaultDO.video else settings.defaultDO.audio
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            Video.cleanupOrphanedTempFiles(context)
+        }
+    }
+
     var showPlaylistPicker by mutableStateOf(false)
     var lastDownloadedSongUri by mutableStateOf<Uri?>(null)
 
-    // ─── URL entry ───
     var urlEntryText by mutableStateOf("")
+        private set
 
-    // ─── Download options ───
     var downloadOptionsIsVisible by mutableStateOf(true)
     var formatPickerIsEnabled by mutableStateOf(true)
     var qualityPickerIsVisible by mutableStateOf(!isQuick)
     var qualityPickerIsEnabled by mutableStateOf(true)
-    var qualityPickerSelectedIndex by mutableIntStateOf(0)
-    var qualityPickerItemsSource by mutableStateOf<List<QualityOption>>(emptyList())
     var loadButtonIsVisible by mutableStateOf(!isQuick)
     var loadButtonIsEnabled by mutableStateOf(true)
     var downloadButtonIsVisible by mutableStateOf(isQuick)
     var cancelButtonIsVisible by mutableStateOf(false)
 
-    // ─── Progress / status ───
+    var selectedFormatIndex by mutableIntStateOf(if (settings.defaultDO.trackType == TrackType.VIDEO) 1 else 0)
+        private set
+
+    var selectedDetailedFormatIndex by mutableIntStateOf(0)
+        private set
+
+    var selectedQualityIndex by mutableIntStateOf(0)
+        private set
+
+    var selectedAudioTrackIndex by mutableIntStateOf(0)
+        private set
+
     var dwnldProgressIsVisible by mutableStateOf(false)
-    var downloadProgress by mutableFloatStateOf(0f)
     var downloadIndicatorIsVisible by mutableStateOf(false)
     var statusLabelIsVisible by mutableStateOf(false)
-    var statusLabelText by mutableStateOf(AnnotatedString(""))
 
-    // ─── Popup ───
     var popupIsVisible by mutableStateOf(false)
     var popupBackground by mutableStateOf(Color(0xFF2D2D2D))
     var popupTitle by mutableStateOf("")
     var popupMessage by mutableStateOf("")
     var popupButtonText by mutableStateOf("OK")
 
-    // ─── Title/Author dialog ───
+    var showKeepPartialDialog by mutableStateOf(false)
+    var keepPartialSizeBytes by mutableLongStateOf(0L)
+    var keepPartialStreamLabel by mutableStateOf("")
+    private var pendingKeepPartialChoice: ((Boolean) -> Unit)? = null
+
+    var showCancelConfirmDialog by mutableStateOf(false)
+
+    var showMarginOverrideDialog by mutableStateOf(false)
+    var marginOverrideAvailableBytes by mutableLongStateOf(0L)
+    var marginOverrideRequiredBytes by mutableLongStateOf(0L)
+    private var pendingMarginOverrideChoice: ((Boolean) -> Unit)? = null
+
+    fun onMarginOverrideChosen(proceed: Boolean) {
+        showMarginOverrideDialog = false
+        pendingMarginOverrideChoice?.invoke(proceed)
+        pendingMarginOverrideChoice = null
+    }
+
+    fun onKeepPartialChosen(keep: Boolean) {
+        showKeepPartialDialog = false
+        pendingKeepPartialChoice?.invoke(keep)
+        pendingKeepPartialChoice = null
+    }
+
     var showTitleAuthorDialog by mutableStateOf(false)
     var dialogTitle by mutableStateOf("")
     var dialogAuthor by mutableStateOf("")
-
-    // ─── Internal state ───
-    private var cleanedUrl = ""
-    private var audioOptions = mapOf<Double, AudioStream>()
-    private var videoOptions = mapOf<Int, VideoStream>()
-    private var downloadJob: Job? = null
     private var pendingOnConfirm: ((String, String) -> Unit)? = null
-    private var muxedFallbackStream: VideoStream? = null
+
+    var video by mutableStateOf<Video?>(null)
+        private set
+
+    private var activeJob: Job? = null
     var updateInfo by mutableStateOf<UpdateInfo?>(null)
 
-    // ─── Actions ───
     suspend fun checkForUpdates(context: Context) {
         val info = UpdateChecker.checkForUpdates(context, settings)
         if (info != null) {
-            withContext(Dispatchers.Main) {
-                updateInfo = info
-            }
+            withContext(Dispatchers.Main) { updateInfo = info }
         }
     }
 
@@ -120,736 +140,125 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         settings.dontShowUpdate = dontShowAgain
     }
 
-    fun onUrlChanged(value: String) { urlEntryText = value }
+    fun onUrlChanged(value: String) {
+        urlEntryText = value
+        val isIdle = !cancelButtonIsVisible && !downloadIndicatorIsVisible && !dwnldProgressIsVisible
+        if (isIdle) {
+            video = null
+            selectedDetailedFormatIndex = 0
+            selectedQualityIndex = 0
+            selectedAudioTrackIndex = 0
+            applyQuickDownloadState()
+            if (isValidId(cleanUrl(urlEntryText))) {
+                onLoadClicked()
+            }
+        }
+    }
+
     fun onFormatChanged(index: Int) {
-        println("Index: $index, audioOptions: ${audioOptions.size}, videoOptions: ${videoOptions.size}")
-        formatPickerSelectedIndex = index
-        if (audioOptions.isNotEmpty() && videoOptions.isNotEmpty()) {
-            qualityPickerItemsSource = when (index) {
-                0 -> when {
-                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
-                    else -> audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
-                }
-                1 -> when {
-                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
-                    else -> videoOptions.entries.map { QualityOption(it.key.toDouble(), "${it.key}p") }
-                }
-                else -> emptyList()
-            }
-            qualityPickerSelectedIndex = 0
-        }
-    }
-    fun onQualityChanged(index: Int) { qualityPickerSelectedIndex = index }
-    fun onClosePopupClicked() { popupIsVisible = false }
-    fun onHistoryItemTapped(urlOrId: String) {
-        urlEntryText = urlOrId
-        if (!settings.quickDwnld && downloadButtonIsVisible) {
-            downloadButtonIsVisible = false
-            loadButtonIsVisible = true
-            loadButtonIsEnabled = true
-        }
+        selectedFormatIndex = index
     }
 
-    var formatPickerSelectedIndex by mutableIntStateOf(0)
-
-    // ─── Load metadata ───
-    fun onLoadClicked() {
+    fun onDetailedFormatChanged(index: Int) {
+        selectedDetailedFormatIndex = index
+        selectedQualityIndex = 0
+        val option = video?.formatOptions?.getOrNull(index) ?: return
         viewModelScope.launch {
-            loadVideoMetadata()
+            video?.loadQualitySizes(option.format, option.isNative)
         }
     }
 
-    private suspend fun loadVideoMetadata() = withContext(Dispatchers.IO) {
-        settings.isDownloadRunning = true
-        withContext(Dispatchers.Main) {
-            loadButtonIsEnabled = false
-            statusLabelIsVisible = false
-            downloadIndicatorIsVisible = true
-            statusLabelIsVisible = true
-            statusLabelText = AnnotatedString(context.getString(R.string.sl_retrieving_metadata))
-        }
+    fun onQualityChanged(index: Int) {
+        selectedQualityIndex = index
+    }
 
-        cleanedUrl = StringUtils.cleanUrl(urlEntryText)
+    fun onAudioTrackChanged(index: Int) {
+        selectedAudioTrackIndex = index
+    }
 
-        if (cleanedUrl.isBlank()) {
-            withContext(Dispatchers.Main) {
-                showPopup(context.getString(R.string.pt_no_url), context.getString(R.string.pm_no_url), 2)
-                applyQuickDownloadState()
-            }
-            settings.isDownloadRunning = false
-            return@withContext
-        }
+    fun onClosePopupClicked() { popupIsVisible = false }
 
-        try {
-            val streamInfo = StreamInfo.getInfo(
-                ServiceList.YouTube,
-                "https://www.youtube.com/watch?v=$cleanedUrl"
-            )
+    fun onHistoryItemTapped(urlOrId: String) {
+        onUrlChanged(urlOrId)
+    }
 
-            streamInfo.audioStreams.forEach { stream ->
-                println("=== AUDIO STREAM: format=${stream.format?.name}, averageBitrate=${stream.averageBitrate}")
-            }
+    val selectedFormatOption: FormatOption?
+        get() = video?.formatOptions?.getOrNull(selectedDetailedFormatIndex)
 
-            streamInfo.videoStreams.forEach { stream ->
-                println("=== MUXED STREAM: format=${stream.format?.name}, height=${stream.height}")
-            }
+    val qualityPickerItemsSource: List<QualityOption>
+        get() = video?.qualityOptionsWithSizes ?: emptyList()
 
-            streamInfo.videoOnlyStreams.forEach { stream ->
-                println("=== VIDEO STREAM: format=${stream.format?.name}, height=${stream.height}")
-            }
-
-            // Build audio options
-            var audioStreams = streamInfo.audioStreams
-                .filter { it.format?.name?.contains("m4a", ignoreCase = true) == true && it.averageBitrate > 0 && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
-                .sortedByDescending { it.averageBitrate }
-                .distinctBy { it.averageBitrate }
-
-            if (audioStreams.isEmpty()) {
-                audioStreams = streamInfo.audioStreams
-                    .filter { it.averageBitrate > 0 && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
-                    .sortedByDescending { it.averageBitrate }
-                    .distinctBy { it.averageBitrate }
-            }
-
-            // Build video options
-            val use4K = settings.use4K
-            val videoStreams = streamInfo.videoOnlyStreams
-                .filter { stream ->
-                    if (use4K) true
-                    else stream.height in 1..1080 && stream.format?.name?.contains("mpeg-4", ignoreCase = true) == true
-                }
-                .sortedByDescending { it.height }
-                .distinctBy { it.height }
-
-            muxedFallbackStream = if (audioStreams.isEmpty() || videoStreams.isEmpty()) {
-                if (settings.muxedFallback) {
-                    streamInfo.videoStreams.maxByOrNull { it.height }
-                        ?: throw Exception("No streams available for this video.")
-                } else {
-                    throw Exception("No streams available for this video.")
-                }
-            } else {
-                null
-            }
-
-            audioOptions = audioStreams.associateBy { it.averageBitrate.toDouble() }
-            videoOptions = videoStreams.associateBy { it.height }
-
-            withContext(Dispatchers.Main) {
-                loadButtonIsVisible = false
-                loadButtonIsEnabled = true
-                downloadIndicatorIsVisible = false
-                statusLabelIsVisible = false
-                downloadOptionsIsVisible = true
-                qualityPickerIsVisible = true
-                formatPickerSelectedIndex = 0
-                qualityPickerItemsSource = when {
-                    muxedFallbackStream != null -> listOf(QualityOption(0.0, "Default"))
-                    else -> audioOptions.entries.map { QualityOption(it.key, "${it.key.toInt()} kbps") }
-                }
-                qualityPickerSelectedIndex = 0
-                downloadButtonIsVisible = true
-                cancelButtonIsVisible = false
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                applyQuickDownloadState()
-                when {
-                    e.message?.contains("403") == true || e.message?.contains("404") == true -> {
-                        showPopup(context.getString(R.string.pt_unavailable), context.getString(R.string.pm_unavailable), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_unavailable))
-                        }
-                    }
-                    e.message?.contains("ID or URL") == true -> {
-                        showPopup(context.getString(R.string.pt_invalid_url), context.getString(R.string.pm_invalid_url), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_invalid_url))
-                        }
-                    }
-                    e.message?.contains("Software caused connection abort") == true -> {
-                        showPopup(context.getString(R.string.pt_network_error), context.getString(R.string.pm_network_error), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_network_error))
-                        }
-                    }
-                    e.message?.contains("streams available for this video") == true -> {
-                        showPopup(context.getString(R.string.pt_no_streams), context.getString(R.string.pm_no_streams), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_no_streams))
-                        }
-                    }
-                    else -> {
-                        showPopup(context.getString(R.string.pt_error), e.message ?: context.getString(R.string.pm_error), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_error))
-                        }
-                    }
-                }
-            }
-        } finally {
-            settings.isDownloadRunning = false
+    fun onLoadClicked() {
+        selectedDetailedFormatIndex = 0
+        selectedQualityIndex = 0
+        selectedAudioTrackIndex = 0
+        val newVideo = Video(urlEntryText, context, videoCallbacks)
+        video = newVideo
+        viewModelScope.launch {
+            newVideo.loadOptions()
         }
     }
 
-    // ─── Download ───
     fun onDownloadClicked() {
-        downloadJob = viewModelScope.launch {
-            startDownload()
+        val currentVideo = video ?: Video(urlEntryText, context, videoCallbacks).also { video = it }
+
+        val target: TargetFormat
+        val isNative: Boolean
+        val qualityIndex: Int
+        if (settings.quickDwnld) {
+            target = if (selectedFormatIndex == 0) TargetFormat.MP3 else TargetFormat.MP4
+            isNative = false
+            qualityIndex = 0
+        } else {
+            val option = selectedFormatOption ?: FormatOption(TargetFormat.MP3, isNative = false, context)
+            target = option.format
+            isNative = option.isNative
+            qualityIndex = selectedQualityIndex
+        }
+
+        val preferredAudioBitrate = if (!settings.quickDwnld && target.trackType == TrackType.VIDEO) {
+            video?.audioTrackOptions?.getOrNull(selectedAudioTrackIndex)?.bitrate
+        } else null
+
+        activeJob = viewModelScope.launch {
+            currentVideo.download(target, isNative, qualityIndex, preferredAudioBitrate)
         }
     }
 
-    private suspend fun startDownload() = withContext(Dispatchers.IO) {
-        settings.isDownloadRunning = true
-
-        withContext(Dispatchers.Main) {
-            formatPickerIsEnabled = false
-            qualityPickerIsEnabled = false
-            downloadButtonIsVisible = false
-            cancelButtonIsVisible = true
-            downloadIndicatorIsVisible = true
-            statusLabelIsVisible = true
-            downloadProgress = 0f
-            statusLabelText = AnnotatedString(context.getString(R.string.sl_retrieving_metadata))
-        }
-
-        if (isQuick) cleanedUrl = StringUtils.cleanUrl(urlEntryText)
-
-        if (cleanedUrl.isBlank()) {
-            withContext(Dispatchers.Main) {
-                applyQuickDownloadState()
-                showPopup(context.getString(R.string.pt_no_url), context.getString(R.string.pm_no_url), 2)
-            }
-            settings.isDownloadRunning = false
-            return@withContext
-        }
-
-        val m4aPath = File(context.cacheDir, "audio.m4a").absolutePath
-        val mp4Path = File(context.cacheDir, "video.mp4").absolutePath
-        val semiOutput = File(context.filesDir, "semi-outputVideo.mp4").absolutePath
-        val semiOutputAudio = File(context.filesDir, "semi-outputAudio.mp3").absolutePath
-        val imagePath = File(context.cacheDir, "thumbnail.jpg").absolutePath
-
-        fun deleteFiles() {
-            listOf(m4aPath, mp4Path, semiOutput, semiOutputAudio, imagePath)
-                .forEach { if (File(it).exists()) File(it).delete() }
-        }
-
-        try {
-            Log.d("URL", "https://www.youtube.com/watch?v=$cleanedUrl")
-            val streamInfo = StreamInfo.getInfo(
-                ServiceList.YouTube,
-                "https://www.youtube.com/watch?v=$cleanedUrl"
-            )
-
-            if (streamInfo.duration <= 0) {
-                withContext(Dispatchers.Main) {
-                    applyQuickDownloadState()
-                    showPopup(context.getString(R.string.pt_live), context.getString(R.string.pm_live))
-                }
-                stopService()
-                settings.isDownloadRunning = false
-                DownloadNotificationService.setProgressType(false)
-                return@withContext
-            }
-
-            DownloadNotificationService.setProgressType(false)
-            withContext(Dispatchers.Main) {
-                ContextCompat.startForegroundService(
-                    context,
-                    Intent(context, DownloadNotificationService::class.java)
-                )
-            }
-
-            var author = StringUtils.cleanAuthor(streamInfo.uploaderName ?: "")
-            val (cleanedTitle, cleanedAuthor) = StringUtils.cleanTitle(streamInfo.name ?: "YouTube_Video", author)
-            author = cleanedAuthor
-            var title = cleanedTitle
-            val unalteredTitle = streamInfo.name?.trim() ?: title
-
-            // Download thumbnail
-            val thumbnailUrl = streamInfo.thumbnails.maxByOrNull { it.height }?.url
-            var hasThumbnail = false
-            if (thumbnailUrl != null) {
-                val bytes = URL(thumbnailUrl).readBytes()
-                val ext = DownloadUtils.detectImageExtension(bytes)
-                val tempThumbnail = File(context.cacheDir, "tempThumbnail.$ext").absolutePath
-                File(tempThumbnail).writeBytes(bytes)
-                if (ext == "jpg") {
-                    File(tempThumbnail).renameTo(File(imagePath))
-                    hasThumbnail = File(imagePath).exists()
-                } else {
-                    val ffmpegComd = "-y -i \"$tempThumbnail\" -frames:v 1 \"$imagePath\""
-                    Log.d("FFmpegCommand", ffmpegComd)
-                    val result = DownloadUtils.runFFmpeg(ffmpegComd, 0) { }
-
-                    hasThumbnail = result && File(imagePath).exists()
-                }
-
-                if (File(tempThumbnail).exists()) File(tempThumbnail).delete()
-            }
-
-            // Show title/author dialog and wait for result
-            val (confirmedTitle, confirmedAuthor) = withContext(Dispatchers.Main) {
-                kotlinx.coroutines.suspendCancellableCoroutine { cont ->
-                    dialogTitle = title
-                    dialogAuthor = author
-                    showTitleAuthorDialog = true
-                    pendingOnConfirm = { t, a ->
-                        showTitleAuthorDialog = false
-                        @Suppress("DEPRECATION")
-                        cont.resume(Pair(t, a)) { }
-                    }
-                    cont.invokeOnCancellation {
-                        showTitleAuthorDialog = false
-                    }
-                }
-            }
-            title = if (confirmedTitle.filter { it !in "/\\:*?\"<>|" } == confirmedTitle) confirmedTitle else StringUtils.cleanTitle(confirmedTitle, confirmedAuthor).first
-
-            val selectedFormat = formatPickerSelectedIndex
-
-            // Update history
-            withContext(Dispatchers.Main) {
-                val existing = settings.downloadHistory.find { it.urlOrId == cleanedUrl }
-                val newItem = SettingsSave.HistoryItem(title = unalteredTitle, metadataTitle = confirmedTitle, metadataAuthor = confirmedAuthor, isMp3 = selectedFormat == 0, urlOrId = cleanedUrl, downloaded = false, uri = "")
-                val updated = settings.downloadHistory.toMutableList()
-                updated.remove(existing)
-                updated.add(0, newItem)
-                Log.d("History update", "$updated")
-                settings.downloadHistory = updated
-            }
-
-            withContext(Dispatchers.Main) {
-                statusLabelText = buildAnnotatedString {
-                    append(context.getString(R.string.sl_download))
-                    append(" ")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(confirmedTitle)
-                    }
-                }
-                downloadIndicatorIsVisible = false
-                dwnldProgressIsVisible = true
-                DownloadNotificationService.setProgressType(true)
-                DownloadNotificationService.startTimer()
-            }
-
-            var lastNotifiedTime = 0L
-
-            if (selectedFormat == 0) {
-                // ─── MP3 ───
-                fun getAudioStream(): AudioStream? {
-                    val audioStream = if (isQuick) {
-                        streamInfo.audioStreams
-                            .filter { it.format?.name?.contains("m4a", ignoreCase = true) == true && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
-                            .maxByOrNull { it.averageBitrate }
-                            ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }
-                    } else {
-                        val selectedBitrate = audioOptions.entries.elementAtOrNull(qualityPickerSelectedIndex)?.key
-                        if (selectedBitrate != null) {
-                            streamInfo.audioStreams
-                                .filter { it.format?.name?.contains("m4a", ignoreCase = true) == true && (it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null) }
-                                .minByOrNull { abs(it.averageBitrate - selectedBitrate.toInt()) }
-                        } else null
-                    } ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }
-
-                    return audioStream
-                }
-
-                val audioStream = getAudioStream()
-                val muxed = if (settings.muxedFallback) muxedFallbackStream ?: streamInfo.videoStreams.maxByOrNull { it.height } else null
-                val inputForFFmpeg: String
-
-                if (audioStream != null) {
-                    inputForFFmpeg = m4aPath
-                    Log.d("YTCnv", "audioStream.content = ${audioStream.content}")
-                    DownloadUtils.downloadStream(audioStream.content, m4aPath,
-                        onProgress = { progress ->
-                            downloadProgress = progress
-                            val percent = (progress * 100).coerceAtMost(100f)
-                            val now = System.currentTimeMillis()
-                            if (now - lastNotifiedTime >= 500) {
-                                lastNotifiedTime = now
-                                DownloadNotificationService.updateProgress(context, percent)
-                            }
-                        },
-                        urlRefresher = { getAudioStream()?.content ?: audioStream.content }
-                    )
-                } else if (muxed != null) {
-                    inputForFFmpeg = mp4Path
-                    Log.d("YTCnv", "Falling back to muxed stream: ${muxed.content}")
-                    DownloadUtils.downloadStream(muxed.content, mp4Path,
-                        onProgress = { progress ->
-                            downloadProgress = progress
-                            val percent = (progress * 100).coerceAtMost(100f)
-                            val now = System.currentTimeMillis()
-                            if (now - lastNotifiedTime >= 500) {
-                                lastNotifiedTime = now
-                                DownloadNotificationService.updateProgress(context, percent)
-                            }
-                        },
-                        urlRefresher = {
-                            StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$cleanedUrl")
-                                .videoStreams.maxByOrNull { it.height }?.content ?: muxed.content
-                        }
-                    )
-                } else {
-                    throw Exception("No audio streams available for this video.")
-                }
-
-                withContext(Dispatchers.Main) {
-                    DownloadNotificationService.updateProgress(context, 0f, finale = true)
-                    DownloadNotificationService.startTimer()
-                    statusLabelText = AnnotatedString(context.getString(R.string.sl_add_metadata))
-                }
-
-                val ffmpegCmd = buildString {
-                    append("-y -i \"$inputForFFmpeg\" ")
-                    if (hasThumbnail) append("-i \"$imagePath\" ")
-                    append("-map 0:a ")
-                    if (hasThumbnail) append("-map 1:v ")
-                    append("-c:a libmp3lame -b:a 128k -ac 2 -af anull ")
-                    if (hasThumbnail) {
-                        append("-c:v mjpeg -disposition:v attached_pic ")
-                        append("-metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover\" ")
-                    }
-                    append("-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" ")
-                    append("-threads 1 \"$semiOutputAudio\"")
-                }
-
-                Log.d("FFmpegCommand", ffmpegCmd)
-                val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegCmd, streamInfo.duration) { progress ->
-                    downloadProgress = progress
-                    val percent = (progress * 100).coerceAtMost(100f)
-                    val now = System.currentTimeMillis()
-                    if (now - lastNotifiedTime >= 500) {
-                        lastNotifiedTime = now
-                        DownloadNotificationService.updateProgress(context, percent)
-                    }
-                }
-
-                if (ffmpegResult) {
-                    val savedUri = FileSaver.saveAudio(context, "${title}.mp3", semiOutputAudio, settings.fileUri.ifBlank { null })
-                    if (settings.notifyOnFinish) {
-                        DownloadNotificationService.showFinishNotification(context, "$title.mp3")
-                    }
-                    withContext(Dispatchers.Main) {
-                        applyQuickDownloadState()
-                        showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
-                        urlEntryText = ""
-                        if (savedUri != null) {
-                            val updated = settings.downloadHistory.toMutableList()
-                            val existingIndex = updated.indexOfFirst { it.urlOrId == cleanedUrl }
-
-                            if (existingIndex != -1) {
-                                updated[existingIndex] = updated[existingIndex].copy(
-                                    downloaded = true,
-                                    uri = savedUri.toString()
-                                )
-                            } else {
-                                val newItem = SettingsSave.HistoryItem(
-                                    title = unalteredTitle,
-                                    metadataTitle = confirmedTitle,
-                                    metadataAuthor = confirmedAuthor,
-                                    isMp3 = true,
-                                    urlOrId = cleanedUrl,
-                                    downloaded = true,
-                                    uri = savedUri.toString()
-                                )
-                                updated.add(0, newItem)
-                            }
-                            settings.downloadHistory = updated
-                        }
-                        if (savedUri != null && MusicAxsClient.isMusicAxsInstalled(context) && MusicAxsClient.getPlaylists(context).isNotEmpty() && settings.addToMusicAxs) {
-                            lastDownloadedSongUri = savedUri
-                            showPlaylistPicker = true
-                        }
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        applyQuickDownloadState()
-                        showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
-                        }
-                    }
-                }
-            } else {
-                // ─── MP4 ───
-                fun getAudioStream(): AudioStream? {
-                    return streamInfo.audioStreams
-                        .filter { it.audioTrackType == AudioTrackType.ORIGINAL || it.audioTrackType == null }
-                        .maxByOrNull { it.averageBitrate }
-                        ?: streamInfo.audioStreams.maxByOrNull { it.averageBitrate }
-                }
-
-                fun getVideoStream(): VideoStream? {
-                    val videoStream = if (isQuick) {
-                        if (settings.use4K)
-                            streamInfo.videoOnlyStreams.maxByOrNull { it.height }
-                        else
-                            streamInfo.videoOnlyStreams
-                                .filter { it.height <= 1080 &&
-                                        it.format?.name?.contains("mpeg-4", ignoreCase = true) == true }
-                                .maxByOrNull { it.height }
-                    } else {
-                        val selectedHeight = videoOptions.entries.elementAtOrNull(qualityPickerSelectedIndex)?.key
-                        if (selectedHeight != null) {
-                            streamInfo.videoOnlyStreams
-                                .filter { it.format?.name?.contains("mpeg-4", ignoreCase = true) == true || settings.use4K }
-                                .firstOrNull { it.height == selectedHeight }
-                        } else null
-                    } ?: streamInfo.videoOnlyStreams.maxByOrNull { it.height }
-
-                    return videoStream
-                }
-
-                val videoOnlyStream = getVideoStream()
-                val muxed = if (settings.muxedFallback) muxedFallbackStream ?: streamInfo.videoStreams.maxByOrNull { it.height } else null
-
-                if (videoOnlyStream != null) {
-                    // parallel download + mux path
-                    val audioStream = getAudioStream()
-                    withContext(Dispatchers.IO) {
-                        val audioJob = launch {
-                            if (audioStream != null) {
-                                DownloadUtils.downloadStream(
-                                    audioStream.content,
-                                    m4aPath,
-                                    onProgress = {},
-                                    urlRefresher = {
-                                        getAudioStream()?.content ?: audioStream.content
-                                    })
-                            } else if (muxed != null) {
-                                // download muxed just for its audio track
-                                DownloadUtils.downloadStream(
-                                    muxed.content,
-                                    m4aPath,
-                                    onProgress = {},
-                                    urlRefresher = {
-                                        StreamInfo.getInfo(
-                                            ServiceList.YouTube,
-                                            "https://www.youtube.com/watch?v=$cleanedUrl"
-                                        )
-                                            .videoStreams.maxByOrNull { it.height }?.content
-                                            ?: muxed.content
-                                    })
-                            } else {
-                                throw Exception("No audio streams available for this video.")
-                            }
-                        }
-                        val videoJob = launch {
-                            DownloadUtils.downloadStream(
-                                videoOnlyStream.content, mp4Path,
-                                onProgress = { progress ->
-                                    downloadProgress = progress
-                                    val percent = (progress * 100).coerceAtMost(100f)
-                                    val now = System.currentTimeMillis()
-                                    if (now - lastNotifiedTime >= 500) {
-                                        lastNotifiedTime = now
-                                        DownloadNotificationService.updateProgress(context, percent)
-                                    }
-                                },
-                                urlRefresher = { getVideoStream()?.content ?: videoOnlyStream.content }
-                            )
-                        }
-                        audioJob.join()
-                        videoJob.join()
-                    }
-
-                    val isMoreThan1080p = videoOnlyStream.height > 1080
-
-                    withContext(Dispatchers.Main) {
-                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
-                        DownloadNotificationService.startTimer()
-                        statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
-                    }
-
-                    val ffmpegArgs = if (settings.use4K && isMoreThan1080p) {
-                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 " +
-                                "-c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
-                                "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
-                    } else {
-                        "-y -i \"$mp4Path\" -i \"$m4aPath\" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 -shortest " +
-                                "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
-                    }
-
-                    Log.d("FFmpegCommand", ffmpegArgs)
-                    val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegArgs, streamInfo.duration) { progress ->
-                        downloadProgress = progress
-                        val percent = (progress * 100).coerceAtMost(100f)
-                        val now = System.currentTimeMillis()
-                        if (now - lastNotifiedTime >= 500) {
-                            lastNotifiedTime = now
-                            DownloadNotificationService.updateProgress(context, percent)
-                        }
-                    }
-
-                    if (ffmpegResult) {
-                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
-                        if (settings.notifyOnFinish) {
-                            DownloadNotificationService.showFinishNotification(context, "$title.mp4")
-                        }
-                        withContext(Dispatchers.Main) {
-                            applyQuickDownloadState()
-                            showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
-                            urlEntryText = ""
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            applyQuickDownloadState()
-                            showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
-                            if (settings.notifyOnFail) {
-                                DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
-                            }
-                        }
-                    }
-                } else if (muxed != null) {
-                    DownloadUtils.downloadStream(muxed.content, mp4Path,
-                        onProgress = { progress ->
-                            downloadProgress = progress
-                            val percent = (progress * 100).coerceAtMost(100f)
-                            val now = System.currentTimeMillis()
-                            if (now - lastNotifiedTime >= 500) {
-                                lastNotifiedTime = now
-                                DownloadNotificationService.updateProgress(context, percent)
-                            }
-                        },
-                        urlRefresher = {
-                            StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$cleanedUrl")
-                                .videoStreams.maxByOrNull { it.height }?.content ?: muxed.content
-                        }
-                    )
-                    val ffmpegArgs = "-y -i \"$mp4Path\" -c copy " +
-                            "-metadata title=\"$confirmedTitle\" -metadata artist=\"$confirmedAuthor\" \"$semiOutput\""
-
-                    withContext(Dispatchers.Main) {
-                        DownloadNotificationService.updateProgress(context, 0f, finale = true)
-                        DownloadNotificationService.startTimer()
-                        statusLabelText = AnnotatedString(context.getString(R.string.sl_joining_a_and_v))
-                    }
-
-                    Log.d("FFmpegCommand", ffmpegArgs)
-                    val ffmpegResult = DownloadUtils.runFFmpeg(ffmpegArgs, streamInfo.duration) { progress ->
-                        downloadProgress = progress
-                        val percent = (progress * 100).coerceAtMost(100f)
-                        val now = System.currentTimeMillis()
-                        if (now - lastNotifiedTime >= 500) {
-                            lastNotifiedTime = now
-                            DownloadNotificationService.updateProgress(context, percent)
-                        }
-                    }
-
-                    if (ffmpegResult) {
-                        FileSaver.saveVideo(context, "$title.mp4", semiOutput, settings.fileVidUri.ifBlank { null })
-                        if (settings.notifyOnFinish) {
-                            DownloadNotificationService.showFinishNotification(context, "$title.mp4")
-                        }
-                        withContext(Dispatchers.Main) {
-                            applyQuickDownloadState()
-                            showPopup(context.getString(R.string.pt_finished), context.getString(R.string.pm_finished), 1)
-                            urlEntryText = ""
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            applyQuickDownloadState()
-                            showPopup(context.getString(R.string.pt_failed), context.getString(R.string.pm_failed), 2)
-                            if (settings.notifyOnFail) {
-                                DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_failed))
-                            }
-                        }
-                    }
-                } else {
-                    throw Exception("No video streams available for this video.")
-                }
-            }
-
-        } catch (_: kotlinx.coroutines.CancellationException) {
-            FFmpegKit.cancel()
-            deleteFiles()
-            stopService()
-            DownloadNotificationService.setProgressType(false)
-            withContext(Dispatchers.Main) {
-                applyQuickDownloadState()
-                showPopup(context.getString(R.string.pt_canceled), context.getString(R.string.pm_canceled), 0)
-            }
-        } catch (e: Exception) {
-            FFmpegKit.cancel()
-            deleteFiles()
-            stopService()
-            DownloadNotificationService.setProgressType(false)
-            withContext(Dispatchers.Main) {
-                applyQuickDownloadState()
-                when {
-                    e.message?.contains("403") == true || e.message?.contains("404") == true -> {
-                        showPopup(context.getString(R.string.pt_unavailable), context.getString(R.string.pm_unavailable), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_unavailable))
-                        }
-                    }
-                    e.message?.contains("ID or URL") == true -> {
-                        showPopup(context.getString(R.string.pt_invalid_url), context.getString(R.string.pm_invalid_url), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_invalid_url))
-                        }
-                    }
-                    e.message?.contains("Software caused connection abort") == true || e.message?.contains("No address associated with hostname") == true -> {
-                        showPopup(context.getString(R.string.pt_network_error), context.getString(R.string.pm_network_error), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_network_error))
-                        }
-                    }
-                    e.message?.contains("streams available for this video") == true -> {
-                        showPopup(context.getString(R.string.pt_no_streams), context.getString(R.string.pm_no_streams), 2)
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_no_streams))
-                        }
-                    }
-                    else -> {
-                        showPopup(context.getString(R.string.pt_error), e.message ?: context.getString(R.string.pm_error), 2)
-                        Log.d("DownloadError", e.stackTraceToString())
-                        if (settings.notifyOnFail) {
-                            DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_error))
-                        }
-                    }
-                }
-            }
-        } finally {
-            deleteFiles()
-            DownloadNotificationService.setProgressType(false)
-            stopService()
-            settings.isDownloadRunning = false
-        }
-    }
-
-    // ─── Cancel ───
     fun onCancelClicked() {
+        showCancelConfirmDialog = true
+    }
+
+    fun onCancelConfirmed() {
+        showCancelConfirmDialog = false
         FFmpegKit.cancel()
-        downloadJob?.cancel()
-        applyQuickDownloadState()
+        activeJob?.cancel()
+        resetAfterInterruption()
         settings.isDownloadRunning = false
     }
 
-    // ─── Dialog confirm ───
+    fun onCancelDismissed() {
+        showCancelConfirmDialog = false
+    }
+
     fun onTitleAuthorConfirmed(title: String, author: String) {
+        showTitleAuthorDialog = false
         pendingOnConfirm?.invoke(title, author)
         pendingOnConfirm = null
     }
 
     fun onTitleAuthorDismissed() {
         showTitleAuthorDialog = false
-        downloadJob?.cancel()
-        applyQuickDownloadState()
+        activeJob?.cancel()
+        resetAfterInterruption()
     }
 
-    // ─── Helpers ───
     fun applyQuickDownloadState() {
         val quick = settings.quickDwnld
         downloadOptionsIsVisible = true
         formatPickerIsEnabled = true
         qualityPickerIsVisible = !quick
         qualityPickerIsEnabled = true
-        qualityPickerSelectedIndex = 0
         loadButtonIsVisible = !quick
         loadButtonIsEnabled = true
         downloadButtonIsVisible = quick
@@ -859,11 +268,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         statusLabelIsVisible = false
     }
 
-    fun showPopup(title: String, message: String, type: Int = 0, buttonText: String = "OK") {
+    private fun applyLoadedState() {
+        downloadOptionsIsVisible = true
+        formatPickerIsEnabled = true
+        qualityPickerIsVisible = true
+        qualityPickerIsEnabled = true
+        loadButtonIsVisible = false
+        loadButtonIsEnabled = true
+        downloadButtonIsVisible = true
+        cancelButtonIsVisible = false
+        dwnldProgressIsVisible = false
+        downloadIndicatorIsVisible = false
+        statusLabelIsVisible = false
+    }
+
+    private fun resetAfterInterruption() {
+        if (!settings.quickDwnld && video?.formatOptions?.isNotEmpty() == true) {
+            applyLoadedState()
+        } else {
+            applyQuickDownloadState()
+        }
+    }
+
+    fun showPopup(title: String, message: String, type: PopupType = PopupType.MESSAGE, buttonText: String = "OK") {
         popupBackground = when (type) {
-            1 -> PopupSuccess  // success green
-            2 -> PopupError  // error red
-            else -> PopupDefault // default
+            PopupType.SUCCESS -> PopupSuccess
+            PopupType.ERROR -> PopupError
+            PopupType.MESSAGE -> PopupDefault
         }
         popupTitle = title
         popupMessage = message
@@ -873,5 +304,100 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun stopService() {
         context.stopService(Intent(context, DownloadNotificationService::class.java))
+    }
+
+    private val videoCallbacks = object : VideoCallbacks {
+        override fun onLoadStarted() {
+            loadButtonIsEnabled = false
+            statusLabelIsVisible = false
+            downloadIndicatorIsVisible = true
+            statusLabelIsVisible = true
+        }
+
+        override fun onLoadFinished() {
+            loadButtonIsVisible = false
+            loadButtonIsEnabled = true
+            downloadIndicatorIsVisible = false
+            statusLabelIsVisible = false
+            downloadOptionsIsVisible = true
+            qualityPickerIsVisible = true
+            downloadButtonIsVisible = true
+            cancelButtonIsVisible = false
+
+            val options = video?.formatOptions ?: emptyList()
+            val defaultIndex = options.indexOfFirst { it.format == preferredDefaultFormat }
+            selectedDetailedFormatIndex = if (defaultIndex >= 0) defaultIndex else 0
+            selectedQualityIndex = 0
+
+            val chosen = options.getOrNull(selectedDetailedFormatIndex)
+            if (chosen != null) {
+                viewModelScope.launch { video?.loadQualitySizes(chosen.format, chosen.isNative) }
+            }
+        }
+
+        override fun onDownloadStarted() {
+            formatPickerIsEnabled = false
+            qualityPickerIsEnabled = false
+            downloadButtonIsVisible = false
+            cancelButtonIsVisible = true
+            downloadIndicatorIsVisible = true
+            statusLabelIsVisible = true
+            dwnldProgressIsVisible = false
+        }
+
+        override fun onDownloadInProgress() {
+            downloadIndicatorIsVisible = false
+            dwnldProgressIsVisible = true
+        }
+
+        override fun onDownloadFinished(savedUri: Uri?, isAudio: Boolean) {
+            applyQuickDownloadState()
+            onUrlChanged("")
+            if (isAudio && savedUri != null &&
+                MusicAxsClient.isMusicAxsInstalled(context) &&
+                MusicAxsClient.getPlaylists(context).isNotEmpty() &&
+                settings.addToMusicAxs
+            ) {
+                lastDownloadedSongUri = savedUri
+                showPlaylistPicker = true
+            }
+        }
+
+        override fun onFailed() {
+            resetAfterInterruption()
+        }
+
+        override fun onCanceled() {
+            resetAfterInterruption()
+        }
+
+        override fun showPopup(title: String, message: String, type: PopupType) {
+            this@MainViewModel.showPopup(title, message, type)
+        }
+
+        override fun requestTitleAuthorConfirmation(title: String, author: String, onConfirm: (String, String) -> Unit) {
+            dialogTitle = title
+            dialogAuthor = author
+            pendingOnConfirm = onConfirm
+            showTitleAuthorDialog = true
+        }
+
+        override fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit) {
+            keepPartialSizeBytes = sizeBytes
+            keepPartialStreamLabel = streamLabel
+            pendingKeepPartialChoice = onChoice
+            showKeepPartialDialog = true
+        }
+
+        override fun offerDownloadWithoutMargin(availableBytes: Long, requiredBytesWithoutMargin: Long, onChoice: (Boolean) -> Unit) {
+            marginOverrideAvailableBytes = availableBytes
+            marginOverrideRequiredBytes = requiredBytesWithoutMargin
+            pendingMarginOverrideChoice = onChoice
+            showMarginOverrideDialog = true
+        }
+
+        override fun stopService() {
+            this@MainViewModel.stopService()
+        }
     }
 }

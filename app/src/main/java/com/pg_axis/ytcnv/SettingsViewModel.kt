@@ -11,6 +11,8 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
+import com.pg_axis.ytcnv.models.TargetFormat
+import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.services.Theme
 import com.pg_axis.ytcnv.settings.SettingsSave
 import java.util.Locale
@@ -38,6 +40,15 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
 
     val resolutionOptions = mapOf(144 to "144p", 240 to "240p", 360 to "360p", 480 to "480p", 720 to "720p", 1080 to "1080p", 1440 to "1440p", 2160 to "4K")
     var selectedRes by mutableIntStateOf(settings.minResolution)
+
+    val formatOptions = mapOf(TrackType.AUDIO to context.getString(R.string.audio), TrackType.VIDEO to context.getString(R.string.video))
+    var selectedFormat by mutableStateOf(settings.defaultDO.trackType)
+
+    val targetAC = mapOf(TargetFormat.M4A to "M4A", TargetFormat.OPUS to "Opus", TargetFormat.MP3 to "MP3")
+    var selectedAC by mutableStateOf(settings.defaultDO.audio)
+
+    val targetVC = mapOf(TargetFormat.MP4 to "MP4", TargetFormat.WEBM to "WebM")
+    var selectedVC by mutableStateOf(settings.defaultDO.video)
 
     var mainFolder by mutableStateOf(context.getString(R.string.internal_storage))
     var finalFolder by mutableStateOf(context.getString(R.string.downloads))
@@ -102,6 +113,28 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     fun onThemeChanged(key: Theme) {
         selectedTheme = key
         settings.theme = key
+    }
+
+    fun onFormatChanged(key: TrackType) {
+        val modified = settings.defaultDO.copy(trackType = key)
+        selectedFormat = key
+        settings.defaultDO = modified
+    }
+
+    fun onACChanged(key: TargetFormat) {
+        val modified = settings.defaultDO.copy(audio = key)
+        selectedAC = key
+        settings.defaultDO = modified
+    }
+
+    fun onVCChanged(key: TargetFormat) {
+        val modified = settings.defaultDO.copy(video = key)
+        selectedVC = key
+        settings.defaultDO = modified
+    }
+
+    fun onMarginChanged(value: Int) {
+        settings.storageMarginMb = value.coerceAtLeast(0)
     }
 
     private fun getMainFolder(uri: String): String {

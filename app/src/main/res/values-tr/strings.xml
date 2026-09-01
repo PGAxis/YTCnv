@@ -11,6 +11,7 @@
     <string name="URLIDPrompt">YouTube URL\'si veya Kimliği</string>
     <string name="format">Biçim</string>
     <string name="quality">Kalite</string>
+    <string name="choose_format">Biçim seçin</string>
     <string name="choose_quality">Kaliteyi seçin</string>
     <string name="download">İndir</string>
     <string name="cancel">İptal</string>
@@ -20,6 +21,12 @@
     <string name="metadata">Meta veriler:</string>
     <string name="empty_history">Geçmiş boş</string>
     <string name="rm_from_history">Geçmişten kaldır</string>
+    <string name="cancel_confirm_title">İndirme iptal edilsin mi?</string>
+    <string name="cancel_confirm_message">Bu indirmeyi iptal etmek istediğinizden emin misiniz? Tüm ilerleme kaybolacak.</string>
+    <string name="cancel_confirm_yes">Evet, iptal et</string>
+    <string name="cancel_confirm_no">Devam et</string>
+    <string name="eta_format">Kalan süre: %1$s</string>
+    <string name="muxing_progress">%1$s / %2$s birleştirildi</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Ayarlar</string>
@@ -28,8 +35,11 @@
     <string name="sd_card">SD kart</string>
     <string name="d_settings">İndirme Ayarları</string>
     <string name="up_to_4k">2K ve üzeri çözünürlükleri etkinleştir (video)</string>
+    <string name="up_to_4k_desc">Video mevcutsa, kalite seçiminde 1080p üzeri çözünürlükleri (2K, 4K ve üzeri) gösterir.</string>
     <string name="quick_download">Hızlı indirmeyi etkinleştir</string>
+    <string name="quick_download_desc">Format ve kalite seçimini atlar - otomatik olarak en iyi mevcut seçeneği indirir.</string>
     <string name="muxed_fallback">Mux akışı yedeklemesini kullan</string>
+    <string name="muxed_fallback_desc">Ayrı ses ve video akışları mevcut değilse, indirme başarısız olmak yerine daha düşük kaliteli birleşik bir akışa geçilir.</string>
     <string name="n_settings">Bildirimler</string>
     <string name="n_download_finished">İndirme tamamlandığında bildirim gönder</string>
     <string name="n_download_failed">İndirme başarısız olduğunda bildirim gönder</string>
@@ -42,8 +52,14 @@
     <string name="set_scr_customization">Özelleştirme</string>
     <string name="set_scr_theme">Renk Teması</string>
     <string name="set_preview">Önizleme çözünürlüğü</string>
+    <string name="set_preview_desc">Video indirilmeden önce önizlemesinde kullanılan çözünürlük.</string>
     <string name="set_add_songs">Music.axs\'e şarkı ekle</string>
     <string name="set_add_songs_desc">MP3 olarak indirdikten sonra Music.axs\'teki bir çalma listesine ekleme seçeneği göster</string>
+    <string name="audio">Ses</string>
+    <string name="video">Video</string>
+    <string name="default_format">Varsayılan format</string>
+    <string name="default_audio_codec">Varsayılan ses kodeği</string>
+    <string name="default_video_codec">Varsayılan video kodeği</string>
 
     <!-- Search Screen -->
     <string name="search_title">Ara</string>
@@ -65,6 +81,7 @@
     <string name="pt_invalid_url">Geçersiz URL</string>
     <string name="pt_network_error">Ağ hatası</string>
     <string name="pt_no_streams">Kullanılabilir akış yok</string>
+    <string name="pt_no_space">Yetersiz depolama alanı</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">URL ayrıştırıcı, bu bağlantıda bir YouTube kimliği bulamadı. Lütfen bir YouTube URL\'si girin</string>
@@ -77,6 +94,7 @@
     <string name="pm_invalid_url">Lütfen geçerli bir YouTube URL\'si girin</string>
     <string name="pm_network_error">Cihazın internet bağlantısı kesildi</string>
     <string name="pm_no_streams">Bu video için kullanılabilir akış bulunamadı. Mux akışı yedeklemesini (daha düşük kalite) kullanmak istiyorsanız, ayarlardan etkinleştirin</string>
+    <string name="pm_no_space">Yeterli boş depolama alanı yok. Şu an boş: %1$s, gereken: %2$s.</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Video meta verileri alınıyor</string>
@@ -122,4 +140,36 @@
     <string name="set_vm_grayscale">Gri Tonları</string>
     <string name="set_vm_bordo">Bordo</string>
     <string name="set_vm_void">Boşluk</string>
+
+    <!-- Partial data dialog -->
+    <string name="keep_partial_title">Yarım kalan indirme tutulsun mu?</string>
+    <string name="keep_partial_message">İndirme başarısız oldu, ancak şimdiye kadar indirilen kısım (%1$s, %2$s) sağlam. Tutulsun mu, silinsin mi?</string>
+    <string name="keep">Tut</string>
+    <string name="delete">Sil</string>
+    <string name="fetching_sizes">Dosya boyutları alınıyor…</string>
+
+    <!-- Video.kt -->
+    <string name="is_native">yerel</string>
+    <string name="converted">dönüştürüldü</string>
+
+    <!-- Format Info -->
+    <string name="format_info_title">Format Bilgisi</string>
+    <string name="format_badge_licensed">Lisanslı</string>
+    <string name="format_desc_m4a">AAC — aynı bit hızında MP3\'ten daha iyi ses verir, ancak Opus kadar verimli değildir. iOS/Android\'de yerleşiktir, Opus\'tan daha yaygın desteklenir.</string>
+    <string name="format_badge_open_royalty_free">Açık, telifsiz</string>
+    <string name="format_desc_opus">Opus — düşük bit hızlarında üçü arasında en verimlisidir, hem AAC\'yi hem MP3\'ü geride bırakır. YouTube\'un varsayılan ses kodeğidir, ancak AAC veya MP3\'ten daha az eski cihaz oynatıcısı tarafından desteklenir.</string>
+    <string name="format_badge_universal">Evrensel</string>
+    <string name="format_desc_mp3">MP3 — üçü arasında en eski ve en az verimli olanıdır, ancak AAC veya Opus\'tan daha fazla cihazda oynatılabilir.</string>
+    <string name="format_badge_h264">H.264</string>
+    <string name="format_desc_mp4">MP4 — H.264 video içeren bir kapsayıcı. WebM\'den daha uyumludur, ancak genellikle aynı kalitede daha az verimlidir.</string>
+    <string name="format_desc_webm">WebM/VP9 — aynı kalitede MP4\'teki akıştan daha iyi sıkıştırma sağlar ve YouTube\'un yüksek çözünürlükler için varsayılanıdır. MP4\'ten daha az evrensel destek sunar.</string>
+
+    <!-- Safety margin texts -->
+    <string name="storage_margin">Depolama güvenlik payı</string>
+    <string name="storage_margin_desc">İndirmenin kendisinin dışında boş bırakılacak ekstra alan.</string>
+    <string name="storage_margin_too_low_warning">Bu pay oldukça küçük — depolama alanı çok dolarsa cihaz yavaşlayabilir.</string>
+    <string name="margin_override_title">Pay yetersiz</string>
+    <string name="margin_override_message">Güvenlik payı kaldırılırsa bu indirme sığar. Boş alan: %1$s, pay olmadan gereken: %2$s. Depolama çok dolarsa cihazın yavaşlama riski var. Payı kaldırıp yine de indirilsin mi?</string>
+    <string name="margin_override_cancel">İptal</string>
+    <string name="margin_override_proceed">Yine de indir</string>
 </resources>

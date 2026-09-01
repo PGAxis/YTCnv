@@ -1,7 +1,6 @@
 package com.pg_axis.ytcnv.settings
-
 import com.pg_axis.ytcnv.services.Theme
-
+import com.pg_axis.ytcnv.settings.SettingsSave.DefaultDO
 interface ISettings {
     var use4K: Boolean
     var quickDwnld: Boolean
@@ -19,5 +18,7 @@ interface ISettings {
     var notifyOnFail: Boolean
     var addToMusicAxs: Boolean
     var minResolution: Int
+    var storageMarginMb: Int
     var theme: Theme
+    var defaultDO: DefaultDO
 }

@@ -16,6 +16,14 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Duration.Companion.milliseconds
 
 object DownloadUtils {
+
+    // No timeout was previously set on any connection here, so a stalled server (e.g. CDN
+    // throttling that stops sending bytes without closing the socket) would block read() forever
+    // with no exception ever thrown - the retry logic below never got a chance to run. These
+    // bound how long a single connect/read call can hang before we treat it as a failure and retry.
+    private const val CONNECT_TIMEOUT_MS = 15_000
+    private const val READ_TIMEOUT_MS = 20_000
+
     @OptIn(ExperimentalAtomicApi::class)
     suspend fun downloadStream(
         url: String,
@@ -23,11 +31,13 @@ object DownloadUtils {
         onProgress: (Float) -> Unit,
         urlRefresher: (suspend () -> String)? = null
     ) = withContext(Dispatchers.IO) {
-        val chunkCount = 4
+        val chunkCount = 6
         val maxRetries = 6
 
         fun fetchTotalBytes(streamUrl: String): Long {
             val conn = URL(streamUrl).openConnection() as HttpURLConnection
+            conn.connectTimeout = CONNECT_TIMEOUT_MS
+            conn.readTimeout = READ_TIMEOUT_MS
             conn.setRequestProperty("Range", "bytes=0-0")
             conn.connect()
             val contentRange = conn.getHeaderField("Content-Range")
@@ -50,8 +60,11 @@ object DownloadUtils {
             var lastReportTime = 0L
 
             while (true) {
+                var conn: HttpURLConnection? = null
                 try {
-                    val conn = URL(currentUrl).openConnection() as HttpURLConnection
+                    conn = URL(currentUrl).openConnection() as HttpURLConnection
+                    conn.connectTimeout = CONNECT_TIMEOUT_MS
+                    conn.readTimeout = READ_TIMEOUT_MS
                     conn.setRequestProperty("Range", "bytes=$position-$end")
                     conn.connect()
                     val buffer = ByteArray(32768)
@@ -80,6 +93,8 @@ object DownloadUtils {
                     if (++retries > maxRetries) throw e
                     delay((1000 * retries).milliseconds)
                     currentUrl = urlRefresher?.invoke() ?: streamUrl
+                } finally {
+                    conn?.disconnect()
                 }
             }
         }

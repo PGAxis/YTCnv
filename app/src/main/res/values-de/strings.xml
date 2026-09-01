@@ -11,6 +11,7 @@
     <string name="URLIDPrompt">YouTube URL oder ID</string>
     <string name="format">Format</string>
     <string name="quality">Qualität</string>
+    <string name="choose_format">Format wählen</string>
     <string name="choose_quality">Qualität wählen</string>
     <string name="download">Herunterladen</string>
     <string name="cancel">Abbrechen</string>
@@ -20,6 +21,12 @@
     <string name="metadata">Metadaten:</string>
     <string name="empty_history">Verlauf ist leer</string>
     <string name="rm_from_history">Aus dem Verlauf entfernen</string>
+    <string name="cancel_confirm_title">Download abbrechen?</string>
+    <string name="cancel_confirm_message">Möchtest du diesen Download wirklich abbrechen? Der gesamte Fortschritt geht verloren.</string>
+    <string name="cancel_confirm_yes">Ja, abbrechen</string>
+    <string name="cancel_confirm_no">Fortsetzen</string>
+    <string name="eta_format">Verbleibend: %1$s</string>
+    <string name="muxing_progress">%1$s / %2$s gemuxt</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Einstellungen</string>
@@ -28,8 +35,11 @@
     <string name="sd_card">SD-Karte</string>
     <string name="d_settings">Download-Einstellungen</string>
     <string name="up_to_4k">2K und höher aktivieren (Video)</string>
+    <string name="up_to_4k_desc">Zeigt Auflösungen über 1080p (2K, 4K und höher) in der Qualitätsauswahl an, sofern das Video sie bietet.</string>
     <string name="quick_download">Schnelldownload aktivieren</string>
+    <string name="quick_download_desc">Überspringt die Auswahl von Format und Qualität - lädt automatisch die beste verfügbare Option herunter.</string>
     <string name="muxed_fallback">Muxed-Stream-Fallback verwenden</string>
+    <string name="muxed_fallback_desc">Falls keine separaten Audio- und Video-Streams verfügbar sind, wird stattdessen auf einen kombinierten Stream niedrigerer Qualität zurückgegriffen, anstatt den Download fehlschlagen zu lassen.</string>
     <string name="n_settings">Benachrichtigungen</string>
     <string name="n_download_finished">Benachrichtigen wenn Download abgeschlossen</string>
     <string name="n_download_failed">Benachrichtigen wenn Download fehlschlägt</string>
@@ -42,8 +52,14 @@
     <string name="set_scr_customization">Anpassung</string>
     <string name="set_scr_theme">Farbschema</string>
     <string name="set_preview">Vorschauauflösung</string>
+    <string name="set_preview_desc">Auflösung, die bei der Vorschau eines Videos vor dem Herunterladen verwendet wird.</string>
     <string name="set_add_songs">Songs zu Music.axs hinzufügen</string>
     <string name="set_add_songs_desc">Nach dem Herunterladen als MP3 eine Option anzeigen, um es einer Wiedergabeliste in Music.axs hinzuzufügen</string>
+    <string name="audio">Audio</string>
+    <string name="video">Video</string>
+    <string name="default_format">Standardformat</string>
+    <string name="default_audio_codec">Standard-Audiocodec</string>
+    <string name="default_video_codec">Standard-Videocodec</string>
 
     <!-- Search Screen -->
     <string name="search_title">Suche</string>
@@ -65,6 +81,7 @@
     <string name="pt_invalid_url">Ungültige URL</string>
     <string name="pt_network_error">Netzwerkfehler</string>
     <string name="pt_no_streams">Keine Streams verfügbar</string>
+    <string name="pt_no_space">Nicht genügend Speicherplatz</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Der URL-Parser konnte keine YouTube-ID in dieser URL finden. Bitte gib eine gültige YouTube-URL ein.</string>
@@ -77,6 +94,7 @@
     <string name="pm_invalid_url">Bitte gib eine gültige YouTube-URL ein</string>
     <string name="pm_network_error">Das Gerät hat die Internetverbindung verloren</string>
     <string name="pm_no_streams">Für dieses Video sind keine Streams verfügbar. Um den Muxed-Stream-Fallback (niedrigere Qualität) zu verwenden, aktiviere ihn in den Einstellungen</string>
+    <string name="pm_no_space">Nicht genügend freier Speicherplatz. Verfügbar: %1$s, benötigt: %2$s.</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Video-Metadaten werden abgerufen</string>
@@ -122,4 +140,36 @@
     <string name="set_vm_grayscale">Graustufen</string>
     <string name="set_vm_bordo">Bordeaux</string>
     <string name="set_vm_void">Leere</string>
+
+    <!-- Partial data dialog -->
+    <string name="keep_partial_title">Unvollständigen Download behalten?</string>
+    <string name="keep_partial_message">Der Download ist fehlgeschlagen, aber der bisher heruntergeladene Teil (%1$s, %2$s) ist unbeschädigt. Behalten oder löschen?</string>
+    <string name="keep">Behalten</string>
+    <string name="delete">Löschen</string>
+    <string name="fetching_sizes">Dateigrößen werden ermittelt…</string>
+
+    <!-- Video.kt -->
+    <string name="is_native">nativ</string>
+    <string name="converted">konvertiert</string>.
+
+    <!-- Format Info -->
+    <string name="format_info_title">Formatinfo</string>
+    <string name="format_badge_licensed">Lizenziert</string>
+    <string name="format_desc_m4a">AAC – klingt bei gleicher Bitrate besser als MP3, ist aber nicht so effizient wie Opus. Nativ unter iOS/Android, weiter verbreitet unterstützt als Opus.</string>
+    <string name="format_badge_open_royalty_free">Offen, lizenzgebührenfrei</string>
+    <string name="format_desc_opus">Opus – am effizientesten der drei bei niedrigen Bitraten, schlägt sowohl AAC als auch MP3. Standard-Audiocodec von YouTube, wird aber von weniger älteren Playern unterstützt als AAC oder MP3.</string>
+    <string name="format_badge_universal">Universell</string>
+    <string name="format_desc_mp3">MP3 – das älteste und am wenigsten effiziente der drei, spielt aber auf mehr Geräten ab als AAC oder Opus.</string>
+    <string name="format_badge_h264">H.264</string>
+    <string name="format_desc_mp4">MP4 – ein Container mit H.264-Video. Kompatibler als WebM, aber meist weniger effizient bei gleicher Qualität.</string>
+    <string name="format_desc_webm">WebM/VP9 – komprimiert bei gleicher Qualität besser als der MP4-Stream und ist der YouTube-Standard für höhere Auflösungen. Weniger universell unterstützt als MP4.</string>
+
+    <!-- Safety margin texts -->
+    <string name="storage_margin">Speicher-Sicherheitspuffer</string>
+    <string name="storage_margin_desc">Zusätzlicher freier Speicherplatz, der über den Download hinaus verfügbar bleiben soll.</string>
+    <string name="storage_margin_too_low_warning">Dieser Puffer ist recht klein – wird der Speicher zu voll, kann das Gerät langsamer werden.</string>
+    <string name="margin_override_title">Puffer nicht ausreichend</string>
+    <string name="margin_override_message">Dieser Download würde passen, wenn der Sicherheitspuffer entfernt würde. Frei: %1$s, benötigt ohne Puffer: %2$s. Es besteht das Risiko, dass das Gerät bei zu vollem Speicher langsamer wird. Puffer entfernen und trotzdem herunterladen?</string>
+    <string name="margin_override_cancel">Abbrechen</string>
+    <string name="margin_override_proceed">Trotzdem herunterladen</string>
 </resources>

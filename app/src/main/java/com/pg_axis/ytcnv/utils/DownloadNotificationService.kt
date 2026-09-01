@@ -24,13 +24,21 @@ class DownloadNotificationService : Service() {
         const val CHANNEL_ID = "ytcnv_download_channel"
         const val FINISH_CHANNEL_ID = "ytcnv_finnish_channel"
         const val FAIL_CHANNEL_ID = "ytcnv_fail_channel"
+
+        /** Fallback only — used if a start Intent somehow arrives without an id attached. */
         const val NOTIFICATION_ID = 1
-        const val FINISH_NOTIFICATION_ID = 2
-        const val FAIL_NOTIFICATION_ID = 3
+        const val EXTRA_NOTIFICATION_ID = "notificationId"
+
         var progressIsRunning = false
         private var startedTime: Long? = null
 
-        fun showFinishNotification(context: Context, fileName: String) {
+        /** Builds the Intent to start this service for a specific video's progress notification. */
+        fun startIntent(context: Context, notificationId: Int): Intent {
+            return Intent(context, DownloadNotificationService::class.java)
+                .putExtra(EXTRA_NOTIFICATION_ID, notificationId)
+        }
+
+        fun showFinishNotification(context: Context, fileName: String, notificationId: Int) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
             val intent = Intent(context, MainActivity::class.java).apply {
@@ -87,7 +95,7 @@ class DownloadNotificationService : Service() {
                     .addAction(openFileAction)
                     .build()
 
-                manager.notify(FINISH_NOTIFICATION_ID, notification)
+                manager.notify(notificationId, notification)
             }
             else {
                 val notification = NotificationCompat.Builder(context, FINISH_CHANNEL_ID)
@@ -98,11 +106,11 @@ class DownloadNotificationService : Service() {
                     .setAutoCancel(true)
                     .build()
 
-                manager.notify(FINISH_NOTIFICATION_ID, notification)
+                manager.notify(notificationId, notification)
             }
         }
 
-        fun showFailedNotification(context: Context, errMsg: String) {
+        fun showFailedNotification(context: Context, errMsg: String, notificationId: Int) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
             val intent = Intent(context, MainActivity::class.java).apply {
@@ -120,10 +128,10 @@ class DownloadNotificationService : Service() {
                 .setAutoCancel(true)
                 .build()
 
-            manager.notify(FAIL_NOTIFICATION_ID, notification)
+            manager.notify(notificationId, notification)
         }
 
-        fun updateProgress(context: Context, progress: Float, finale: Boolean = false) {
+        fun updateProgress(context: Context, progress: Float, notificationId: Int, finale: Boolean = false) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
             val etaText = if (progressIsRunning && progress > 0) {
@@ -147,7 +155,7 @@ class DownloadNotificationService : Service() {
 
             if (etaText != null) builder.setSubText(etaText)
 
-            manager.notify(NOTIFICATION_ID, builder.build())
+            manager.notify(notificationId, builder.build())
         }
 
         fun startTimer() {
@@ -178,21 +186,11 @@ class DownloadNotificationService : Service() {
                     .apply { description = "Notifies when a download fails" }
             )
         }
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.not_downloading))
-            .setContentText(getString(R.string.not_progress))
-            .setSmallIcon(R.drawable.icon)
-            .setOngoing(true)
-            .setProgress(100, 0, true)
-            .build()
-
-        startForeground(NOTIFICATION_ID, notification)
     }
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startedTime = null
+        val notificationId = intent?.getIntExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID) ?: NOTIFICATION_ID
 
         val openIntent = Intent(this, MainActivity::class.java)
         openIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
@@ -211,7 +209,7 @@ class DownloadNotificationService : Service() {
             .setProgress(100, 0, !progressIsRunning)
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        startForeground(notificationId, notification)
         return START_NOT_STICKY
     }
 

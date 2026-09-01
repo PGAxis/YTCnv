@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.pg_axis.ytcnv.side_pages.FormatInfoScreen
 import com.pg_axis.ytcnv.side_pages.HistoryScreen
 
 @Composable
@@ -23,7 +24,7 @@ fun AppNavigation(initialUrl: String? = null) {
 
     LaunchedEffect(initialUrl) {
         if (!initialUrl.isNullOrBlank()) {
-            mainViewModel.urlEntryText = initialUrl
+            mainViewModel.onUrlChanged(initialUrl)
         }
     }
 
@@ -33,6 +34,10 @@ fun AppNavigation(initialUrl: String? = null) {
         }
     }
 
+    fun popBackToMain() {
+        navController.popBackStack("main", inclusive = false)
+    }
+
     NavHost(navController = navController, startDestination = "main") {
         composable("main") {
             LockPortrait()
@@ -40,7 +45,8 @@ fun AppNavigation(initialUrl: String? = null) {
                 viewModel = mainViewModel,
                 onOpenSearch = { navController.navigate("search") },
                 onOpenSettings = { navController.navigate("settings") },
-                onOpenHistory = { navController.navigate("history") }
+                onOpenHistory = { navController.navigate("history") },
+                onOpenInfo = { navController.navigate("info") },
             )
         }
         composable("search") {
@@ -56,14 +62,9 @@ fun AppNavigation(initialUrl: String? = null) {
             SearchScreen(
                 onBack = { popBack() },
                 onResultSelected = { url ->
-                    mainViewModel.urlEntryText = url
-                    if (mainViewModel.downloadButtonIsVisible && !mainViewModel.settings.quickDwnld) {
-                        mainViewModel.downloadButtonIsVisible = false
-                        mainViewModel.loadButtonIsVisible = true
-                        mainViewModel.loadButtonIsEnabled = true
-                    }
-                    navController.navigate("main")
-               },
+                    mainViewModel.onUrlChanged(url)
+                    popBackToMain()
+                },
                 onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
                 viewModel = searchViewModel
             )
@@ -97,15 +98,15 @@ fun AppNavigation(initialUrl: String? = null) {
             HistoryScreen(
                 onBack = { popBack() },
                 onResultSelected = { url ->
-                    mainViewModel.urlEntryText = url
-                    if (mainViewModel.downloadButtonIsVisible && !mainViewModel.settings.quickDwnld) {
-                        mainViewModel.downloadButtonIsVisible = false
-                        mainViewModel.loadButtonIsVisible = true
-                        mainViewModel.loadButtonIsEnabled = true
-                    }
-                    navController.navigate("main")
+                    mainViewModel.onUrlChanged(url)
+                    popBackToMain()
                 }
             )
+        }
+        composable("info") {
+            FormatInfoScreen {
+                popBack()
+            }
         }
     }
 }

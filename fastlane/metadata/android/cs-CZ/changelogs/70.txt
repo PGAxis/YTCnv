@@ -1,0 +1,15 @@
+Opravy chyb:
+- Stahování se občas mohlo zastavit na ~90-100 % bez dokončení (#14)
+- Názvy souborů (a samotný název v metadatech) se teď již neořezávají (#13)
+
+Co je nového:
+- Stažená videa lze nyní ve výsledcích vyhledávání rozlišit (jiná barva názvu a jiný styl tlačítka „Stáhnout“) (#12)
+- Rozbalovací nabídka formátu nyní má více možností (pro audio: M4A, Opus a MP3, pro video: MP4, WebM) (#10)
+- Rozbalovací nabídka kvality nyní zobrazuje velikost souboru (#10)
+- Metadata se nyní načítají automaticky (nejvíce patrné při vypnutém „Rychlém stahování“) (#10)
+- Uživatelé si nyní mohou zvolit výchozí formát a kodek (#10)
+- Aplikace kontroluje dostupné místo v zařízení (a buď upozorní, pokud by po stažení bylo téměř plné, nebo stahování rovnou zastaví, pokud místa není dostatek) (#10)
+- Aplikace nyní slučuje (muxuje) přímo do zvoleného umístění, místo do mezipaměti a následného kopírování do umístění (#10)
+- Přibyla informační obrazovka vysvětlující uživatelům různé kodeky/kontejnery a jejich rozdíly (#10)
+- Během stahování je vidět zbývající čas (ETA), uplynulý čas, procenta, stažená a celková velikost a rychlost (#9)
+- Přibyl potvrzovací dialog pro zrušení (aby nedošlo k náhodnému zrušení stahování) (#10)

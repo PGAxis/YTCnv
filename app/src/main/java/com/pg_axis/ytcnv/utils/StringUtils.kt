@@ -11,6 +11,12 @@ object StringUtils {
         return cleaned.substring(0, 11)
     }
 
+    private val YOUTUBE_ID_REGEX = Regex("^[A-Za-z0-9_-]{11}$")
+    fun isValidId(id: String?): Boolean {
+        if (id == null) return false
+        return YOUTUBE_ID_REGEX.matches(id)
+    }
+
     private val featRegex = Regex(
         """[(\[]?\s*\b(?:feat(?:uring)?|ft)\b\.?\s*[:\-]?\s*([^()\[\]]+)\s*[)\]]?""",
         RegexOption.IGNORE_CASE
@@ -112,19 +118,11 @@ object StringUtils {
         }
         t = t.trim()
         if (t.isBlank()) t = "YouTube_Video"
-        if (t.length > 60) t = truncateSmart(t)
 
         if (featured != null) {
             a = "$a, $featured"
         }
 
         return Pair(t, a)
-    }
-
-    fun truncateSmart(input: String, maxLength: Int = 60): String {
-        if (input.length <= maxLength) return input
-        val lastSpace = input.lastIndexOf(' ', maxLength)
-        return if (lastSpace > -1) input.substring(0, lastSpace) + " ..."
-        else input.substring(0, maxLength) + " ..."
     }
 }

@@ -106,6 +106,10 @@ class SearchViewModel(val settings: ISettings) : ViewModel() {
         settings.searchHistory = updated
     }
 
+    fun isDownloaded(videoId: String): Boolean {
+        return settings.downloadHistory.any { it.urlOrId == videoId && it.downloaded }
+    }
+
     private fun updateSearchHistory(query: String) {
         val updated = settings.searchHistory.toMutableList()
         updated.remove(query)

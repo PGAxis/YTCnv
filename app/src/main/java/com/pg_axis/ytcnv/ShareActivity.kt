@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pg_axis.ytcnv.models.QualityOption
 import com.pg_axis.ytcnv.services.Theme
 import com.pg_axis.ytcnv.settings.SettingsSave
 import com.pg_axis.ytcnv.ui.theme.*
@@ -23,6 +24,7 @@ import com.pg_axis.ytcnv.utils.NewPipeDownloader
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.localization.Localization
+import java.util.Locale
 
 class ShareActivity : ComponentActivity() {
 
@@ -86,7 +88,7 @@ fun ShareBottomSheet(
                 .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ─── Title ───
+            // --- Title ---
             Text(
                 text = stringResource(R.string.share_quick_download),
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -96,7 +98,7 @@ fun ShareBottomSheet(
                 textAlign = TextAlign.Center
             )
 
-            // ─── URL preview ───
+            // --- URL preview ---
             Text(
                 text = rawUrl,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -117,77 +119,124 @@ fun ShareBottomSheet(
                 }
 
                 SheetState.PICKING -> {
-                    // ─── Format picker ───
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("MP3", "MP4").forEachIndexed { index, label ->
-                            val selected = viewModel.formatIndex == index
-                            OutlinedButton(
-                                onClick = { viewModel.onFormatChanged(index) },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
-                                ),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    width = 2.dp,
-                                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                                )
-                            ) {
-                                Text(
-                                    text = label,
-                                    color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primary,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-                                )
+                    if (viewModel.settings.quickDwnld) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("MP3", "MP4").forEachIndexed { index, label ->
+                                val selected = viewModel.formatIndex == index
+                                OutlinedButton(
+                                    onClick = { viewModel.onFormatChanged(index) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
+                                    ),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        width = 2.dp,
+                                        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                                    )
+                                ) {
+                                    Text(
+                                        text = label,
+                                        color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primary,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
                             }
                         }
-                    }
-
-                    // ─── Quality picker (only when not quick and metadata loaded) ───
-                    if (!viewModel.settings.quickDwnld && viewModel.qualityOptions.isNotEmpty()) {
-                        var expanded by remember { mutableStateOf(false) }
-                        val selectedLabel = viewModel.qualityOptions.values.elementAtOrNull(viewModel.qualityIndex) ?: ""
-
-                        ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = !expanded }
-                        ) {
-                            OutlinedTextField(
-                                value = selectedLabel,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(stringResource(R.string.quality), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
-                                    focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            var formatExpanded by remember { mutableStateOf(false) }
+                            ExposedDropdownMenuBox(
+                                expanded = formatExpanded,
+                                onExpandedChange = { formatExpanded = !formatExpanded }
                             ) {
-                                viewModel.qualityOptions.values.forEachIndexed { index, label ->
-                                    DropdownMenuItem(
-                                        text = { Text(label, color = MaterialTheme.colorScheme.onPrimary) },
-                                        onClick = {
-                                            viewModel.qualityIndex = index
-                                            expanded = false
+                                OutlinedTextField(
+                                    value = viewModel.selectedFormatOption?.displayName ?: "",
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text(stringResource(R.string.format), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(formatExpanded) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                                        focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = formatExpanded,
+                                    onDismissRequest = { formatExpanded = false },
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                ) {
+                                    viewModel.formatOptions.forEachIndexed { index, option ->
+                                        DropdownMenuItem(
+                                            text = { Text(option.displayName, color = MaterialTheme.colorScheme.onPrimary) },
+                                            onClick = {
+                                                viewModel.onDetailedFormatChanged(index)
+                                                formatExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (viewModel.qualityOptions.isNotEmpty()) {
+                                var qualityExpanded by remember { mutableStateOf(false) }
+                                val selectedQuality = viewModel.qualityOptions.getOrNull(viewModel.qualityIndex)
+
+                                ExposedDropdownMenuBox(
+                                    expanded = qualityExpanded,
+                                    onExpandedChange = { qualityExpanded = !qualityExpanded }
+                                ) {
+                                    OutlinedTextField(
+                                        value = selectedQuality?.let { qualityLabel(it) } ?: "",
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text(stringResource(R.string.quality), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(qualityExpanded) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                            unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                                            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = qualityExpanded,
+                                        onDismissRequest = { qualityExpanded = false },
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                    ) {
+                                        viewModel.qualityOptions.forEachIndexed { index, option ->
+                                            DropdownMenuItem(
+                                                text = { Text(qualityLabel(option), color = MaterialTheme.colorScheme.onPrimary) },
+                                                onClick = {
+                                                    viewModel.onQualityChanged(index)
+                                                    qualityExpanded = false
+                                                }
+                                            )
                                         }
+                                    }
+                                }
+                                if (viewModel.isFetchingQualitySizes) {
+                                    Text(
+                                        text = stringResource(R.string.fetching_sizes),
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         }
                     }
 
-                    // ─── Download button ───
+                    // --- Download button ---
                     Button(
                         onClick = { viewModel.startDownload(onDone = onDismiss) },
                         modifier = Modifier.fillMaxWidth(),
@@ -198,5 +247,23 @@ fun ShareBottomSheet(
                 }
             }
         }
+    }
+}
+
+private fun qualityLabel(option: QualityOption): String {
+    val nativePart = if (!option.isNative) " · converted" else ""
+    val sizePart = option.sizeBytes?.let { " (${formatBytes(it)})" } ?: ""
+    return "${option.displayName}$nativePart$sizePart"
+}
+
+private fun formatBytes(bytes: Long): String {
+    if (bytes <= 0) return "0 KB"
+    val kb = bytes / 1024.0
+    val mb = kb / 1024.0
+    val gb = mb / 1024.0
+    return when {
+        gb >= 1 -> String.format(Locale.getDefault(), "%.2f GB", gb)
+        mb >= 1 -> String.format(Locale.getDefault(), "%.1f MB", mb)
+        else -> String.format(Locale.getDefault(), "%.0f KB", kb)
     }
 }

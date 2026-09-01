@@ -133,7 +133,7 @@ val YTCnvAetherScheme = darkColorScheme(
 
 val YTCnvPhosphorScheme = darkColorScheme(
     primary = PhosphorPrimary,
-    onPrimary = Color(0xFF002616),
+    onPrimary = TextWhitePrimary,
     primaryContainer = PhosphorSurfaceVariant,
     onPrimaryContainer = TextWhitePrimary,
 
@@ -195,7 +195,7 @@ val YTCnvBordoScheme = darkColorScheme(
 
 val YTCnvVoidScheme = darkColorScheme(
     primary = VoidPrimary,
-    onPrimary = Color(0xFF001A17),
+    onPrimary = TextWhitePrimary,
     primaryContainer = VoidSurfaceVariant,
     onPrimaryContainer = TextWhitePrimary,
 

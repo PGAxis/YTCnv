@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -35,11 +36,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pg_axis.ytcnv.models.TargetFormat
+import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.services.MusicAxsClient
 import com.pg_axis.ytcnv.services.Theme
+import com.pg_axis.ytcnv.settings.SettingsSave
+import com.pg_axis.ytcnv.side_pages.SideScreenHeader
 import java.io.File
 import java.time.LocalDateTime
 
@@ -100,26 +106,16 @@ fun SettingsScreen(
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        // ─── Header ───
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-                .height(60.dp),
-            verticalAlignment = Alignment.CenterVertically
+        SideScreenHeader(
+            onBack = onBack
         ) {
-            IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.back),
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            Spacer(Modifier.width(4.dp))
+
             Text(
                 text = stringResource(R.string.settings_title),
-                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -130,7 +126,7 @@ fun SettingsScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // ─── Folder picker ───
+            // -- Folder picker --
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -153,6 +149,12 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Text(
+                                text = stringResource(R.string.audio),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+
                             IconButton(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
@@ -188,6 +190,12 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Text(
+                                text = stringResource(R.string.video),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp
+                            )
+
                             IconButton(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
@@ -222,41 +230,68 @@ fun SettingsScreen(
                 }
             }
 
-            // ─── Download Settings Group ───
-            SettingsGroup(title = stringResource(R.string.d_settings)) {
-                // ─── Toggle: 4K ───
+            // -- Download Settings Group --
+            SettingsGroup(title = stringResource(R.string.d_settings), initiallyExpanded = false) {
+                // -- Toggle: 4K --
                 SettingsToggleRow(
-                    label = stringResource(R.string.up_to_4k),
-                    checked = viewModel.settings.use4K,
-                    onCheckedChange = { viewModel.onUse4KChanged(it) }
-                )
+                    title = stringResource(R.string.up_to_4k),
+                    description = stringResource(R.string.up_to_4k_desc),
+                    checked = viewModel.settings.use4K
+                ) { viewModel.onUse4KChanged(it) }
 
-                // ─── Toggle: Quick download ───
+                // -- Toggle: Quick download --
                 SettingsToggleRow(
-                    label = stringResource(R.string.quick_download),
-                    checked = viewModel.settings.quickDwnld,
-                    onCheckedChange = { viewModel.onQuickDwnldChanged(it) }
-                )
+                    title = stringResource(R.string.quick_download),
+                    description = stringResource(R.string.quick_download_desc),
+                    checked = viewModel.settings.quickDwnld
+                ) { viewModel.onQuickDwnldChanged(it) }
 
                 SettingsToggleRow(
-                    label = stringResource(R.string.muxed_fallback),
-                    checked = viewModel.settings.muxedFallback,
-                    onCheckedChange = { viewModel.onMuxedChanged(it) }
-                )
+                    title = stringResource(R.string.muxed_fallback),
+                    description = stringResource(R.string.muxed_fallback_desc),
+                    checked = viewModel.settings.muxedFallback
+                ) { viewModel.onMuxedChanged(it) }
+
+                SettingsNumberInputRow(
+                    title = stringResource(R.string.storage_margin),
+                    description = stringResource(R.string.storage_margin_desc),
+                    warning = if (viewModel.settings.storageMarginMb < SettingsSave.RECOMMENDED_MIN_STORAGE_MARGIN_MB)
+                        stringResource(R.string.storage_margin_too_low_warning) else null,
+                    value = viewModel.settings.storageMarginMb,
+                    suffix = "MB"
+                ) { viewModel.onMarginChanged(it) }
+
+                SettingsDropdownRow(
+                    title = stringResource(R.string.default_format),
+                    options = viewModel.formatOptions,
+                    selected = viewModel.selectedFormat
+                ) { viewModel.onFormatChanged(it as TrackType) }
+
+                SettingsDropdownRow(
+                    title = stringResource(R.string.default_audio_codec),
+                    options = viewModel.targetAC,
+                    selected = viewModel.selectedAC
+                ) { viewModel.onACChanged(it as TargetFormat) }
+
+                SettingsDropdownRow(
+                    title = stringResource(R.string.default_video_codec),
+                    options = viewModel.targetVC,
+                    selected = viewModel.selectedVC
+                ) { viewModel.onVCChanged(it as TargetFormat) }
             }
 
-            // ─── Notifications Group ───
+            // -- Notifications Group --
             SettingsGroup(title = stringResource(R.string.n_settings), initiallyExpanded = false) {
-                // ─── Toggle: Notify on finish ───
+                // -- Toggle: Notify on finish --
                 SettingsToggleRow(
-                    label = stringResource(R.string.n_download_finished),
+                    title = stringResource(R.string.n_download_finished),
                     checked = viewModel.settings.notifyOnFinish,
                     onCheckedChange = { viewModel.onNotifyOnFinishChanged(it) }
                 )
 
-                // ─── Toggle: Notify on fail ───
+                // -- Toggle: Notify on fail --
                 SettingsToggleRow(
-                    label = stringResource(R.string.n_download_failed),
+                    title = stringResource(R.string.n_download_failed),
                     checked = viewModel.settings.notifyOnFail,
                     onCheckedChange = { viewModel.onNotifyOnFailChanged(it) }
                 )
@@ -264,25 +299,26 @@ fun SettingsScreen(
 
             SettingsGroup(title = stringResource(R.string.set_scr_customization), initiallyExpanded = false) {
                 SettingsDropdownRow(
-                    label = stringResource(R.string.set_scr_theme),
+                    title = stringResource(R.string.set_scr_theme),
                     options = viewModel.themeOptions,
                     selected = viewModel.selectedTheme,
                     onSelectChange = { viewModel.onThemeChanged(it as Theme) }
                 )
 
                 SettingsDropdownRow(
-                    label = stringResource(R.string.set_preview),
+                    title = stringResource(R.string.set_preview),
+                    description = stringResource(R.string.set_preview_desc),
                     options = viewModel.resolutionOptions,
                     selected = viewModel.selectedRes,
                     onSelectChange = { viewModel.onResolutionChange(it as Int) }
                 )
             }
 
-            // ─── Notifications Group ───
+            // -- Notifications Group --
             SettingsGroup(title = stringResource(R.string.set_app_settings), initiallyExpanded = false) {
-                // ─── Dropdown: Change language ───
+                // -- Dropdown: Change language --
                 SettingsDropdownRow(
-                    label = stringResource(R.string.language),
+                    title = stringResource(R.string.language),
                     options = viewModel.langOptions,
                     selected = viewModel.selectedLang,
                     onSelectChange = { viewModel.onLanguageChange(it as String) }
@@ -290,7 +326,7 @@ fun SettingsScreen(
 
                 if (MusicAxsClient.isMusicAxsInstalled(context)) {
                     SettingsToggleRow(
-                        label = stringResource(R.string.set_add_songs),
+                        title = stringResource(R.string.set_add_songs),
                         description = stringResource(R.string.set_add_songs_desc),
                         checked = viewModel.settings.addToMusicAxs,
                         onCheckedChange = { viewModel.onMusicAxsChanged(it) }
@@ -298,12 +334,11 @@ fun SettingsScreen(
                 }
             }
 
-            // ─── Updates Group ───
+            // -- Updates Group --
             if (!BuildConfig.IS_FDROID) {
                 SettingsGroup(title = stringResource(R.string.u_settings), initiallyExpanded = false) {
-                    // ─── Toggle: Don't show updates ───
                     SettingsToggleRow(
-                        label = stringResource(R.string.d_reminder),
+                        title = stringResource(R.string.d_reminder),
                         checked = viewModel.settings.dontShowUpdate,
                         onCheckedChange = { viewModel.onDontShowUpdateChanged(it) }
                     )
@@ -319,7 +354,7 @@ fun SettingsScreen(
             Text("Open crash logs", fontSize = 12.sp)
         }
 
-        // ─── Version label ───
+        // -- Version label --
         Text(
             text = "$versionName ($versionCode)",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -392,45 +427,53 @@ fun SettingsGroup(
 
 @Composable
 fun SettingsToggleRow(
-    label: String,
+    title: String,
     description: String? = null,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
-            if (description != null) {
-                Text(
-                    description,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.background,
-                checkedTrackColor = MaterialTheme.colorScheme.primary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                title,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
             )
-        )
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.background,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        }
+        if (description != null) {
+            Text(
+                description,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsDropdownRow(
-    label: String,
+    title: String,
     description: String? = null,
     options: Map<out Any, String>,
     selected: Any,
@@ -447,67 +490,81 @@ fun SettingsDropdownRow(
         with(density) { maxPx.toDp() + 32.dp }
     }
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 20.dp, vertical = 4.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
-            if (description != null) {
-                Text(
-                    description,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                    .wrapContentWidth()
-                    .border(
-                        width = 2.dp,
-                        color = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 4.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = options.entries.find { it.key == selected }?.value ?: selected.toString(),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+            Text(
+                title,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
+            )
 
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Icon(
-                    painter = painterResource(if (expanded) R.drawable.expand_less else R.drawable.expand_more),
-                    contentDescription = null,
-                    tint = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.height(15.dp)
-                )
-            }
-            ExposedDropdownMenu(
+            ExposedDropdownMenuBox(
                 expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.widthIn(min = minDropdownWidth).background(MaterialTheme.colorScheme.secondaryContainer)
+                onExpandedChange = { expanded = !expanded }
             ) {
-                options.forEach { (backendValue, displayLabel) ->
-                    DropdownMenuItem(
-                        text = { Text(displayLabel, color = MaterialTheme.colorScheme.onSecondaryContainer) },
-                        onClick = {
-                            onSelectChange(backendValue)
-                            expanded = false
-                        }
+                Row(
+                    modifier = Modifier
+                        .menuAnchor(
+                            ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true
+                        )
+                        .wrapContentWidth()
+                        .border(
+                            width = 2.dp,
+                            color = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = options.entries.find { it.key == selected }?.value ?: selected.toString(),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Icon(
+                        painter = painterResource(if (expanded) R.drawable.expand_less else R.drawable.expand_more),
+                        contentDescription = null,
+                        tint = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.height(15.dp)
                     )
                 }
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .widthIn(min = minDropdownWidth)
+                        .background(MaterialTheme.colorScheme.secondary)
+                ) {
+                    options.forEach { (backendValue, displayLabel) ->
+                        DropdownMenuItem(
+                            text = { Text(displayLabel, color = MaterialTheme.colorScheme.onSecondary) },
+                            onClick = {
+                                onSelectChange(backendValue)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
+        }
+        if (description != null) {
+            Text(
+                description,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -581,4 +638,50 @@ fun CrashLogsDialog(context: Context, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+@Composable
+fun SettingsNumberInputRow(
+    title: String,
+    description: String? = null,
+    warning: String? = null,
+    value: Int,
+    suffix: String = "",
+    onValueChange: (Int) -> Unit
+) {
+    var text by remember(value) { mutableStateOf(value.toString()) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                title,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = text,
+                onValueChange = { newText ->
+                    text = newText.filter { it.isDigit() }
+                    text.toIntOrNull()?.let { onValueChange(it) }
+                },
+                modifier = Modifier.width(110.dp),
+                singleLine = true,
+                suffix = { if (suffix.isNotEmpty()) Text(suffix, fontSize = 12.sp) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+        }
+        if (description != null) {
+            Text(description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth())
+        }
+        if (warning != null) {
+            Text(warning, fontSize = 12.sp, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
+        }
+    }
 }

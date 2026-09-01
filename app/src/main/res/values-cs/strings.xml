@@ -11,6 +11,7 @@
     <string name="URLIDPrompt">YouTube URL nebo ID</string>
     <string name="format">Formát</string>
     <string name="quality">Kvalita</string>
+    <string name="choose_format">Vyberte formát</string>
     <string name="choose_quality">Vyber kvalitu</string>
     <string name="download">Stáhnout</string>
     <string name="cancel">Přerušit</string>
@@ -20,6 +21,12 @@
     <string name="metadata">Metadata:</string>
     <string name="empty_history">Historie je prázdná</string>
     <string name="rm_from_history">Odebrat z historie</string>
+    <string name="cancel_confirm_title">Zrušit stahování?</string>
+    <string name="cancel_confirm_message">Opravdu chcete zrušit toto stahování? Veškerý postup bude ztracen.</string>
+    <string name="cancel_confirm_yes">Ano, zrušit</string>
+    <string name="cancel_confirm_no">Pokračovat</string>
+    <string name="eta_format">Zbývá %1$s</string>
+    <string name="muxing_progress">%1$s / %2$s zkombinováno</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Nastavení</string>
@@ -28,8 +35,11 @@
     <string name="sd_card">SD karta</string>
     <string name="d_settings">Nastavení Stahování</string>
     <string name="up_to_4k">Povolit 2K a výš (video)</string>
+    <string name="up_to_4k_desc">Zobrazí rozlišení nad 1080p (2K, 4K a vyšší) ve výběru kvality, pokud je video má k dispozici.</string>
     <string name="quick_download">Povolit rychlé stáhnutí</string>
+    <string name="quick_download_desc">Přeskočí výběr formátu a kvality - stáhne automaticky nejlepší dostupnou možnost.</string>
     <string name="muxed_fallback">Použít záložní muxovaný stream</string>
+    <string name="muxed_fallback_desc">Pokud nejsou k dispozici samostatné audio a video streamy, použije se záložní kombinovaný stream v nižší kvalitě místo selhání stahování.</string>
     <string name="n_settings">Upozornění</string>
     <string name="n_download_finished">Upozornit když stahování úspěšně skončí</string>
     <string name="n_download_failed">Upozornit když se stahování nepovede</string>
@@ -42,8 +52,14 @@
     <string name="set_scr_customization">Přizpůsobení</string>
     <string name="set_scr_theme">Barevný motiv</string>
     <string name="set_preview">Rozlišení náhledu</string>
+    <string name="set_preview_desc">Rozlišení použité při náhledu videa před jeho stažením.</string>
     <string name="set_add_songs">Přidat písničky do Music.axs</string>
     <string name="set_add_songs_desc">Po stažení ve formátu MP3, ukázat volbu pro přidání do playlistu v Music.axs</string>
+    <string name="audio">Zvuk</string>
+    <string name="video">Video</string>
+    <string name="default_format">Výchozí formát</string>
+    <string name="default_audio_codec">Výchozí zvukový kodek</string>
+    <string name="default_video_codec">Výchozí video kodek</string>
 
     <!-- Search Screen -->
     <string name="search_title">Vyhledávání</string>
@@ -65,6 +81,7 @@
     <string name="pt_invalid_url">Neplatná URL</string>
     <string name="pt_network_error">Chyba sítě</string>
     <string name="pt_no_streams">Žádné streamy nejsou dostupné</string>
+    <string name="pt_no_space">Nedostatek úložného prostoru</string>
 
     <!-- Pop-up messages -->
     <string name="pm_no_url">Analyzátor URL adresy nenašel YouTube ID. Zadejte prosím platnou YouTube URL adresu.</string>
@@ -77,6 +94,7 @@
     <string name="pm_invalid_url">Prosím zadejte platnou YouTube URL adresu</string>
     <string name="pm_network_error">Zařízení se odpojilo od internetu</string>
     <string name="pm_no_streams">Pro toto video nejsou dostupné žádné streamy. Pokud chcete použít záložní muxovaný stream (nižší kvalita), zapněte ho v nastavení</string>
+    <string name="pm_no_space">Nedostatek volného úložiště. Volno nyní: %1$s, potřeba: %2$s.</string>
 
     <!-- Status label messages -->
     <string name="sl_retrieving_metadata">Načítání metadat videa</string>
@@ -122,4 +140,36 @@
     <string name="set_vm_grayscale">Stupně šedi</string>
     <string name="set_vm_bordo">Bordó</string>
     <string name="set_vm_void">Prázdnota</string>
+
+    <!-- Partial data dialog -->
+    <string name="keep_partial_title">Ponechat nedokončené stažení?</string>
+    <string name="keep_partial_message">Stahování selhalo, ale dosud stažená část (%1$s, %2$s) je v pořádku. Ponechat, nebo smazat?</string>
+    <string name="keep">Ponechat</string>
+    <string name="delete">Smazat</string>
+    <string name="fetching_sizes">Zjišťování velikosti souborů…</string>
+
+    <!-- Video.kt -->
+    <string name="is_native">nativní</string>
+    <string name="converted">převedeno</string>
+
+    <!-- Format Info -->
+    <string name="format_info_title">Informace o formátu</string>
+    <string name="format_badge_licensed">Licencovaný</string>
+    <string name="format_desc_m4a">AAC — zní lépe než MP3 při stejném datovém toku, i když není tak efektivní jako Opus. Nativní na iOS/Androidu, podporovaný šířeji než Opus.</string>
+    <string name="format_badge_open_royalty_free">Otevřený, bez licenčních poplatků</string>
+    <string name="format_desc_opus">Opus — nejefektivnější ze tří při nízkých datových tocích, překonává AAC i MP3. Výchozí zvukový kodek YouTube, ale podporuje ho méně starších přehrávačů než AAC nebo MP3.</string>
+    <string name="format_badge_universal">Univerzální</string>
+    <string name="format_desc_mp3">MP3 — nejstarší a nejméně efektivní ze tří, ale přehraje ho víc zařízení než AAC nebo Opus.</string>
+    <string name="format_badge_h264">H.264</string>
+    <string name="format_desc_mp4">MP4 — kontejner s videem H.264. Kompatibilnější než WebM, ale obvykle méně efektivní při stejné kvalitě.</string>
+    <string name="format_desc_webm">WebM/VP9 — komprimuje lépe než stream v MP4 při stejné kvalitě a je výchozí volbou YouTube pro vyšší rozlišení. Méně univerzálně podporovaný než MP4.</string>
+
+    <!-- Safety margin texts -->
+    <string name="storage_margin">Bezpečnostní rezerva úložiště</string>
+    <string name="storage_margin_desc">Volné místo navíc, které se má udržet nad rámec samotného stahování.</string>
+    <string name="storage_margin_too_low_warning">Tato rezerva je dost malá – pokud se úložiště zaplní příliš, zařízení může zpomalit.</string>
+    <string name="margin_override_title">Nedostatečná rezerva</string>
+    <string name="margin_override_message">Toto stahování by se vešlo, kdyby se odstranila bezpečnostní rezerva. Volno: %1$s, potřeba bez rezervy: %2$s. Hrozí riziko zpomalení zařízení při zaplnění úložiště. Odstranit rezervu a přesto stáhnout?</string>
+    <string name="margin_override_cancel">Zrušit</string>
+    <string name="margin_override_proceed">Přesto stáhnout</string>
 </resources>

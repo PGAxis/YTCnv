@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.pg_axis.ytcnv.models.TargetFormat
+import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.services.Theme
 import dev.pgaxis.axs.AxsBoundObject
 import dev.pgaxis.axs.AxsFile
@@ -18,6 +20,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
     companion object {
         @Volatile
         private var instance: SettingsSave? = null
+
+        const val DEFAULT_STORAGE_MARGIN_MB = 500
+        const val RECOMMENDED_MIN_STORAGE_MARGIN_MB = 200
 
         fun getInstance(context: Context): SettingsSave =
             instance ?: synchronized(this) {
@@ -86,7 +91,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
     override var notifyOnFail by setting(true, SettingsClass::notifyOnFail)
     override var addToMusicAxs by setting(false, SettingsClass::addToMusicAxs)
     override var minResolution by intSetting(480, SettingsClass::minResolution)
+    override var storageMarginMb by intSetting(DEFAULT_STORAGE_MARGIN_MB, SettingsClass::storageMarginMb)
     override var theme by setting(Theme.CYAN, SettingsClass::theme)
+    override var defaultDO by setting(DefaultDO(), SettingsClass::defaultDO)
 
     // --- Extra data ---
     override var searchHistory by extraData(emptyList(), ExtraData::searchHistory)
@@ -111,7 +118,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var notifyOnFail: Boolean = true,
         var addToMusicAxs: Boolean = false,
         var minResolution: Int = 480,
+        var storageMarginMb: Int = 500,
         var theme: Theme = Theme.CYAN,
+        var defaultDO: DefaultDO = DefaultDO()
     )
 
     @Keep
@@ -131,6 +140,13 @@ class SettingsSave private constructor(context: Context) : ISettings {
         var downloadHistory: List<HistoryItem> = emptyList()
     )
 
+    @Keep
+    data class DefaultDO(
+        var trackType: TrackType = TrackType.AUDIO,
+        var audio: TargetFormat = TargetFormat.MP3,
+        var video: TargetFormat = TargetFormat.MP4
+    )
+
     init {
         axsFile.open()
 
@@ -148,7 +164,9 @@ class SettingsSave private constructor(context: Context) : ISettings {
         notifyOnFail = s.notifyOnFail
         addToMusicAxs = s.addToMusicAxs
         minResolution = s.minResolution
+        storageMarginMb = s.storageMarginMb
         theme = s.theme
+        defaultDO = s.defaultDO
 
         boundExtraData = axsFile.bind(ExtraData())
 

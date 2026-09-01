@@ -69,7 +69,7 @@ fun HistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // ─── Header ───
+            // -- Header --
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -263,7 +263,6 @@ fun HistoryItemRow(
                     )
                 }
                 VerticalDivider(
-                    modifier = Modifier.padding(vertical = 10.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 Text(
@@ -274,7 +273,6 @@ fun HistoryItemRow(
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                 )
                 VerticalDivider(
-                    modifier = Modifier.padding(vertical = 10.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 Box(

@@ -12,19 +12,43 @@ import androidx.core.net.toUri
 
 object FileSaver {
 
-    fun saveAudio(context: Context, fileName: String, inputFilePath: String, fileUri: String?): Uri? {
-        return if (!fileUri.isNullOrBlank()) {
-            saveToChosenFolder(context, fileName, inputFilePath, "audio/mpeg", fileUri)
-        } else {
-            saveAudioToDownloads(context, fileName, inputFilePath)
+    private fun mimeTypeFor(fileName: String): String {
+        return when (fileName.substringAfterLast('.', "").lowercase()) {
+            "mp3" -> "audio/mpeg"
+            "m4a" -> "audio/mp4"
+            "opus" -> "audio/opus"
+            "mp4" -> "video/mp4"
+            "webm" -> "video/webm"
+            else -> "application/octet-stream"
         }
     }
 
-    fun saveVideo(context: Context, fileName: String, inputFilePath: String, fileUri: String?) {
-        if (!fileUri.isNullOrBlank()) {
-            saveToChosenFolder(context, fileName, inputFilePath, "video/mp4", fileUri)
+    fun saveAudio(context: Context, fileName: String, inputFilePath: String, fileUri: String?): Uri? {
+        val mimeType = mimeTypeFor(fileName)
+        return if (!fileUri.isNullOrBlank()) {
+            saveToChosenFolder(context, fileName, inputFilePath, mimeType, fileUri)
         } else {
-            saveVideoToDownloads(context, fileName, inputFilePath)
+            saveToDownloads(context, fileName, inputFilePath, mimeType)
+        }
+    }
+
+    fun saveVideo(context: Context, fileName: String, inputFilePath: String, fileUri: String?): Uri? {
+        val mimeType = mimeTypeFor(fileName)
+        return if (!fileUri.isNullOrBlank()) {
+            saveToChosenFolder(context, fileName, inputFilePath, mimeType, fileUri)
+        } else {
+            saveToDownloads(context, fileName, inputFilePath, mimeType)
+        }
+    }
+
+    fun createFileInChosenFolder(context: Context, fileName: String, folderUriString: String): Uri? {
+        return try {
+            val folderUri = folderUriString.toUri()
+            val pickedDir = DocumentFile.fromTreeUri(context, folderUri) ?: return null
+            val mimeType = mimeTypeFor(fileName)
+            pickedDir.createFile(mimeType, fileName)?.uri
+        } catch (_: Exception) {
+            null
         }
     }
 
@@ -38,22 +62,19 @@ object FileSaver {
         val folderUri = folderUriString.toUri()
         val pickedDir = DocumentFile.fromTreeUri(context, folderUri)
             ?: throw IllegalStateException("Could not access chosen folder")
-
         val newFile = pickedDir.createFile(mimeType, fileName)
             ?: throw IllegalStateException("Could not create file in chosen folder")
-
         context.contentResolver.openOutputStream(newFile.uri)?.use { out ->
             File(inputFilePath).inputStream().use { it.copyTo(out) }
         }
-
         return newFile.uri
     }
 
-    private fun saveAudioToDownloads(context: Context, fileName: String, inputFilePath: String): Uri {
+    private fun saveToDownloads(context: Context, fileName: String, inputFilePath: String, mimeType: String): Uri {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg")
+                put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
                 put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/")
             }
             val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
@@ -67,25 +88,6 @@ object FileSaver {
             val outFile = File(downloadsDir, fileName)
             File(inputFilePath).copyTo(outFile, overwrite = true)
             return Uri.fromFile(outFile)
-        }
-    }
-
-    private fun saveVideoToDownloads(context: Context, fileName: String, inputFilePath: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/")
-            }
-            val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                ?: throw IllegalStateException("Could not create MediaStore entry")
-            context.contentResolver.openOutputStream(uri)?.use { out ->
-                File(inputFilePath).inputStream().use { it.copyTo(out) }
-            }
-        } else {
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val outFile = File(downloadsDir, fileName)
-            File(inputFilePath).copyTo(outFile, overwrite = true)
         }
     }
 }

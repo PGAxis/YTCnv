@@ -72,7 +72,7 @@ fun SearchScreen(
                 MutableInteractionSource()
             }) { focusManager.clearFocus() }
     ) {
-        // ─── Header ───
+        // -- Header --
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,7 +94,7 @@ fun SearchScreen(
                 color = MaterialTheme.colorScheme.primary
             )
         }
-        // ─── Search bar ───
+        // -- Search bar --
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -232,7 +232,7 @@ fun SearchScreen(
             }
         }
 
-        // ─── Search history panel ───
+        // -- Search history panel --
         if (historyHeightFraction > 0f) {
             Card(
                 modifier = Modifier
@@ -277,7 +277,7 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // ─── Results / states ───
+        // -- Results / states --
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 viewModel.isLoading -> {
@@ -312,6 +312,7 @@ fun SearchScreen(
                                 SearchResultRow(
                                     item = item,
                                     isMusic = viewModel.isMusicSearch,
+                                    isDownloaded = viewModel.isDownloaded(item.videoId),
                                     onDownload = {
                                         onResultSelected("https://www.youtube.com/watch?v=${item.videoId}")
                                     },
@@ -361,6 +362,7 @@ fun SearchScreen(
 fun SearchResultRow(
     item: SearchResultItem,
     isMusic: Boolean,
+    isDownloaded: Boolean,
     onDownload: () -> Unit,
     onCopyUrl: () -> Unit,
     onPreview: () -> Unit
@@ -421,12 +423,22 @@ fun SearchResultRow(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
-                    onClick = onDownload,
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
-                ) {
-                    Text(stringResource(R.string.download), fontSize = 12.sp)
+                if (isDownloaded) {
+                    OutlinedButton(
+                        onClick = onDownload,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(stringResource(R.string.download), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    }
+                } else {
+                    Button(
+                        onClick = onDownload,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(stringResource(R.string.download), fontSize = 12.sp)
+                    }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 OutlinedButton(
@@ -442,7 +454,7 @@ fun SearchResultRow(
         // Title
         Text(
             text = item.title,
-            color = MaterialTheme.colorScheme.primary,
+            color = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             maxLines = 2,
