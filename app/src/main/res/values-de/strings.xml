@@ -18,7 +18,7 @@
     <string name="cancel">Abbrechen</string>
     <string name="load">Metadaten laden</string>
     <string name="download_history_caps">DOWNLOADVERLAUF</string>
-    <string name="download_history">Download-Verlauf</string>
+    <string name="download_history">Downloadverlauf/Warteschlange</string>
     <string name="metadata">Metadaten:</string>
     <string name="empty_history">Verlauf ist leer</string>
     <string name="rm_from_history">Aus dem Verlauf entfernen</string>
@@ -28,6 +28,12 @@
     <string name="cancel_confirm_no">Fortsetzen</string>
     <string name="eta_format">Verbleibend: %1$s</string>
     <string name="muxing_progress">%1$s / %2$s gemuxt</string>
+    <string name="queue_more_waiting">+%d in der Warteschlange</string>
+    <string name="queue_section">Warteschlange</string>
+    <string name="history_section">Verlauf</string>
+    <string name="queue_downloading">Wird heruntergeladen</string>
+    <string name="queue_remove">Aus Warteschlange entfernen</string>
+
 
     <!-- Settings Screen -->
     <string name="settings_title">Einstellungen</string>

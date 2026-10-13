@@ -2,7 +2,6 @@ package com.pg_axis.ytcnv
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -12,11 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arthenica.ffmpegkit.FFmpegKit
 import com.pg_axis.ytcnv.dialogs.UpdateChecker
 import com.pg_axis.ytcnv.dialogs.UpdateInfo
+import com.pg_axis.ytcnv.models.DownloadQueue
 import com.pg_axis.ytcnv.models.FormatOption
-import com.pg_axis.ytcnv.models.QualityOption
+import com.pg_axis.ytcnv.models.LoadOnlyCallbacks
 import com.pg_axis.ytcnv.models.TargetFormat
 import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.models.Video
@@ -26,7 +25,6 @@ import com.pg_axis.ytcnv.settings.*
 import com.pg_axis.ytcnv.ui.theme.PopupSuccess
 import com.pg_axis.ytcnv.ui.theme.PopupError
 import com.pg_axis.ytcnv.ui.theme.PopupDefault
-import com.pg_axis.ytcnv.utils.DownloadNotificationService
 import com.pg_axis.ytcnv.utils.StringUtils.cleanUrl
 import com.pg_axis.ytcnv.utils.StringUtils.isValidId
 import kotlinx.coroutines.Dispatchers
@@ -71,7 +69,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var loadButtonIsVisible by mutableStateOf(!isQuick)
     var loadButtonIsEnabled by mutableStateOf(true)
     var downloadButtonIsVisible by mutableStateOf(isQuick)
-    var cancelButtonIsVisible by mutableStateOf(false)
 
     var selectedFormatIndex by mutableIntStateOf(if (settings.defaultDO.trackType == TrackType.VIDEO) 1 else 0)
         private set
@@ -85,9 +82,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var selectedAudioTrackIndex by mutableIntStateOf(0)
         private set
 
-    var dwnldProgressIsVisible by mutableStateOf(false)
-    var downloadIndicatorIsVisible by mutableStateOf(false)
-    var statusLabelIsVisible by mutableStateOf(false)
+    val cancelButtonIsVisible: Boolean get() = DownloadQueue.phase != DownloadQueue.Phase.IDLE
+    val downloadIndicatorIsVisible: Boolean get() = DownloadQueue.phase == DownloadQueue.Phase.RETRIEVING
+    val dwnldProgressIsVisible: Boolean get() = DownloadQueue.phase == DownloadQueue.Phase.DOWNLOADING
+    val statusLabelIsVisible: Boolean get() = DownloadQueue.phase != DownloadQueue.Phase.IDLE
+
+    var isLoadingOptions by mutableStateOf(false)
+        private set
+    var isPreparingDownload by mutableStateOf(false)
+        private set
 
     var popupIsVisible by mutableStateOf(false)
     var popupBackground by mutableStateOf(Color(0xFF2D2D2D))
@@ -158,7 +161,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var video by mutableStateOf<Video?>(null)
         private set
 
-    private var activeJob: Job? = null
+    val videoQueue: List<Video> get() = DownloadQueue.videoQueue
+
+    val activeVideo: Video? get() = DownloadQueue.activeVideo
+
     var updateInfo by mutableStateOf<UpdateInfo?>(null)
 
     suspend fun checkForUpdates(context: Context) {
@@ -175,16 +181,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onUrlChanged(value: String) {
         urlEntryText = value
-        val isIdle = !cancelButtonIsVisible && !downloadIndicatorIsVisible && !dwnldProgressIsVisible
-        if (isIdle) {
-            video = null
-            selectedDetailedFormatIndex = 0
-            selectedQualityIndex = 0
-            selectedAudioTrackIndex = 0
-            applyQuickDownloadState()
-            if (isValidId(cleanUrl(urlEntryText))) {
-                onLoadClicked()
-            }
+        video = null
+        isLoadingOptions = false
+        selectedDetailedFormatIndex = 0
+        selectedQualityIndex = 0
+        selectedAudioTrackIndex = 0
+        applyQuickDownloadState()
+        if (isValidId(cleanUrl(urlEntryText))) {
+            onLoadClicked()
         }
     }
 
@@ -218,14 +222,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val selectedFormatOption: FormatOption?
         get() = video?.formatOptions?.getOrNull(selectedDetailedFormatIndex)
 
-    val qualityPickerItemsSource: List<QualityOption>
-        get() = video?.qualityOptionsWithSizes ?: emptyList()
-
     fun onLoadClicked() {
         selectedDetailedFormatIndex = 0
         selectedQualityIndex = 0
         selectedAudioTrackIndex = 0
-        val newVideo = Video(urlEntryText, context, videoCallbacks)
+        val newVideo = Video(urlEntryText, context, formCallbacks)
         video = newVideo
         viewModelScope.launch {
             newVideo.loadOptions()
@@ -233,7 +234,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onDownloadClicked() {
-        val currentVideo = video ?: Video(urlEntryText, context, videoCallbacks).also { video = it }
+        if (isPreparingDownload) return
+        val currentVideo = video ?: Video(urlEntryText, context, formCallbacks).also { video = it }
 
         val target: TargetFormat
         val isNative: Boolean
@@ -250,12 +252,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val preferredAudioBitrate = if (!settings.quickDwnld && target.trackType == TrackType.VIDEO) {
-            video?.audioTrackOptions?.getOrNull(selectedAudioTrackIndex)?.bitrate
+            currentVideo.audioTrackOptions.getOrNull(selectedAudioTrackIndex)?.bitrate
         } else null
 
-        activeJob = viewModelScope.launch {
-            currentVideo.download(target, isNative, qualityIndex, preferredAudioBitrate)
+        isPreparingDownload = true
+        viewModelScope.launch {
+            val suggested = try {
+                currentVideo.ensureMetadata()
+            } finally {
+                isPreparingDownload = false
+            }
+            if (suggested == null) return@launch
+
+            requestTitleAuthor(suggested.first, suggested.second) { title, author ->
+                currentVideo.configure(target, isNative, qualityIndex, preferredAudioBitrate, title, author)
+                enqueueVideo(currentVideo)
+                onUrlChanged("")
+            }
         }
+    }
+
+    /** Adds a fully configured video (see [Video.configure]) to the app-wide queue. */
+    fun enqueueVideo(newVideo: Video) {
+        DownloadQueue.enqueue(context, newVideo, downloadCallbacks)
     }
 
     fun onCancelClicked() {
@@ -264,10 +283,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onCancelConfirmed() {
         showCancelConfirmDialog = false
-        FFmpegKit.cancel()
-        activeJob?.cancel()
-        resetAfterInterruption()
-        settings.isDownloadRunning = false
+        // Cancels the ACTIVE video only; the queue then moves on to the next one.
+        DownloadQueue.cancelActive()
     }
 
     fun onCancelDismissed() {
@@ -284,8 +301,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun onTitleAuthorDismissed() {
         cancelAutoDownloadTimer()
         showTitleAuthorDialog = false
-        activeJob?.cancel()
-        resetAfterInterruption()
+        pendingOnConfirm = null
+    }
+
+    private fun requestTitleAuthor(title: String, author: String, onConfirm: (String, String) -> Unit) {
+        dialogTitle = title
+        dialogAuthor = author
+        pendingOnConfirm = onConfirm
+        showTitleAuthorDialog = true
+        onTitleAuthorDialogInteraction()
     }
 
     fun applyQuickDownloadState() {
@@ -297,10 +321,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         loadButtonIsVisible = !quick
         loadButtonIsEnabled = true
         downloadButtonIsVisible = quick
-        cancelButtonIsVisible = false
-        dwnldProgressIsVisible = false
-        downloadIndicatorIsVisible = false
-        statusLabelIsVisible = false
     }
 
     private fun applyLoadedState() {
@@ -311,13 +331,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         loadButtonIsVisible = false
         loadButtonIsEnabled = true
         downloadButtonIsVisible = true
-        cancelButtonIsVisible = false
-        dwnldProgressIsVisible = false
-        downloadIndicatorIsVisible = false
-        statusLabelIsVisible = false
     }
 
-    private fun resetAfterInterruption() {
+    private fun resetFormAfterFailure() {
         if (!settings.quickDwnld && video?.formatOptions?.isNotEmpty() == true) {
             applyLoadedState()
         } else {
@@ -337,27 +353,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         popupIsVisible = true
     }
 
-    private fun stopService() {
-        context.stopService(Intent(context, DownloadNotificationService::class.java))
-    }
-
-    private val videoCallbacks = object : VideoCallbacks {
+    private val formCallbacks = object : LoadOnlyCallbacks() {
         override fun onLoadStarted() {
             loadButtonIsEnabled = false
-            statusLabelIsVisible = false
-            downloadIndicatorIsVisible = true
-            statusLabelIsVisible = true
+            isLoadingOptions = true
         }
 
         override fun onLoadFinished() {
             loadButtonIsVisible = false
             loadButtonIsEnabled = true
-            downloadIndicatorIsVisible = false
-            statusLabelIsVisible = false
+            isLoadingOptions = false
             downloadOptionsIsVisible = true
             qualityPickerIsVisible = true
             downloadButtonIsVisible = true
-            cancelButtonIsVisible = false
 
             val options = video?.formatOptions ?: emptyList()
             val defaultIndex = options.indexOfFirst { it.format == preferredDefaultFormat }
@@ -370,24 +378,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        override fun onDownloadStarted() {
-            formatPickerIsEnabled = false
-            qualityPickerIsEnabled = false
-            downloadButtonIsVisible = false
-            cancelButtonIsVisible = true
-            downloadIndicatorIsVisible = true
-            statusLabelIsVisible = true
-            dwnldProgressIsVisible = false
+        override fun onFailed() {
+            isLoadingOptions = false
+            resetFormAfterFailure()
         }
 
-        override fun onDownloadInProgress() {
-            downloadIndicatorIsVisible = false
-            dwnldProgressIsVisible = true
+        override fun showPopup(title: String, message: String, type: PopupType) {
+            this@MainViewModel.showPopup(title, message, type)
         }
+    }
+
+    private val downloadCallbacks = object : VideoCallbacks {
+        override fun onLoadStarted() {}
+        override fun onLoadFinished() {}
+
+        override fun onDownloadStarted() {}
+        override fun onDownloadInProgress() {}
 
         override fun onDownloadFinished(savedUri: Uri?, isAudio: Boolean) {
-            applyQuickDownloadState()
-            onUrlChanged("")
             if (isAudio && savedUri != null &&
                 MusicAxsClient.isMusicAxsInstalled(context) &&
                 MusicAxsClient.getPlaylists(context).isNotEmpty() &&
@@ -398,24 +406,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        override fun onFailed() {
-            resetAfterInterruption()
-        }
-
-        override fun onCanceled() {
-            resetAfterInterruption()
-        }
+        override fun onFailed() {}
+        override fun onCanceled() {}
 
         override fun showPopup(title: String, message: String, type: PopupType) {
             this@MainViewModel.showPopup(title, message, type)
-        }
-
-        override fun requestTitleAuthorConfirmation(title: String, author: String, onConfirm: (String, String) -> Unit) {
-            dialogTitle = title
-            dialogAuthor = author
-            pendingOnConfirm = onConfirm
-            showTitleAuthorDialog = true
-            onTitleAuthorDialogInteraction()
         }
 
         override fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit) {
@@ -432,9 +427,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             showMarginOverrideDialog = true
         }
 
-        override fun stopService() {
-            this@MainViewModel.stopService()
-        }
+        override fun stopService() {}
     }
 
     companion object {

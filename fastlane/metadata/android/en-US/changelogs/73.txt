@@ -1,0 +1,5 @@
+Bug fixes:
+- The progress of a video downloaded via the "Overlay" function would not show in the main app
+
+Additions:
+- Downloading a video (via all three methods - main screen, search screen, overlay) will now put it in a queue, allowing for continuous download (#11)

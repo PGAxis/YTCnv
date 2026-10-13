@@ -18,7 +18,7 @@
     <string name="cancel">Cancel</string>
     <string name="load">Load metadata</string>
     <string name="download_history_caps">DOWNLOAD HISTORY</string>
-    <string name="download_history">Download history</string>
+    <string name="download_history">Download history/Queue</string>
     <string name="metadata">Metadata:</string>
     <string name="empty_history">History is empty</string>
     <string name="rm_from_history">Remove from history</string>
@@ -28,6 +28,12 @@
     <string name="cancel_confirm_no">Continue</string>
     <string name="eta_format">ETA %1$s</string>
     <string name="muxing_progress">%1$s / %2$s muxed</string>
+    <string name="queue_more_waiting">+%d in queue</string>
+    <string name="queue_section">Queue</string>
+    <string name="history_section">History</string>
+    <string name="queue_downloading">Downloading</string>
+    <string name="queue_remove">Remove from queue</string>
+
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>

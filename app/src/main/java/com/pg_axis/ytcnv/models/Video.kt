@@ -25,6 +25,7 @@ import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFmpegKitConfig
 import com.pg_axis.ytcnv.PopupType
 import com.pg_axis.ytcnv.R
+import com.pg_axis.ytcnv.formatBytes
 import com.pg_axis.ytcnv.settings.SettingsSave
 import com.pg_axis.ytcnv.utils.DownloadNotificationService
 import com.pg_axis.ytcnv.utils.DownloadUtils
@@ -128,18 +129,69 @@ interface VideoCallbacks {
     fun onFailed()
     fun onCanceled()
     fun showPopup(title: String, message: String, type: PopupType)
-    fun requestTitleAuthorConfirmation(title: String, author: String, onConfirm: (String, String) -> Unit)
     fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit)
     fun offerDownloadWithoutMargin(availableBytes: Long, requiredBytesWithoutMargin: Long, onChoice: (Boolean) -> Unit)
     fun stopService()
 }
 
+data class DownloadPlan(
+    val target: TargetFormat,
+    val isNative: Boolean,
+    val qualityIndex: Int,
+    val preferredAudioBitrate: Int?,
+    val title: String?,
+    val author: String?
+)
+
+abstract class LoadOnlyCallbacks : VideoCallbacks {
+    override fun onDownloadStarted() {}
+    override fun onDownloadInProgress() {}
+    override fun onDownloadFinished(savedUri: Uri?, isAudio: Boolean) {}
+    override fun onCanceled() {}
+    override fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit) = onChoice(false)
+    override fun offerDownloadWithoutMargin(availableBytes: Long, requiredBytesWithoutMargin: Long, onChoice: (Boolean) -> Unit) = onChoice(false)
+    override fun stopService() {}
+}
+
+private val videoUidCounter = AtomicLong()
+
 class Video(
     urlOrId: String,
     private val context: Context,
-    private val callbacks: VideoCallbacks
+    initialCallbacks: VideoCallbacks
 ) {
     val id: String = cleanUrl(urlOrId)
+
+    private var callbacks: VideoCallbacks = initialCallbacks
+
+    fun attachCallbacks(newCallbacks: VideoCallbacks) {
+        callbacks = newCallbacks
+    }
+
+    val uid: Long = videoUidCounter.incrementAndGet()
+
+    val displayTitle: String
+        get() = plan?.title ?: cachedStreamInfo?.name ?: id
+
+    val displayAuthor: String
+        get() = plan?.author ?: cachedStreamInfo?.uploaderName ?: ""
+
+    val isAudioTarget: Boolean?
+        get() = plan?.target?.trackType?.let { it == TrackType.AUDIO }
+
+    var plan: DownloadPlan? = null
+        private set
+
+    fun configure(
+        target: TargetFormat,
+        isNative: Boolean,
+        qualityIndex: Int,
+        preferredAudioBitrate: Int?,
+        title: String?,
+        author: String?
+    ) {
+        plan = DownloadPlan(target, isNative, qualityIndex, preferredAudioBitrate, title, author)
+    }
 
     val notificationId: Int = id.hashCode()
 
@@ -150,7 +202,7 @@ class Video(
 
     private val settings = SettingsSave.getInstance(context)
 
-    private var cachedStreamInfo: StreamInfo? = null
+    private var cachedStreamInfo by mutableStateOf<StreamInfo?>(null)
     private var muxedFallbackStream: VideoStream? = null
 
     var formatOptions by mutableStateOf<List<FormatOption>>(emptyList())
@@ -560,8 +612,39 @@ class Video(
         }
     }
 
+    suspend fun ensureMetadata(): Pair<String, String>? = withContext(Dispatchers.IO) {
+        if (id.isBlank()) {
+            withContext(Dispatchers.Main) {
+                callbacks.showPopup(context.getString(R.string.pt_no_url), context.getString(R.string.pm_no_url), PopupType.ERROR)
+                callbacks.onFailed()
+            }
+            return@withContext null
+        }
+        try {
+            val info = cachedStreamInfo
+                ?: StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$id").also { cachedStreamInfo = it }
+            if (info.duration <= 0) {
+                withContext(Dispatchers.Main) {
+                    callbacks.showPopup(context.getString(R.string.pt_live), context.getString(R.string.pm_live), PopupType.MESSAGE)
+                    callbacks.onFailed()
+                }
+                return@withContext null
+            }
+            val author = cleanAuthor(info.uploaderName ?: "")
+            val (title, cleanedAuthor) = cleanTitle(info.name ?: "YouTube_Video", author)
+            title to cleanedAuthor
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                reportError(e)
+                callbacks.onFailed()
+            }
+            null
+        }
+    }
+
     suspend fun loadOptions() = withContext(Dispatchers.IO) {
-        settings.isDownloadRunning = true
         withContext(Dispatchers.Main) {
             callbacks.onLoadStarted()
             statusLabelText = AnnotatedString(context.getString(R.string.sl_retrieving_metadata))
@@ -572,7 +655,6 @@ class Video(
                 callbacks.showPopup(context.getString(R.string.pt_no_url), context.getString(R.string.pm_no_url), PopupType.ERROR)
                 callbacks.onFailed()
             }
-            settings.isDownloadRunning = false
             return@withContext
         }
 
@@ -616,18 +698,26 @@ class Video(
                 reportError(e)
                 callbacks.onFailed()
             }
-        } finally {
-            settings.isDownloadRunning = false
         }
     }
 
 
-    suspend fun download(target: TargetFormat, isNative: Boolean, qualityIndex: Int, preferredAudioBitrate: Int? = null) = withContext(Dispatchers.IO) {
+    /** Downloads using the [plan] set through [configure]. */
+    suspend fun download() = withContext(Dispatchers.IO) {
+        val plan = this@Video.plan
+        if (plan == null) {
+            withContext(Dispatchers.Main) {
+                callbacks.showPopup(context.getString(R.string.pt_error), "Download was not configured.", PopupType.ERROR)
+                callbacks.onFailed()
+            }
+            return@withContext
+        }
+        val target = plan.target
+        val isNative = plan.isNative
         outputFormat = target
         isMp3 = target.trackType == TrackType.AUDIO
-        selectedQualityIndex = qualityIndex
-        this@Video.preferredAudioBitrate = preferredAudioBitrate
-        settings.isDownloadRunning = true
+        selectedQualityIndex = plan.qualityIndex
+        this@Video.preferredAudioBitrate = plan.preferredAudioBitrate
 
         withContext(Dispatchers.Main) {
             callbacks.onDownloadStarted()
@@ -649,7 +739,6 @@ class Video(
                 callbacks.showPopup(context.getString(R.string.pt_no_url), context.getString(R.string.pm_no_url), PopupType.ERROR)
                 callbacks.onFailed()
             }
-            settings.isDownloadRunning = false
             return@withContext
         }
 
@@ -663,7 +752,6 @@ class Video(
                     callbacks.onFailed()
                 }
                 callbacks.stopService()
-                settings.isDownloadRunning = false
                 DownloadNotificationService.setProgressType(false)
                 return@withContext
             }
@@ -676,9 +764,7 @@ class Video(
                 )
             }
 
-            var author = cleanAuthor(streamInfo.uploaderName ?: "")
-            val (cleanedTitle, cleanedAuthor) = cleanTitle(streamInfo.name ?: "YouTube_Video", author)
-            author = cleanedAuthor
+            val (cleanedTitle, cleanedAuthor) = cleanTitle(streamInfo.name ?: "YouTube_Video", cleanAuthor(streamInfo.uploaderName ?: ""))
             var title = cleanedTitle
             val unalteredTitle = streamInfo.name?.trim() ?: title
 
@@ -702,15 +788,9 @@ class Video(
             }
             if (target == TargetFormat.OPUS || target == TargetFormat.WEBM) hasThumbnail = false
 
-            // Confirm title/author with the user
-            val (confirmedTitle, confirmedAuthor) = withContext(Dispatchers.Main) {
-                suspendCancellableCoroutine { cont ->
-                    callbacks.requestTitleAuthorConfirmation(title, author) { t, a ->
-                        @Suppress("DEPRECATION")
-                        cont.resume(Pair(t, a)) { }
-                    }
-                }
-            }
+            // Title/author were confirmed
+            val confirmedTitle = plan.title ?: cleanedTitle
+            val confirmedAuthor = plan.author ?: cleanedAuthor
             title = if (confirmedTitle.filter { it !in "/\\:*?\"<>|" } == confirmedTitle) confirmedTitle
             else cleanTitle(confirmedTitle, confirmedAuthor).first
 
@@ -810,7 +890,6 @@ class Video(
             deleteFiles()
             DownloadNotificationService.setProgressType(false)
             callbacks.stopService()
-            settings.isDownloadRunning = false
         }
     }
 
@@ -924,7 +1003,7 @@ class Video(
                     urlRefresher = { getAudioStream()?.content ?: audioStream.content }
                 )
             } catch (e: Exception) {
-                offerToKeepPartialFile(rawPath, rawExtension, title, rawLabel, rawIsVideo)
+                offerToKeepPartialFile(rawPath, rawExtension, title, rawLabel, false)
                 throw e
             }
         } else if (muxed != null) {
@@ -942,7 +1021,7 @@ class Video(
                     }
                 )
             } catch (e: Exception) {
-                offerToKeepPartialFile(rawPath, rawExtension, title, rawLabel, rawIsVideo)
+                offerToKeepPartialFile(rawPath, rawExtension, title, rawLabel, true)
                 throw e
             }
         } else {
@@ -1047,8 +1126,7 @@ class Video(
 
         fun pool() = streamInfo.videoOnlyStreams.filter { stream ->
             (settings.use4K || stream.height <= 1080) &&
-                    if (target == TargetFormat.MP4) true
-                    else if (isNative) matchesVideoCodec(stream.format?.name, target) else true
+                    (target == TargetFormat.MP4 || !isNative || matchesVideoCodec(stream.format?.name, target))
         }
         fun pickBest(candidates: List<VideoStream>): VideoStream? {
             val maxHeight = candidates.maxOfOrNull { it.height } ?: return null
@@ -1107,7 +1185,7 @@ class Video(
                         } else if (muxed != null) {
                             DownloadUtils.downloadStream(muxed.content, audioPath,
                                 onProgress = { p ->
-                                    audioBytesDone.set((p * audioBytes).toLong())
+                                    audioBytesDone.set((p * 0).toLong())
                                     reportCombined()
                                 },
                                 urlRefresher = {
@@ -1308,18 +1386,6 @@ class Video(
                 Log.d("DownloadError", e.stackTraceToString())
                 if (settings.notifyOnFail) DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_error), notificationId)
             }
-        }
-    }
-
-    private fun formatBytes(bytes: Long): String {
-        if (bytes <= 0) return "0 KB"
-        val kb = bytes / 1024.0
-        val mb = kb / 1024.0
-        val gb = mb / 1024.0
-        return when {
-            gb >= 1 -> String.format(java.util.Locale.getDefault(), "%.2f GB", gb)
-            mb >= 1 -> String.format(java.util.Locale.getDefault(), "%.1f MB", mb)
-            else -> String.format(java.util.Locale.getDefault(), "%.0f KB", kb)
         }
     }
 

@@ -1,0 +1,5 @@
+Opravy chyb:
+- Progres videa, které bylo stáhnuto pomocí funkce "Překrytí" neukazovalo progres na hlavní obrazovce
+
+Co je nového:
+- Stáhnutí videa (pomocí všech tří metod - hlavní obrazovka, vyhledávací obrazovka, překrytí) jej nyní umístí do fronty, umožnující spojité stahování (#11)

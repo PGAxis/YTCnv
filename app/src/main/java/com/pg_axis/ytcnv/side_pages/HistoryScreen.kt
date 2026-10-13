@@ -1,5 +1,7 @@
 package com.pg_axis.ytcnv.side_pages
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -46,6 +50,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pg_axis.ytcnv.R
+import com.pg_axis.ytcnv.models.Video
+import sh.calvin.reorderable.ReorderableCollectionItemScope
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -92,11 +100,42 @@ fun HistoryScreen(
                 )
             }
 
+            val lazyListState = rememberLazyListState()
+            // Keys of queue rows are Video.uid (Long); everything else in the list uses String keys,
+            // so only queue rows can ever be reordered. The downloading row is disabled below.
+            val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+                val fromUid = from.key as? Long
+                val toUid = to.key as? Long
+                if (fromUid != null && toUid != null) vm.onMoveQueueItem(fromUid, toUid)
+            }
+
             LazyColumn(
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
-                    .padding(10.dp)
+                    .padding(10.dp),
+                state = lazyListState
             ) {
+                val queue = vm.queue
+                if (queue.isNotEmpty()) {
+                    item(key = "queue_header") {
+                        SectionHeader(stringResource(R.string.queue_section))
+                    }
+                    items(queue, key = { it.uid }) { video ->
+                        val isActive = video === vm.activeVideo
+                        ReorderableItem(reorderableState, key = video.uid, enabled = !isActive) { isDragging ->
+                            QueueItemRow(
+                                video = video,
+                                isActive = isActive,
+                                isDragging = isDragging,
+                                onRemove = { vm.onRemoveQueueItem(video) }
+                            )
+                        }
+                    }
+                    item(key = "history_header") {
+                        SectionHeader(stringResource(R.string.history_section))
+                    }
+                }
+
                 itemsIndexed(
                     items = vm.settings.downloadHistory,
                     key = { i, item -> "${item.urlOrId}_${i}" }
@@ -290,6 +329,118 @@ fun HistoryItemRow(
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    )
+}
+
+@Composable
+private fun ReorderableCollectionItemScope.QueueItemRow(
+    video: Video,
+    isActive: Boolean,
+    isDragging: Boolean,
+    onRemove: () -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "queueRowElevation")
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        border = if (isActive) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = video.displayTitle,
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = if (isActive) 12.dp else 0.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                if (!isActive) {
+                    Icon(
+                        painter = painterResource(R.drawable.drag_handle),
+                        contentDescription = "Reorder",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(4.dp)
+                            .draggableHandle(),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }, shape = RoundedCornerShape(0.dp), modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.settings),
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.queue_remove), color = MaterialTheme.colorScheme.onSecondaryContainer) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onRemove()
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isActive) stringResource(R.string.queue_downloading) else video.displayAuthor,
+                    fontSize = 10.sp,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                )
+                VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text(
+                    text = when (video.isAudioTarget) {
+                        true -> "MP3"
+                        false -> "MP4"
+                        null -> "N/A"
+                    },
+                    textAlign = TextAlign.End,
+                    fontSize = 10.sp,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                )
             }
         }
     }

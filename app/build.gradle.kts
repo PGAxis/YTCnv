@@ -32,8 +32,8 @@ android {
         applicationId = "com.pg_axis.ytcnv"
         minSdk = 25
         targetSdk = 37
-        versionCode = 72
-        versionName = "3.16.2"
+        versionCode = 73
+        versionName = "3.17.0"
 
         ndk {
             //noinspection ChromeOsAbiSupport
@@ -46,6 +46,14 @@ android {
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("../debug.jks")
+            storePassword = "android"
+            keyAlias = "debug"
+            keyPassword = "android"
+        }
     }
     buildTypes {
         release {
@@ -101,6 +109,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.datasource)
     implementation(libs.axs)
+    implementation(libs.reorderable)
     coreLibraryDesugaring(libs.desugar)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -51,22 +51,10 @@ fun AppNavigation(initialUrl: String? = null) {
         }
         composable("search") {
             LockPortrait()
-            val searchViewModel = viewModel<SearchViewModel>(
-                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return SearchViewModel(mainViewModel.settings) as T
-                    }
-                }
-            )
             SearchScreen(
                 onBack = { popBack() },
-                onResultSelected = { url ->
-                    mainViewModel.onUrlChanged(url)
-                    popBackToMain()
-                },
-                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
-                viewModel = searchViewModel
+                onEnqueue = { video -> mainViewModel.enqueueVideo(video) },
+                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") }
             )
         }
         composable("settings") {
@@ -81,14 +69,9 @@ fun AppNavigation(initialUrl: String? = null) {
         }
         composable("preview/{videoId}") { backStackEntry ->
             val videoId = backStackEntry.arguments?.getString("videoId") ?: return@composable
-            val previewViewModel = viewModel<PreviewViewModel>(
-                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return PreviewViewModel(videoId, application) as T
-                    }
-                }
-            )
+            val previewViewModel = remember {
+                PreviewViewModel(videoId, application)
+            }
             PreviewScreen(
                 onBack = { popBack() },
                 viewModel = previewViewModel

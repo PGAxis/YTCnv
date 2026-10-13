@@ -18,7 +18,7 @@
     <string name="cancel">Отмена</string>
     <string name="load">Загрузить метаданные</string>
     <string name="download_history_caps">ИСТОРИЯ ЗАГРУЗОК</string>
-    <string name="download_history">История загрузок</string>
+    <string name="download_history">История загрузок/Очередь</string>
     <string name="metadata">Метаданные:</string>
     <string name="empty_history">История пуста</string>
     <string name="rm_from_history">Удалить из истории</string>
@@ -28,6 +28,12 @@
     <string name="cancel_confirm_no">Продолжить</string>
     <string name="eta_format">Осталось: %1$s</string>
     <string name="muxing_progress">%1$s / %2$s объединено</string>
+    <string name="queue_more_waiting">+%d в очереди</string>
+    <string name="queue_section">Очередь</string>
+    <string name="history_section">История</string>
+    <string name="queue_downloading">Загружается</string>
+    <string name="queue_remove">Удалить из очереди</string>
+
 
     <!-- Settings Screen -->
     <string name="settings_title">Настройки</string>

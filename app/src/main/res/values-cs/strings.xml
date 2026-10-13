@@ -18,7 +18,7 @@
     <string name="cancel">Přerušit</string>
     <string name="load">Načíst metadata</string>
     <string name="download_history_caps">HISTORIE STAHOVÁNÍ</string>
-    <string name="download_history">Historie stahování</string>
+    <string name="download_history">Historie stahování/Fronta</string>
     <string name="metadata">Metadata:</string>
     <string name="empty_history">Historie je prázdná</string>
     <string name="rm_from_history">Odebrat z historie</string>
@@ -28,6 +28,11 @@
     <string name="cancel_confirm_no">Pokračovat</string>
     <string name="eta_format">Zbývá %1$s</string>
     <string name="muxing_progress">%1$s / %2$s zkombinováno</string>
+    <string name="queue_more_waiting">+%d ve frontě</string>
+    <string name="queue_section">Fronta</string>
+    <string name="history_section">Historie</string>
+    <string name="queue_downloading">Stahuje se</string>
+    <string name="queue_remove">Odebrat z fronty</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Nastavení</string>

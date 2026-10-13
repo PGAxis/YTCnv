@@ -18,7 +18,7 @@
     <string name="cancel">İptal</string>
     <string name="load">Meta verileri yükle</string>
     <string name="download_history_caps">İndirme Geçmişi</string>
-    <string name="download_history">İndirme geçmişi</string>
+    <string name="download_history">İndirme geçmişi/Sıra</string>
     <string name="metadata">Meta veriler:</string>
     <string name="empty_history">Geçmiş boş</string>
     <string name="rm_from_history">Geçmişten kaldır</string>
@@ -28,6 +28,12 @@
     <string name="cancel_confirm_no">Devam et</string>
     <string name="eta_format">Kalan süre: %1$s</string>
     <string name="muxing_progress">%1$s / %2$s birleştirildi</string>
+    <string name="queue_more_waiting">+%d sırada</string>
+    <string name="queue_section">Sıra</string>
+    <string name="history_section">Geçmiş</string>
+    <string name="queue_downloading">İndiriliyor</string>
+    <string name="queue_remove">Sıradan kaldır</string>
+
 
     <!-- Settings Screen -->
     <string name="settings_title">Ayarlar</string>

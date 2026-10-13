@@ -26,11 +26,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,10 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,14 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.dialogs.UpdateDialog
-import com.pg_axis.ytcnv.models.AudioTrackOption
-import com.pg_axis.ytcnv.models.TrackType
+import com.pg_axis.ytcnv.side_pages.DownloadOptionsPicker
 import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 import com.pg_axis.ytcnv.ui.theme.PopupError
 import java.util.Locale
 
 @SuppressLint("SourceLockedOrientationActivity")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
@@ -151,222 +140,26 @@ fun MainScreen(
 
             // --- Format/Quality pickers ---
             if (viewModel.downloadOptionsIsVisible) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    if (settings.quickDwnld) {
-                        var formatExpanded by remember { mutableStateOf(false) }
-                        val formats = listOf("MP3", "MP4")
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            ExposedDropdownMenuBox(
-                                expanded = formatExpanded,
-                                onExpandedChange = { formatExpanded = it },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                OutlinedTextField(
-                                    value = formats.getOrElse(viewModel.selectedFormatIndex) { stringResource(R.string.choose_format) },
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text(text = stringResource(R.string.format)) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = formatExpanded) },
-                                    modifier = Modifier
-                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                                        .fillMaxWidth()
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = formatExpanded,
-                                    onDismissRequest = { formatExpanded = false }
-                                ) {
-                                    formats.forEachIndexed { index, format ->
-                                        DropdownMenuItem(
-                                            text = { Text(format) },
-                                            onClick = {
-                                                viewModel.onFormatChanged(index)
-                                                formatExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            IconButton(onClick = { onOpenInfo() }, shape = CutCornerShape(0.dp), modifier = Modifier.size(35.dp)) {
-                                Icon(
-                                    painter = painterResource(R.drawable.info),
-                                    contentDescription = "Info",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    } else {
-                        val formatOptions = viewModel.video?.formatOptions ?: emptyList()
-                        val hasOptions = formatOptions.isNotEmpty()
-                        var formatExpanded by remember { mutableStateOf(false) }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            ExposedDropdownMenuBox(
-                                expanded = formatExpanded,
-                                onExpandedChange = { formatExpanded = it },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                OutlinedTextField(
-                                    value = formatOptions.getOrNull(viewModel.selectedDetailedFormatIndex)?.displayName
-                                        ?: stringResource(R.string.choose_format),
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    enabled = hasOptions,
-                                    label = { Text(text = stringResource(R.string.format)) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = formatExpanded) },
-                                    modifier = Modifier
-                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = hasOptions)
-                                        .fillMaxWidth()
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = formatExpanded,
-                                    onDismissRequest = { formatExpanded = false }
-                                ) {
-                                    formatOptions.forEachIndexed { index, option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option.displayName) },
-                                            onClick = {
-                                                viewModel.onDetailedFormatChanged(index)
-                                                formatExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            IconButton(onClick = { onOpenInfo() }, shape = CutCornerShape(0.dp), modifier = Modifier.size(35.dp)) {
-                                Icon(
-                                    painter = painterResource(R.drawable.info),
-                                    contentDescription = "Info",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-
-                        if (viewModel.qualityPickerIsVisible && viewModel.qualityPickerItemsSource.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            var qualityExpanded by remember { mutableStateOf(false) }
-                            val selectedQuality = viewModel.qualityPickerItemsSource.getOrNull(viewModel.selectedQualityIndex)
-                            ExposedDropdownMenuBox(
-                                expanded = qualityExpanded,
-                                onExpandedChange = { qualityExpanded = it },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    value = selectedQuality?.let { qualityLabel(it) } ?: stringResource(R.string.choose_quality),
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text(text = stringResource(R.string.quality)) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = qualityExpanded) },
-                                    modifier = Modifier
-                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                                        .fillMaxWidth()
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = qualityExpanded,
-                                    onDismissRequest = { qualityExpanded = false }
-                                ) {
-                                    viewModel.qualityPickerItemsSource.forEachIndexed { index, option ->
-                                        DropdownMenuItem(
-                                            text = { Text(qualityLabel(option)) },
-                                            onClick = {
-                                                viewModel.onQualityChanged(index)
-                                                qualityExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            if (viewModel.video?.isFetchingQualitySizes == true) {
-                                Text(
-                                    text = stringResource(R.string.fetching_sizes),
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(top = 2.dp)
-                                )
-                            }
-
-                            // --- Audio quality toggle (video downloads only) ---
-                            val selectedFormat = viewModel.selectedFormatOption?.format
-                            if (selectedFormat?.trackType == TrackType.VIDEO) {
-
-                                val audioOptions = viewModel.video?.audioTrackOptions ?: emptyList()
-                                if (audioOptions.isNotEmpty()) {
-                                    var audioExpanded by remember { mutableStateOf(false) }
-                                    val videoSizeBytes = selectedQuality?.sizeBytes
-                                    val selectedAudio = audioOptions.getOrNull(viewModel.selectedAudioTrackIndex)
-                                    ExposedDropdownMenuBox(
-                                        expanded = audioExpanded,
-                                        onExpandedChange = { audioExpanded = it },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        OutlinedTextField(
-                                            value = selectedAudio?.let {
-                                                audioTrackLabel(
-                                                    it,
-                                                    videoSizeBytes
-                                                )
-                                            }
-                                                ?: stringResource(R.string.choose_quality),
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            label = { Text(text = stringResource(R.string.audio)) },
-                                            trailingIcon = {
-                                                ExposedDropdownMenuDefaults.TrailingIcon(
-                                                    expanded = audioExpanded
-                                                )
-                                            },
-                                            modifier = Modifier
-                                                .menuAnchor(
-                                                    ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                                    enabled = true
-                                                )
-                                                .fillMaxWidth()
-                                        )
-                                        ExposedDropdownMenu(
-                                            expanded = audioExpanded,
-                                            onDismissRequest = { audioExpanded = false }
-                                        ) {
-                                            audioOptions.forEachIndexed { index, option ->
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            audioTrackLabel(
-                                                                option,
-                                                                videoSizeBytes
-                                                            )
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        viewModel.onAudioTrackChanged(index)
-                                                        audioExpanded = false
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                    if (viewModel.video?.isFetchingAudioTrackSizes == true) {
-                                        Text(
-                                            text = stringResource(R.string.fetching_sizes),
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(top = 2.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                DownloadOptionsPicker(
+                    quickMode = settings.quickDwnld,
+                    video = viewModel.video,
+                    selectedQuickFormatIndex = viewModel.selectedFormatIndex,
+                    selectedDetailedFormatIndex = viewModel.selectedDetailedFormatIndex,
+                    selectedQualityIndex = viewModel.selectedQualityIndex,
+                    selectedAudioTrackIndex = viewModel.selectedAudioTrackIndex,
+                    qualityPickerIsVisible = viewModel.qualityPickerIsVisible,
+                    onQuickFormatChanged = { viewModel.onFormatChanged(it) },
+                    onDetailedFormatChanged = { viewModel.onDetailedFormatChanged(it) },
+                    onQualityChanged = { viewModel.onQualityChanged(it) },
+                    onAudioTrackChanged = { viewModel.onAudioTrackChanged(it) },
+                    onOpenInfo = onOpenInfo
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             // --- Action button ---
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 /*if (viewModel.loadButtonIsVisible) {
                     Button(
                         onClick = { viewModel.onLoadClicked() },
@@ -381,13 +174,14 @@ fun MainScreen(
                 if (viewModel.downloadButtonIsVisible) {
                     Button(
                         onClick = { viewModel.onDownloadClicked() },
-                        modifier = Modifier.fillMaxWidth()
+                        enabled = !viewModel.isPreparingDownload,
+                        modifier = Modifier.weight(1f)
                     ) { Text(text = stringResource(R.string.download)) }
                 }
                 if (viewModel.cancelButtonIsVisible) {
                     Button(
                         onClick = { viewModel.onCancelClicked() },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.primary
@@ -399,15 +193,15 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(25.dp))
 
             // --- Progress / Status ---
-            if (viewModel.dwnldProgressIsVisible || viewModel.downloadIndicatorIsVisible || viewModel.statusLabelIsVisible) {
+            if (viewModel.dwnldProgressIsVisible || viewModel.downloadIndicatorIsVisible || viewModel.statusLabelIsVisible || viewModel.isLoadingOptions) {
                 Column(modifier = Modifier.padding(bottom = 25.dp)) {
                     if (viewModel.dwnldProgressIsVisible) {
                         LinearProgressIndicator(
-                            progress = { viewModel.video?.downloadProgress ?: 0f },
+                            progress = { viewModel.activeVideo?.downloadProgress ?: 0f },
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        val v = viewModel.video
+                        val v = viewModel.activeVideo
                         if (v != null && v.isMuxing) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -472,18 +266,28 @@ fun MainScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                         }
                     }
-                    if (viewModel.downloadIndicatorIsVisible) {
+                    if (viewModel.downloadIndicatorIsVisible || viewModel.isLoadingOptions) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                     }
-                    if (viewModel.statusLabelIsVisible) {
+                    if (viewModel.statusLabelIsVisible || viewModel.isLoadingOptions) {
                         Text(
-                            text = viewModel.video?.statusLabelText ?: AnnotatedString(""),
+                            text = (viewModel.activeVideo ?: viewModel.video)?.statusLabelText ?: AnnotatedString(""),
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
+            }
+
+            if (viewModel.videoQueue.size > 1) {
+                Text(
+                    text = stringResource(R.string.queue_more_waiting, viewModel.videoQueue.size - 1),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    textAlign = TextAlign.Center
+                )
             }
 
             // --- Divider ---
@@ -758,35 +562,6 @@ fun MainScreen(
                 )
             }
         }
-    }
-}
-
-private fun qualityLabel(option: com.pg_axis.ytcnv.models.QualityOption): String {
-    val nativePart = if (!option.isNative) " · converted" else ""
-    val sizePart = option.sizeBytes?.let { " (${formatBytes(it)})" } ?: ""
-    return "${option.displayName}$nativePart$sizePart"
-}
-
-private fun audioTrackLabel(option: AudioTrackOption, videoSizeBytes: Long?): String {
-    val base = "${option.codecName}: ${option.bitrate} kbps"
-    val audioSize = option.sizeBytes ?: return base
-    return if (videoSizeBytes != null) {
-        val total = formatBytes(videoSizeBytes + audioSize)
-        "$base | $total (${formatBytes(videoSizeBytes)} + ${formatBytes(audioSize)})"
-    } else {
-        "$base | ${formatBytes(audioSize)}"
-    }
-}
-
-private fun formatBytes(bytes: Long): String {
-    if (bytes <= 0) return "0 KB"
-    val kb = bytes / 1024.0
-    val mb = kb / 1024.0
-    val gb = mb / 1024.0
-    return when {
-        gb >= 1 -> String.format(Locale.getDefault(), "%.2f GB", gb)
-        mb >= 1 -> String.format(Locale.getDefault(), "%.1f MB", mb)
-        else -> String.format(Locale.getDefault(), "%.0f KB", kb)
     }
 }
 

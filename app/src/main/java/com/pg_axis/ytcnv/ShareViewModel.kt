@@ -1,7 +1,6 @@
 package com.pg_axis.ytcnv
 
 import android.app.Application
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -9,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.pg_axis.ytcnv.models.DownloadQueue
 import com.pg_axis.ytcnv.models.FormatOption
 import com.pg_axis.ytcnv.models.QualityOption
 import com.pg_axis.ytcnv.models.TargetFormat
@@ -16,10 +16,6 @@ import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.models.Video
 import com.pg_axis.ytcnv.models.VideoCallbacks
 import com.pg_axis.ytcnv.settings.SettingsSave
-import com.pg_axis.ytcnv.utils.DownloadNotificationService
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 enum class SheetState { LOADING_METADATA, PICKING }
@@ -83,7 +79,6 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
         qualityIndex = index
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun startDownload(onDone: () -> Unit) {
         val target: TargetFormat
         val isNative: Boolean
@@ -99,9 +94,8 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
             quality = qualityIndex
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
-            video.download(target, isNative, quality)
-        }
+        video.configure(target, isNative, quality, preferredAudioBitrate = null, title = null, author = null)
+        DownloadQueue.enqueue(context, video, this)
         onDone()
     }
 
@@ -141,10 +135,6 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
     override fun showPopup(title: String, message: String, type: PopupType) {
     }
 
-    override fun requestTitleAuthorConfirmation(title: String, author: String, onConfirm: (String, String) -> Unit) {
-        onConfirm(title, author)
-    }
-
     override fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit) {
         onChoice(true)
     }
@@ -154,6 +144,5 @@ class ShareViewModel(application: Application, rawUrl: String) : AndroidViewMode
     }
 
     override fun stopService() {
-        context.stopService(Intent(context, DownloadNotificationService::class.java))
     }
 }

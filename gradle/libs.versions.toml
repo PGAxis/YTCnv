@@ -1,16 +1,16 @@
 [versions]
 agp = "9.4.1"
-coreKtx = "1.19.0"
+coreKtx = "1.19.1"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 composeBom = "2026.09.00"
 gson = "2.14.0"
 splashscreen = "1.2.0"
-navigation = "2.10.1"
+navigation = "2.10.2"
 newpipe-extractor = "v0.26.5"
 coil = "2.7.0"
 documentfile = "1.1.0"
@@ -19,7 +19,8 @@ smartexception = "0.2.1"
 appcompat = "1.8.0"
 media3 = "1.11.1"
 desugar = "2.1.5"
-axs = "1.2.2"
+axs = "1.2.5"
+reorderable = "3.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,7 @@ androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.re
 androidx-media3-datasource = { group = "androidx.media3", name = "media3-datasource", version.ref = "media3" }
 desugar = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugar" }
 axs = { group = "dev.pgaxis", name = "axs", version.ref = "axs" }
+reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

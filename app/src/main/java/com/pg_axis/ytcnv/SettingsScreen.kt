@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pg_axis.ytcnv.models.TargetFormat
 import com.pg_axis.ytcnv.models.TrackType
 import com.pg_axis.ytcnv.services.MusicAxsClient
@@ -53,7 +55,7 @@ import java.time.LocalDateTime
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -426,6 +428,20 @@ fun SettingsGroup(
 }
 
 @Composable
+fun DescriptionText(
+    description: String?
+) {
+    if (description != null) {
+        Text(
+            description,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
 fun SettingsToggleRow(
     title: String,
     description: String? = null,
@@ -449,6 +465,7 @@ fun SettingsToggleRow(
                 modifier = Modifier.weight(1f)
             )
             Switch(
+                modifier = Modifier.height(10.dp).scale(0.7f),
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
@@ -459,14 +476,7 @@ fun SettingsToggleRow(
                 )
             )
         }
-        if (description != null) {
-            Text(
-                description,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        DescriptionText(description)
     }
 }
 
@@ -558,14 +568,7 @@ fun SettingsDropdownRow(
                 }
             }
         }
-        if (description != null) {
-            Text(
-                description,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        DescriptionText(description)
     }
 }
 
@@ -677,9 +680,7 @@ fun SettingsNumberInputRow(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
-        if (description != null) {
-            Text(description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth())
-        }
+        DescriptionText(description)
         if (warning != null) {
             Text(warning, fontSize = 12.sp, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
         }

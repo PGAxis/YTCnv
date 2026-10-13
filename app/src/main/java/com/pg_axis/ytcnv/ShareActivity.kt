@@ -16,7 +16,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pg_axis.ytcnv.models.QualityOption
 import com.pg_axis.ytcnv.services.Theme
 import com.pg_axis.ytcnv.settings.SettingsSave
 import com.pg_axis.ytcnv.ui.theme.*
@@ -24,7 +23,6 @@ import com.pg_axis.ytcnv.utils.NewPipeDownloader
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.localization.Localization
-import java.util.Locale
 
 class ShareActivity : ComponentActivity() {
 
@@ -247,23 +245,5 @@ fun ShareBottomSheet(
                 }
             }
         }
-    }
-}
-
-private fun qualityLabel(option: QualityOption): String {
-    val nativePart = if (!option.isNative) " · converted" else ""
-    val sizePart = option.sizeBytes?.let { " (${formatBytes(it)})" } ?: ""
-    return "${option.displayName}$nativePart$sizePart"
-}
-
-private fun formatBytes(bytes: Long): String {
-    if (bytes <= 0) return "0 KB"
-    val kb = bytes / 1024.0
-    val mb = kb / 1024.0
-    val gb = mb / 1024.0
-    return when {
-        gb >= 1 -> String.format(Locale.getDefault(), "%.2f GB", gb)
-        mb >= 1 -> String.format(Locale.getDefault(), "%.1f MB", mb)
-        else -> String.format(Locale.getDefault(), "%.0f KB", kb)
     }
 }

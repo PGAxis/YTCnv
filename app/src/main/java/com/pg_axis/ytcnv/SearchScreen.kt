@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -42,20 +43,30 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.pg_axis.ytcnv.dialogs.AddToQueueDialog
+import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
+import com.pg_axis.ytcnv.models.Video
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
 fun SearchScreen(
     onBack: () -> Unit,
-    onResultSelected: (String) -> Unit,
+    onEnqueue: (Video) -> Unit,
     onPreviewVideo: (String) -> Unit,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel = viewModel()
 ) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     var isSearchFocused by remember { mutableStateOf(false) }
+
+    SideEffect {
+        viewModel.onVideoReady = { video ->
+            onEnqueue(video)
+            Toast.makeText(context, "Added to queue", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // Animate history panel height
     val historyHeightFraction by animateFloatAsState(
@@ -64,292 +75,292 @@ fun SearchScreen(
         label = "historyHeight"
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .clickable(indication = null, interactionSource = remember {
-                MutableInteractionSource()
-            }) { focusManager.clearFocus() }
-    ) {
-        // -- Header --
-        Row(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-                .height(60.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .clickable(indication = null, interactionSource = remember {
+                    MutableInteractionSource()
+                }) { focusManager.clearFocus() }
         ) {
-            IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.back),
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            Text(
-                text = stringResource(R.string.search_title),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // -- Search bar --
+            // -- Header --
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 0.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .height(60.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val interactionSource = remember { MutableInteractionSource() }
-                BasicTextField(
-                    value = viewModel.searchQuery,
-                    onValueChange = { viewModel.onQueryChanged(it) },
-                    singleLine = true,
-                    cursorBrush = SolidColor(Color.White),
-                    textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        focusManager.clearFocus()
-                        viewModel.onSearch()
-                    }),
-                    interactionSource = interactionSource,
-                    modifier = Modifier
-                        .weight(1f)
-                        .onFocusChanged { isSearchFocused = it.isFocused },
-                    decorationBox = { innerTextField ->
-                        OutlinedTextFieldDefaults.DecorationBox(
-                            value = viewModel.searchQuery.text,
-                            innerTextField = innerTextField,
-                            enabled = true,
-                            singleLine = true,
-                            visualTransformation = VisualTransformation.None,
-                            interactionSource = interactionSource,
-                            placeholder = {
-                                Text(stringResource(R.string.search_prompt), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            },
-                            trailingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .clickable {
-                                            focusManager.clearFocus()
-                                            viewModel.onSearch()
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.magglass),
-                                        contentDescription = "Search",
-                                        tint = MaterialTheme.colorScheme.background
-                                    )
-                                }
-                            },
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // tune this
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                            ),
-                            container = {
-                                OutlinedTextFieldDefaults.Container(
-                                    enabled = true,
-                                    isError = false,
-                                    interactionSource = interactionSource,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                                    ),
-                                    shape = RoundedCornerShape(50.dp),
-                                    focusedBorderThickness = FocusedBorderThickness,
-                                    unfocusedBorderThickness = UnfocusedBorderThickness,
-                                )
-                            }
-                        )
-                    }
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                var filterMenuExpanded by remember { mutableStateOf(false) }
-                Box {
-                    IconButton(
-                        onClick = { filterMenuExpanded = true },
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(Color.Transparent)
-                    ) {
-                        Icon(
-                            painter = if (viewModel.isMusicSearch) painterResource(R.drawable.youtube_music) else painterResource(R.drawable.youtube),
-                            contentDescription = "Filter",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = filterMenuExpanded,
-                        onDismissRequest = { filterMenuExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("YouTube", color = MaterialTheme.colorScheme.onSecondaryContainer) },
-                            onClick = {
-                                viewModel.isMusicSearch = false
-                                focusManager.clearFocus()
-                                viewModel.onSearch()
-                                filterMenuExpanded = false
-                            },
-                            leadingIcon = if (!viewModel.isMusicSearch) {
-                                {
-                                    Icon(
-                                        painter = painterResource(R.drawable.magglass),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint = MaterialTheme.colorScheme.tertiary
-                                    )
-                                }
-                            } else null
-                        )
-                        DropdownMenuItem(
-                            text = { Text("YouTube Music", color = MaterialTheme.colorScheme.onSecondaryContainer) },
-                            onClick = {
-                                viewModel.isMusicSearch = true
-                                focusManager.clearFocus()
-                                viewModel.onSearch()
-                                filterMenuExpanded = false
-                            },
-                            leadingIcon = if (viewModel.isMusicSearch) {
-                                {
-                                    Icon(
-                                        painter = painterResource(R.drawable.magglass),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint = MaterialTheme.colorScheme.tertiary
-                                    )
-                                }
-                            } else null
-                        )
-                    }
+                IconButton(onClick = onBack, shape = CutCornerShape(0.dp), modifier = Modifier.size(45.dp).padding(horizontal = 5.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
+                Text(
+                    text = stringResource(R.string.search_title),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
-
-            // -- Search history panel --
-            if (historyHeightFraction > 0f) {
-                Card(
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // -- Search bar --
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 52.dp)
-                        .heightIn(max = (300 * historyHeightFraction).dp)
-                        .zIndex(5f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(horizontal = 8.dp, vertical = 0.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    LazyColumn (contentPadding = PaddingValues(0.dp), modifier = Modifier.fillMaxWidth()) {
-                        items(viewModel.settings.searchHistory) { term ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.onHistoryItemTapped(term) }
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = term,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                IconButton(
-                                    onClick = { viewModel.onRemoveHistoryItem(term) },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.cross),
-                                        contentDescription = "Remove",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(16.dp)
+                    val interactionSource = remember { MutableInteractionSource() }
+                    BasicTextField(
+                        value = viewModel.searchQuery,
+                        onValueChange = { viewModel.onQueryChanged(it) },
+                        singleLine = true,
+                        cursorBrush = SolidColor(Color.White),
+                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            focusManager.clearFocus()
+                            viewModel.onSearch()
+                        }),
+                        interactionSource = interactionSource,
+                        modifier = Modifier
+                            .weight(1f)
+                            .onFocusChanged { isSearchFocused = it.isFocused },
+                        decorationBox = { innerTextField ->
+                            OutlinedTextFieldDefaults.DecorationBox(
+                                value = viewModel.searchQuery.text,
+                                innerTextField = innerTextField,
+                                enabled = true,
+                                singleLine = true,
+                                visualTransformation = VisualTransformation.None,
+                                interactionSource = interactionSource,
+                                placeholder = {
+                                    Text(stringResource(R.string.search_prompt), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                },
+                                trailingIcon = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary)
+                                            .clickable {
+                                                focusManager.clearFocus()
+                                                viewModel.onSearch()
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.magglass),
+                                            contentDescription = "Search",
+                                            tint = MaterialTheme.colorScheme.background
+                                        )
+                                    }
+                                },
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // tune this
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                                ),
+                                container = {
+                                    OutlinedTextFieldDefaults.Container(
+                                        enabled = true,
+                                        isError = false,
+                                        interactionSource = interactionSource,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                            unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                                        ),
+                                        shape = RoundedCornerShape(50.dp),
+                                        focusedBorderThickness = FocusedBorderThickness,
+                                        unfocusedBorderThickness = UnfocusedBorderThickness,
                                     )
                                 }
-                            }
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                            )
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    var filterMenuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(
+                            onClick = { filterMenuExpanded = true },
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
+                                .background(Color.Transparent)
+                        ) {
+                            Icon(
+                                painter = if (viewModel.isMusicSearch) painterResource(R.drawable.youtube_music) else painterResource(R.drawable.youtube),
+                                contentDescription = "Filter",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = filterMenuExpanded,
+                            onDismissRequest = { filterMenuExpanded = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("YouTube", color = MaterialTheme.colorScheme.onSecondaryContainer) },
+                                onClick = {
+                                    viewModel.isMusicSearch = false
+                                    focusManager.clearFocus()
+                                    viewModel.onSearch()
+                                    filterMenuExpanded = false
+                                },
+                                leadingIcon = if (!viewModel.isMusicSearch) {
+                                    {
+                                        Icon(
+                                            painter = painterResource(R.drawable.magglass),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    }
+                                } else null
+                            )
+                            DropdownMenuItem(
+                                text = { Text("YouTube Music", color = MaterialTheme.colorScheme.onSecondaryContainer) },
+                                onClick = {
+                                    viewModel.isMusicSearch = true
+                                    focusManager.clearFocus()
+                                    viewModel.onSearch()
+                                    filterMenuExpanded = false
+                                },
+                                leadingIcon = if (viewModel.isMusicSearch) {
+                                    {
+                                        Icon(
+                                            painter = painterResource(R.drawable.magglass),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    }
+                                } else null
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
 
-            // -- Results / states --
-            Box(modifier = Modifier.fillMaxSize().padding(top = 50.dp)) {
-                when {
-                    viewModel.isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    viewModel.errorMessage != null -> {
-                        Text(
-                            text = viewModel.errorMessage!!,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(24.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    viewModel.results.isEmpty() -> {
-                        Text(
-                            text = stringResource(R.string.search_big_prompt),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    else -> {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            LazyColumn {
-                                items(viewModel.results) { item ->
-                                    SearchResultRow(
-                                        item = item,
-                                        isMusic = viewModel.isMusicSearch,
-                                        isDownloaded = viewModel.isDownloaded(item.videoId),
-                                        onDownload = {
-                                            onResultSelected("https://www.youtube.com/watch?v=${item.videoId}")
-                                        },
-                                        onCopyUrl = {
-                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                            val clip = ClipData.newPlainText("YouTube URL", "https://www.youtube.com/watch?v=${item.videoId}")
-                                            clipboard.setPrimaryClip(clip)
-                                        },
-                                        onPreview = { onPreviewVideo(item.videoId) }
+                // -- Search history panel --
+                if (historyHeightFraction > 0f) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 52.dp)
+                            .heightIn(max = (300 * historyHeightFraction).dp)
+                            .zIndex(5f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    ) {
+                        LazyColumn (contentPadding = PaddingValues(0.dp), modifier = Modifier.fillMaxWidth()) {
+                            items(viewModel.settings.searchHistory) { term ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.onHistoryItemTapped(term) }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = term,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.weight(1f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
+                                    IconButton(
+                                        onClick = { viewModel.onRemoveHistoryItem(term) },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.cross),
+                                            contentDescription = "Remove",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-                                item {
-                                    if (!viewModel.endReached) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp, vertical = 8.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.Bottom
-                                        ) {
-                                            if (viewModel.isLoadingMore) {
-                                                CircularProgressIndicator(
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                            else {
-                                                OutlinedButton(
-                                                    onClick = { viewModel.onLoadMore() },
-                                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                                ) {
-                                                    Text(text = "Load more", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                // -- Results / states --
+                Box(modifier = Modifier.fillMaxSize().padding(top = 50.dp)) {
+                    when {
+                        viewModel.isLoading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        viewModel.errorMessage != null -> {
+                            Text(
+                                text = viewModel.errorMessage!!,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(24.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        viewModel.results.isEmpty() -> {
+                            Text(
+                                text = stringResource(R.string.search_big_prompt),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                        else -> {
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                LazyColumn {
+                                    items(viewModel.results) { item ->
+                                        SearchResultRow(
+                                            item = item,
+                                            isMusic = viewModel.isMusicSearch,
+                                            isDownloaded = viewModel.isDownloaded(item.videoId),
+                                            onDownload = { viewModel.onDownloadClicked(item) },
+                                            onCopyUrl = {
+                                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                                val clip = ClipData.newPlainText("YouTube URL", "https://www.youtube.com/watch?v=${item.videoId}")
+                                                clipboard.setPrimaryClip(clip)
+                                            },
+                                            onPreview = { onPreviewVideo(item.videoId) }
+                                        )
+                                    }
+
+                                    item {
+                                        if (!viewModel.endReached) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalAlignment = Alignment.Bottom
+                                            ) {
+                                                if (viewModel.isLoadingMore) {
+                                                    CircularProgressIndicator(
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                                else {
+                                                    OutlinedButton(
+                                                        onClick = { viewModel.onLoadMore() },
+                                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                                    ) {
+                                                        Text(text = "Load more", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                                                    }
                                                 }
                                             }
                                         }
@@ -360,6 +371,21 @@ fun SearchScreen(
                     }
                 }
             }
+        }
+
+        if (viewModel.showTitleAuthorDialog) {
+            TitleAuthorDialog(
+                title = viewModel.dialogTitle,
+                author = viewModel.dialogAuthor,
+                secondsRemaining = viewModel.autoDownloadSecondsRemaining,
+                onTitleChange = { viewModel.onDialogTitleChanged(it) },
+                onAuthorChange = { viewModel.onDialogAuthorChanged(it) },
+                onInteraction = { viewModel.onTitleAuthorDialogInteraction() },
+                onConfirm = { viewModel.onTitleAuthorConfirmed() },
+                onDismiss = { viewModel.closeQueueDialog() }
+            )
+        } else if (viewModel.queueItem != null) {
+            AddToQueueDialog(viewModel)
         }
     }
 }
