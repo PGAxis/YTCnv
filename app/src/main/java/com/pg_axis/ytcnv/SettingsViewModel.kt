@@ -57,11 +57,11 @@ class SettingsViewModel(val mainViewModel: MainViewModel, application: Applicati
     var finalVidFolder by mutableStateOf(context.getString(R.string.downloads))
 
     fun initPaths() {
-        if (!settings.fileUri.isBlank()) {
+        if (settings.fileUri.isNotBlank()) {
             mainFolder = getMainFolder(settings.fileUri)
             finalFolder = getFinalFolder(settings.fileUri)
         }
-        if (!settings.fileVidUri.isBlank()) {
+        if (settings.fileVidUri.isNotBlank()) {
             mainVidFolder = getMainFolder(settings.fileVidUri)
             finalVidFolder = getFinalFolder(settings.fileVidUri)
         }
