@@ -21,8 +21,10 @@ A simple, open-source YouTube downloader for Android. Download YouTube videos as
 
 ## Features
 
-- Download YouTube videos as **MP3** or **MP4**
-- Embedded metadata (title, artist) and album art for MP3s
+- Download YouTube videos as **audio** or **video**
+- Supported audio formats: MP3, AAC (M4A), Opus
+- Supported video formats: MP4, VP9 (WebM)
+- Embedded metadata (title, artist) and album art for MP3s and M4As
 - **Quick download** mode — download without manually picking quality
 - **Manual quality selection** — pick audio bitrate or video resolution
 - YouTube **search** with thumbnails, duration, and channel name
