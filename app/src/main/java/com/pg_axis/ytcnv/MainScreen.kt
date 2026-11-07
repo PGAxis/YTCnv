@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -19,8 +20,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -132,6 +135,10 @@ fun MainScreen(
                     value = viewModel.urlEntryText,
                     onValueChange = { viewModel.onUrlChanged(it) },
                     placeholder = { Text(text = "youtube.com/watch?v=...") },
+                    isError = viewModel.urlErrorVisible,
+                    supportingText = if (viewModel.urlErrorVisible) {
+                        { Text(text = stringResource(R.string.pt_invalid_url)) }
+                    } else null,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -384,33 +391,42 @@ fun MainScreen(
                     .clickable(enabled = false) {},
                 contentAlignment = Alignment.Center
             ) {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = viewModel.popupBackground),
-                    modifier = Modifier.widthIn(min = 200.dp).padding(horizontal = 16.dp)
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 600.dp)
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = viewModel.popupTitle,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 20.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = viewModel.popupMessage,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 15.sp,
-                            modifier = Modifier.padding(bottom = 5.dp)
-                        )
-                        TextButton(
-                            onClick = { viewModel.onClosePopupClicked() },
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Text(viewModel.popupButtonText, color = Color(0xFFD0D0D0))
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = viewModel.popupBackground),
+                        modifier = Modifier.widthIn(min = 200.dp).padding(horizontal = 16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = viewModel.popupTitle,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 20.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = viewModel.popupMessage,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .weight(1f, fill = false)
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(bottom = 5.dp)
+                            )
+                            TextButton(
+                                onClick = { viewModel.onClosePopupClicked() },
+                                modifier = Modifier.align(Alignment.End)
+                            ) {
+                                Text(viewModel.popupButtonText, color = Color(0xFFD0D0D0))
+                            }
                         }
                     }
                 }

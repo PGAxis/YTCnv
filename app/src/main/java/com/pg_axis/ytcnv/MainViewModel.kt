@@ -179,8 +179,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         settings.dontShowUpdate = dontShowAgain
     }
 
+    var urlErrorVisible by mutableStateOf(false)
+        private set
+
     fun onUrlChanged(value: String) {
         urlEntryText = value
+        urlErrorVisible = false
         video = null
         isLoadingOptions = false
         selectedDetailedFormatIndex = 0
@@ -383,6 +387,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             resetFormAfterFailure()
         }
 
+        override fun onInvalidUrl() {
+            urlErrorVisible = true
+        }
+
         override fun showPopup(title: String, message: String, type: PopupType) {
             this@MainViewModel.showPopup(title, message, type)
         }
@@ -408,6 +416,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         override fun onFailed() {}
         override fun onCanceled() {}
+
+        override fun onInvalidUrl() {
+            urlErrorVisible = true
+        }
 
         override fun showPopup(title: String, message: String, type: PopupType) {
             this@MainViewModel.showPopup(title, message, type)

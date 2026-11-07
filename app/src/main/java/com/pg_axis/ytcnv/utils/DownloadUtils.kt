@@ -1,5 +1,6 @@
 package com.pg_axis.ytcnv.utils
 
+import android.util.Log
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
 import kotlinx.coroutines.Dispatchers
@@ -12,19 +13,13 @@ import java.io.RandomAccessFile
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Duration.Companion.milliseconds
 
 object DownloadUtils {
 
-    // No timeout was previously set on any connection here, so a stalled server (e.g. CDN
-    // throttling that stops sending bytes without closing the socket) would block read() forever
-    // with no exception ever thrown - the retry logic below never got a chance to run. These
-    // bound how long a single connect/read call can hang before we treat it as a failure and retry.
     private const val CONNECT_TIMEOUT_MS = 15_000
     private const val READ_TIMEOUT_MS = 20_000
 
-    @OptIn(ExperimentalAtomicApi::class)
     suspend fun downloadStream(
         url: String,
         outputPath: String,
@@ -67,6 +62,12 @@ object DownloadUtils {
                     conn.readTimeout = READ_TIMEOUT_MS
                     conn.setRequestProperty("Range", "bytes=$position-$end")
                     conn.connect()
+                    val code = conn.responseCode
+                    if (code !in 200..299) {
+                        val body = conn.errorStream?.bufferedReader()?.use { it.readText().take(300) }
+                        Log.w("DL", "chunk $start-$end pos=$position -> HTTP $code $body")
+                        throw IOException("HTTP $code")
+                    }
                     val buffer = ByteArray(32768)
                     conn.inputStream.use { input ->
                         var bytes = input.read(buffer)

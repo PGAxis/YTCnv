@@ -1,0 +1,6 @@
+Bug fixes:
+- The popup on the main screen could take the whole screen and hide the "OK" button which closes it (#18)
+- Entering a non-working URL doesn't trigger a notification, but rather a small "Invalid URL" error under the entry (#19)
+
+Additions:
+- When downloading a video as music, the app crops the thumbnail to a square

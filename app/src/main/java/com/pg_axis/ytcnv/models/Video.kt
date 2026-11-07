@@ -1,6 +1,8 @@
 package com.pg_axis.ytcnv.models
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -128,6 +130,7 @@ interface VideoCallbacks {
     fun onDownloadFinished(savedUri: Uri?, isAudio: Boolean)
     fun onFailed()
     fun onCanceled()
+    fun onInvalidUrl() {}
     fun showPopup(title: String, message: String, type: PopupType)
     fun offerKeepPartialDownload(sizeBytes: Long, streamLabel: String, onChoice: (Boolean) -> Unit)
     fun offerDownloadWithoutMargin(availableBytes: Long, requiredBytesWithoutMargin: Long, onChoice: (Boolean) -> Unit)
@@ -787,6 +790,7 @@ class Video(
                 if (File(tempThumbnail).exists()) File(tempThumbnail).delete()
             }
             if (target == TargetFormat.OPUS || target == TargetFormat.WEBM) hasThumbnail = false
+            if (hasThumbnail && target.trackType == TrackType.AUDIO) cropToSquare(imagePath)
 
             // Title/author were confirmed
             val confirmedTitle = plan.title ?: cleanedTitle
@@ -907,7 +911,7 @@ class Video(
             append("-c:a copy ")
         }
         if (hasThumbnail) {
-            append("-c:v mjpeg -disposition:v attached_pic ")
+            append("-c:v copy -disposition:v attached_pic ")
             append("-metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover\" ")
         }
         append("-metadata title=\"$title\" -metadata artist=\"$author\" ")
@@ -1351,6 +1355,8 @@ class Video(
     }
 
     private fun reportError(e: Exception) {
+        Log.d("Video", e.toString())
+        Log.d("Video", e.stackTraceToString())
         when {
             e is InsufficientStorageException -> {
                 val message = context.getString(
@@ -1369,9 +1375,8 @@ class Video(
                 callbacks.showPopup(context.getString(R.string.pt_unavailable), context.getString(R.string.pm_unavailable), PopupType.ERROR)
                 if (settings.notifyOnFail) DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_unavailable), notificationId)
             }
-            e.message?.contains("ID or URL") == true || e.message?.contains("JSON response is too short") == true -> {
-                callbacks.showPopup(context.getString(R.string.pt_invalid_url), context.getString(R.string.pm_invalid_url), PopupType.ERROR)
-                if (settings.notifyOnFail) DownloadNotificationService.showFailedNotification(context, context.getString(R.string.pm_invalid_url), notificationId)
+            e.message?.contains("ID or URL") == true || e.message?.contains("JSON response is too short") == true || e.message?.contains("This video is unavailable") == true -> {
+                callbacks.onInvalidUrl()
             }
             e.message?.contains("Software caused connection abort") == true || e.message?.contains("No address associated with hostname") == true || e.message?.contains("Connection reset") == true -> {
                 callbacks.showPopup(context.getString(R.string.pt_network_error), context.getString(R.string.pm_network_error), PopupType.ERROR)
@@ -1403,6 +1408,20 @@ class Video(
             (context.filesDir.listFiles() ?: emptyArray())
                 .filter { file -> file.name.startsWith("semi-output-") && file.lastModified() < cutoff }
                 .forEach { it.delete() }
+        }
+    }
+
+    private fun cropToSquare(path: String) {
+        val bmp = BitmapFactory.decodeFile(path) ?: return
+        try {
+            val size = minOf(bmp.width, bmp.height)
+            val x = (bmp.width - size) / 2
+            val y = (bmp.height - size) / 2
+            val cropped = Bitmap.createBitmap(bmp, x, y, size, size)
+            File(path).outputStream().use { cropped.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+            if (cropped !== bmp) cropped.recycle()
+        } finally {
+            bmp.recycle()
         }
     }
 }

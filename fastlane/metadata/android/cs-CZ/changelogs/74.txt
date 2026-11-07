@@ -1,0 +1,6 @@
+Opravy chyb:
+- Vyskakovací okno na hlavní obrazovce mohlo zabrat celou obrazovku a skrýt tlačítko „OK“, kterým se zavírá (#18)
+- Zadání nefunkční URL už nevyvolá oznámení, ale pouze malou chybovou hlášku „Neplatná URL“ pod polem pro zadání (#19)
+
+Co je nového:
+- Při stahování videa jako hudby aplikace ořízne náhledový obrázek na čtverec
