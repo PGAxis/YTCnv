@@ -1,6 +1,6 @@
 @file:kotlin.OptIn(ExperimentalMaterial3Api::class)
 
-package com.pg_axis.ytcnv
+package com.pg_axis.ytcnv.search_screens
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
@@ -43,6 +43,7 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.pg_axis.ytcnv.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -305,7 +306,8 @@ fun PreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = if (isPlaying) painterResource(R.drawable.pause) else painterResource(R.drawable.play),
+                        painter = if (isPlaying) painterResource(R.drawable.pause) else painterResource(
+                            R.drawable.play),
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = Color.White,
                         modifier = Modifier.size(30.dp)

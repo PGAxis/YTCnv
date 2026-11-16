@@ -1,4 +1,4 @@
-package com.pg_axis.ytcnv
+package com.pg_axis.ytcnv.search_screens
 
 import android.app.Application
 import androidx.compose.runtime.getValue

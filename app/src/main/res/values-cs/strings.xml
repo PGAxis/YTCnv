@@ -15,6 +15,8 @@
     <string name="choose_format">Vyberte formát</string>
     <string name="choose_quality">Vyber kvalitu</string>
     <string name="download">Stáhnout</string>
+    <string name="download_all">Stáhnout vše</string>
+    <string name="load_more">Načíst další</string>
     <string name="cancel">Přerušit</string>
     <string name="load">Načíst metadata</string>
     <string name="download_history_caps">HISTORIE STAHOVÁNÍ</string>
@@ -61,7 +63,7 @@
     <string name="set_preview_desc">Rozlišení použité při náhledu videa před jeho stažením.</string>
     <string name="set_add_songs">Přidat písničky do Music.axs</string>
     <string name="set_add_songs_desc">Po stažení ve formátu MP3, ukázat volbu pro přidání do playlistu v Music.axs</string>
-    <string name="audio">Zvuk</string>
+    <string name="audio">Audio</string>
     <string name="video">Video</string>
     <string name="default_format">Výchozí formát</string>
     <string name="default_audio_codec">Výchozí zvukový kodek</string>
@@ -72,6 +74,12 @@
     <string name="search_prompt">Prohledej YouTube</string>
     <string name="search_big_prompt">Vyhledej si YouTube video</string>
     <string name="copy_url">Zkopírovat URL</string>
+    <string name="filter_youtube">YouTube</string>
+    <string name="filter_youtube_music">YouTube Music</string>
+    <string name="filter_videos">Videa</string>
+    <string name="filter_channels">Kanály</string>
+    <string name="filter_playlists">Playlisty</string>
+    <string name="filter_songs">Skladby</string>
 
     <!-- History Screen -->
     <string name="hist_scr_redownload">Stáhnout znovu</string>
@@ -179,4 +187,16 @@
     <string name="margin_override_message">Toto stahování by se vešlo, kdyby se odstranila bezpečnostní rezerva. Volno: %1$s, potřeba bez rezervy: %2$s. Hrozí riziko zpomalení zařízení při zaplnění úložiště. Odstranit rezervu a přesto stáhnout?</string>
     <string name="margin_override_cancel">Zrušit</string>
     <string name="margin_override_proceed">Přesto stáhnout</string>
+
+    <!-- Channel screen -->
+    <string name="back">Zpět</string>
+    <string name="added_to_queue">Přidáno do fronty</string>
+    <string name="tab_videos">Videa</string>
+    <string name="tab_playlists">Playlisty</string>
+    <string name="tab_search">Hledat</string>
+    <string name="subscribers">Odběratelé: %1$s</string>
+    <string name="channel_search_hint">Hledat v kanálu</string>
+    <string name="channel_search_scanned">Prohledáno videí: %1$d</string>
+    <string name="channel_search_none">Nic nenalezeno</string>
+    <string name="channel_search_more">Hledat dál</string>
 </resources>

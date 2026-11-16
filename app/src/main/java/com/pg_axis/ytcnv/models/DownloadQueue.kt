@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.pg_axis.ytcnv.PopupType
 import com.pg_axis.ytcnv.settings.SettingsSave
@@ -33,6 +34,29 @@ object DownloadQueue {
 
     private var queueRunning = false
     private var activeJob: Job? = null
+
+    private var keepAliveHolders = 0
+
+    /** Call when a title/author dialog opens (app is in the foreground). Pair with [releaseKeepAlive]. */
+    fun acquireKeepAlive(context: Context, notificationId: Int) {
+        val first = keepAliveHolders++ == 0
+        if (!first || queueRunning) return
+        val appContext = context.applicationContext
+        DownloadNotificationService.setProgressType(false)
+        ContextCompat.startForegroundService(
+            appContext,
+            DownloadNotificationService.startIntent(appContext, notificationId)
+        )
+    }
+
+    /** Call when the dialog closes, AFTER enqueue() if the user confirmed. */
+    fun releaseKeepAlive(context: Context) {
+        if (keepAliveHolders > 0) keepAliveHolders--
+        if (keepAliveHolders == 0 && !queueRunning) {
+            val appContext = context.applicationContext
+            appContext.stopService(Intent(appContext, DownloadNotificationService::class.java))
+        }
+    }
 
     fun enqueue(context: Context, video: Video, callbacks: VideoCallbacks) {
         video.attachCallbacks(QueueCallbacks(callbacks))
@@ -70,7 +94,9 @@ object DownloadQueue {
                 phase = Phase.IDLE
                 queueRunning = false
                 settings.isDownloadRunning = false
-                appContext.stopService(Intent(appContext, DownloadNotificationService::class.java))
+                if (keepAliveHolders == 0) {
+                    appContext.stopService(Intent(appContext, DownloadNotificationService::class.java))
+                }
             }
         }
     }

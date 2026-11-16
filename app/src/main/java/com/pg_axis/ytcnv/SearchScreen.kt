@@ -45,9 +45,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.pg_axis.ytcnv.dialogs.AddToQueueDialog
-import com.pg_axis.ytcnv.dialogs.TitleAuthorDialog
 import com.pg_axis.ytcnv.models.Video
+import com.pg_axis.ytcnv.search_screens.QueueDialogs
+import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
@@ -55,11 +55,14 @@ fun SearchScreen(
     onBack: () -> Unit,
     onEnqueue: (Video) -> Unit,
     onPreviewVideo: (String) -> Unit,
+    onChannel: (String) -> Unit,
+    onPlaylist: (String) -> Unit,
     viewModel: SearchViewModel = viewModel()
 ) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     var isSearchFocused by remember { mutableStateOf(false) }
+    var filterMenuExpanded by remember { mutableStateOf(false) }
 
     SideEffect {
         viewModel.onVideoReady = { video ->
@@ -68,9 +71,11 @@ fun SearchScreen(
         }
     }
 
+    val entries = viewModel.panelEntries
+
     // Animate history panel height
     val historyHeightFraction by animateFloatAsState(
-        targetValue = if (isSearchFocused && viewModel.settings.searchHistory.isNotEmpty()) 1f else 0f,
+        targetValue = if (isSearchFocused && entries.isNotEmpty()) 1f else 0f,
         animationSpec = tween(durationMillis = 200),
         label = "historyHeight"
     )
@@ -132,7 +137,10 @@ fun SearchScreen(
                         interactionSource = interactionSource,
                         modifier = Modifier
                             .weight(1f)
-                            .onFocusChanged { isSearchFocused = it.isFocused },
+                            .onFocusChanged {
+                                isSearchFocused = it.isFocused
+                                if (it.isFocused) filterMenuExpanded = false
+                            },
                         decorationBox = { innerTextField ->
                             OutlinedTextFieldDefaults.DecorationBox(
                                 value = viewModel.searchQuery.text,
@@ -163,7 +171,7 @@ fun SearchScreen(
                                         )
                                     }
                                 },
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // tune this
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
@@ -189,15 +197,18 @@ fun SearchScreen(
                     var filterMenuExpanded by remember { mutableStateOf(false) }
                     Box {
                         IconButton(
-                            onClick = { filterMenuExpanded = true },
+                            onClick = {
+                                focusManager.clearFocus()
+                                filterMenuExpanded = true
+                            },
                             modifier = Modifier
                                 .size(50.dp)
                                 .clip(CircleShape)
                                 .background(Color.Transparent)
                         ) {
                             Icon(
-                                painter = if (viewModel.isMusicSearch) painterResource(R.drawable.youtube_music) else painterResource(R.drawable.youtube),
-                                contentDescription = "Filter",
+                                painter = painterResource(R.drawable.filter),
+                                contentDescription = "Filters",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -206,43 +217,59 @@ fun SearchScreen(
                             onDismissRequest = { filterMenuExpanded = false },
                             modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("YouTube", color = MaterialTheme.colorScheme.onSecondaryContainer) },
-                                onClick = {
-                                    viewModel.isMusicSearch = false
-                                    focusManager.clearFocus()
-                                    viewModel.onSearch()
-                                    filterMenuExpanded = false
-                                },
-                                leadingIcon = if (!viewModel.isMusicSearch) {
-                                    {
-                                        Icon(
-                                            painter = painterResource(R.drawable.magglass),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.tertiary
-                                        )
-                                    }
-                                } else null
+                            @Composable
+                            fun FilterGroup(titleRes: Int, filters: List<SearchFilter>) {
+                                Text(
+                                    text = stringResource(titleRes),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 8.dp,
+                                        bottom = 4.dp
+                                    )
+                                )
+
+                                filters.forEach { filter ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = stringResource(filter.labelRes),
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            RadioButton(
+                                                selected = filter == viewModel.selectedFilter,
+                                                onClick = {
+                                                    viewModel.onFilterToggled(filter)
+                                                    filterMenuExpanded = false
+                                                }
+                                            )
+                                        },
+                                        onClick = {
+                                            viewModel.onFilterToggled(filter)
+                                            filterMenuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+
+                            FilterGroup(
+                                R.string.filter_youtube,
+                                SearchFilter.entries.filter { !it.isMusic }
                             )
-                            DropdownMenuItem(
-                                text = { Text("YouTube Music", color = MaterialTheme.colorScheme.onSecondaryContainer) },
-                                onClick = {
-                                    viewModel.isMusicSearch = true
-                                    focusManager.clearFocus()
-                                    viewModel.onSearch()
-                                    filterMenuExpanded = false
-                                },
-                                leadingIcon = if (viewModel.isMusicSearch) {
-                                    {
-                                        Icon(
-                                            painter = painterResource(R.drawable.magglass),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.tertiary
-                                        )
-                                    }
-                                } else null
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.outline
+                            )
+
+                            FilterGroup(
+                                R.string.filter_youtube_music,
+                                SearchFilter.entries.filter { it.isMusic }
                             )
                         }
                     }
@@ -259,32 +286,40 @@ fun SearchScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                     ) {
-                        LazyColumn (contentPadding = PaddingValues(0.dp), modifier = Modifier.fillMaxWidth()) {
-                            items(viewModel.settings.searchHistory) { term ->
+                        LazyColumn(contentPadding = PaddingValues(0.dp), modifier = Modifier.fillMaxWidth()) {
+                            items(entries, key = { it.text }) { entry ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { viewModel.onHistoryItemTapped(term) }
+                                        .clickable {
+                                            if (entry.isHistory) viewModel.onHistoryItemTapped(entry.text)
+                                            else {
+                                                focusManager.clearFocus()
+                                                viewModel.onSuggestionTapped(entry.text)
+                                            }
+                                        }
                                         .padding(horizontal = 16.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = term,
+                                        text = entry.text,
                                         color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.weight(1f),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    IconButton(
-                                        onClick = { viewModel.onRemoveHistoryItem(term) },
-                                        modifier = Modifier.size(24.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.cross),
-                                            contentDescription = "Remove",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(16.dp)
-                                        )
+                                    if (entry.isHistory) {
+                                        IconButton(
+                                            onClick = { viewModel.onRemoveHistoryItem(entry.text) },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.cross),
+                                                contentDescription = "Remove",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
                                     }
                                 }
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outline)
@@ -328,15 +363,19 @@ fun SearchScreen(
                                     items(viewModel.results) { item ->
                                         SearchResultRow(
                                             item = item,
-                                            isMusic = viewModel.isMusicSearch,
-                                            isDownloaded = viewModel.isDownloaded(item.videoId),
+                                            isDownloaded = viewModel.isDownloaded(item.itemId),
                                             onDownload = { viewModel.onDownloadClicked(item) },
                                             onCopyUrl = {
                                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                                val clip = ClipData.newPlainText("YouTube URL", "https://www.youtube.com/watch?v=${item.videoId}")
+                                                val clip = ClipData.newPlainText(
+                                                    "YouTube URL",
+                                                    item.url
+                                                )
                                                 clipboard.setPrimaryClip(clip)
                                             },
-                                            onPreview = { onPreviewVideo(item.videoId) }
+                                            onPreview = { onPreviewVideo(item.itemId) },
+                                            onChannel = { (item.uploaderId ?: item.itemId).let(onChannel) },
+                                            onPlaylist = { onPlaylist(item.itemId) }
                                         )
                                     }
 
@@ -359,7 +398,11 @@ fun SearchScreen(
                                                         onClick = { viewModel.onLoadMore() },
                                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                                                     ) {
-                                                        Text(text = "Load more", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                                                        Text(
+                                                            text = stringResource(R.string.load_more),
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            fontSize = 12.sp
+                                                        )
                                                     }
                                                 }
                                             }
@@ -373,36 +416,25 @@ fun SearchScreen(
             }
         }
 
-        if (viewModel.showTitleAuthorDialog) {
-            TitleAuthorDialog(
-                title = viewModel.dialogTitle,
-                author = viewModel.dialogAuthor,
-                secondsRemaining = viewModel.autoDownloadSecondsRemaining,
-                onTitleChange = { viewModel.onDialogTitleChanged(it) },
-                onAuthorChange = { viewModel.onDialogAuthorChanged(it) },
-                onInteraction = { viewModel.onTitleAuthorDialogInteraction() },
-                onConfirm = { viewModel.onTitleAuthorConfirmed() },
-                onDismiss = { viewModel.closeQueueDialog() }
-            )
-        } else if (viewModel.queueItem != null) {
-            AddToQueueDialog(viewModel)
-        }
+        QueueDialogs(viewModel)
     }
 }
 
 @Composable
 fun SearchResultRow(
     item: SearchResultItem,
-    isMusic: Boolean,
     isDownloaded: Boolean,
     onDownload: () -> Unit,
     onCopyUrl: () -> Unit,
-    onPreview: () -> Unit
+    onPreview: () -> Unit,
+    onChannel: () -> Unit,
+    onPlaylist: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalAlignment = if (item is ChannelResultItem) Alignment.CenterHorizontally else Alignment.Start
     ) {
         // Thumbnail with duration overlay and buttons
         Row(
@@ -413,79 +445,105 @@ fun SearchResultRow(
                 modifier = Modifier
                     .weight(1f)
                     .then(
-                        if (isMusic) Modifier.height(150.dp)
+                        if (item.squareArt) Modifier.height(150.dp)
                         else Modifier.aspectRatio(16f / 9f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
+                val shape = if (item is ChannelResultItem) CircleShape else RoundedCornerShape(8.dp)
+
                 Box(
                     modifier = Modifier
                         .then(
-                            if (isMusic) Modifier.fillMaxHeight().aspectRatio(1f)
+                            if (item.squareArt) Modifier.fillMaxHeight().aspectRatio(1f)
                             else Modifier.fillMaxSize()
                         )
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onPreview() }
+                        .clickable {
+                            when(item) {
+                                is VideoResultItem, is MusicResultItem -> onPreview()
+                                is ChannelResultItem -> onChannel()
+                                is PlaylistResultItem -> onPlaylist()
+                            }
+                        }
                 ) {
                     AsyncImage(
-                        model = item.thumbnailUrl,
+                        model = item.imageUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    Text(
-                        text = item.duration,
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(6.dp)
-                            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .fillMaxSize()
+                            .clip(shape)
                     )
+                    if (item.duration.isNotEmpty()) {
+                        Text(
+                            text = item.duration,
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(6.dp)
+                                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
+                    if (item is PlaylistResultItem) {
+                        Icon(
+                            painter = painterResource(R.drawable.queue),
+                            contentDescription = "Playlist",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(40.dp)
+                                .padding(6.dp)
+                                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            // Buttons
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (isDownloaded) {
-                    OutlinedButton(
-                        onClick = onDownload,
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text(stringResource(R.string.download), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-                    }
-                } else {
-                    Button(
-                        onClick = onDownload,
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text(stringResource(R.string.download), fontSize = 12.sp)
-                    }
-                }
+            if (item !is ChannelResultItem) {
                 Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = onCopyUrl,
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
+                // Buttons
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(stringResource(R.string.copy_url), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    if (isDownloaded) {
+                        OutlinedButton(
+                            onClick = onDownload,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(stringResource(if (item !is PlaylistResultItem) R.string.download else R.string.download_all), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                    } else {
+                        Button(
+                            onClick = onDownload,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(stringResource(if (item !is PlaylistResultItem) R.string.download else R.string.download_all), fontSize = 12.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = onCopyUrl,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(stringResource(R.string.copy_url), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
         // Title
         Text(
-            text = item.title,
+            text = item.name,
             color = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
@@ -494,13 +552,100 @@ fun SearchResultRow(
         )
         Spacer(modifier = Modifier.height(2.dp))
         // Uploader
-        Text(
-            text = item.uploader,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        if (!item.uploader.isNullOrEmpty()) {
+            Text(
+                text = item.uploader.orEmpty(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = if (item.uploaderId != null) Modifier.clickable { onChannel() } else Modifier
+            )
+        }
     }
     HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 4.dp, modifier = Modifier.padding(horizontal = 16.dp))
+}
+
+enum class SearchFilter(
+    val key: String,
+    val labelRes: Int,
+    val isMusic: Boolean = false
+) {
+    VIDEOS(
+        YoutubeSearchQueryHandlerFactory.VIDEOS,
+        R.string.filter_videos
+    ),
+    CHANNELS(
+        YoutubeSearchQueryHandlerFactory.CHANNELS,
+        R.string.filter_channels
+    ),
+    PLAYLISTS(
+        YoutubeSearchQueryHandlerFactory.PLAYLISTS,
+        R.string.filter_playlists
+    ),
+
+    MUSIC_SONGS(
+        YoutubeSearchQueryHandlerFactory.MUSIC_SONGS,
+        R.string.filter_songs,
+        true
+    )
+}
+
+sealed interface SearchResultItem {
+    val name: String
+    val itemId: String
+    val uploader: String?
+    val duration: String
+    val imageUrl: String
+    val url: String
+    val squareArt: Boolean
+    val uploaderId: String?
+}
+
+data class VideoResultItem(
+    override val name: String,
+    override val itemId: String,
+    override val uploader: String,
+    override val duration: String,
+    override val imageUrl: String,
+    override val url: String,
+    override val uploaderId: String?,
+) : SearchResultItem {
+    override val squareArt: Boolean = false
+}
+
+data class ChannelResultItem(
+    override val name: String,
+    override val itemId: String,
+    override val imageUrl: String,
+    override val url: String,
+) : SearchResultItem {
+    override val squareArt: Boolean = true
+    override val uploader: String? = null
+    override val duration: String = ""
+    override val uploaderId: String? = null
+}
+
+data class PlaylistResultItem(
+    override val name: String,
+    override val itemId: String,
+    override val uploader: String,
+    override val imageUrl: String,
+    override val url: String,
+    override val uploaderId: String?,
+) : SearchResultItem {
+    override val squareArt: Boolean = false
+    override val duration: String = ""
+}
+
+data class MusicResultItem(
+    override val name: String,
+    override val itemId: String,
+    override val uploader: String,
+    override val duration: String,
+    override val imageUrl: String,
+    override val url: String,
+    override val uploaderId: String?,
+) : SearchResultItem {
+    override val squareArt: Boolean = true
 }

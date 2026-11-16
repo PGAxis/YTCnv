@@ -15,6 +15,8 @@
     <string name="choose_format">Choose format</string>
     <string name="choose_quality">Choose quality</string>
     <string name="download">Download</string>
+    <string name="download_all">Download all</string>
+    <string name="load_more">Load more</string>
     <string name="cancel">Cancel</string>
     <string name="load">Load metadata</string>
     <string name="download_history_caps">DOWNLOAD HISTORY</string>
@@ -73,6 +75,12 @@
     <string name="search_prompt">Search YouTube…</string>
     <string name="search_big_prompt">Search for a YouTube video</string>
     <string name="copy_url">Copy URL</string>
+    <string name="filter_youtube">YouTube</string>
+    <string name="filter_youtube_music">YouTube Music</string>
+    <string name="filter_videos">Videos</string>
+    <string name="filter_channels">Channels</string>
+    <string name="filter_playlists">Playlists</string>
+    <string name="filter_songs">Songs</string>
 
     <!-- History Screen -->
     <string name="hist_scr_redownload">Download again</string>
@@ -180,4 +188,16 @@
     <string name="margin_override_message">This download would fit if the safety margin were removed. Free: %1$s, needed without margin: %2$s. There\'s a risk of slowing your device down if storage gets too full. Remove the margin and download anyway?</string>
     <string name="margin_override_cancel">Cancel</string>
     <string name="margin_override_proceed">Download anyway</string>
+
+    <!-- Channel screen -->
+    <string name="back">Back</string>
+    <string name="added_to_queue">Added to queue</string>
+    <string name="tab_videos">Videos</string>
+    <string name="tab_playlists">Playlists</string>
+    <string name="tab_search">Search</string>
+    <string name="subscribers">%1$s subscribers</string>
+    <string name="channel_search_hint">Search in channel</string>
+    <string name="channel_search_scanned">Scanned %1$d videos</string>
+    <string name="channel_search_none">No videos found</string>
+    <string name="channel_search_more">Search further</string>
 </resources>

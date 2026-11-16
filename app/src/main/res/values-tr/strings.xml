@@ -15,6 +15,8 @@
     <string name="choose_format">Biçim seçin</string>
     <string name="choose_quality">Kaliteyi seçin</string>
     <string name="download">İndir</string>
+    <string name="download_all">Tümünü indir</string>
+    <string name="load_more">Daha fazla yükle</string>
     <string name="cancel">İptal</string>
     <string name="load">Meta verileri yükle</string>
     <string name="download_history_caps">İndirme Geçmişi</string>
@@ -73,6 +75,12 @@
     <string name="search_prompt">YouTube\'da ara…</string>
     <string name="search_big_prompt">Bir YouTube videosu ara</string>
     <string name="copy_url">URL\'yi kopyala</string>
+    <string name="filter_youtube">YouTube</string>
+    <string name="filter_youtube_music">YouTube Music</string>
+    <string name="filter_videos">Videolar</string>
+    <string name="filter_channels">Kanallar</string>
+    <string name="filter_playlists">Oynatma listeleri</string>
+    <string name="filter_songs">Şarkılar</string>
 
     <!-- History Screen -->
     <string name="hist_scr_redownload">Tekrar indir</string>
@@ -180,4 +188,16 @@
     <string name="margin_override_message">Güvenlik payı kaldırılırsa bu indirme sığar. Boş alan: %1$s, pay olmadan gereken: %2$s. Depolama çok dolarsa cihazın yavaşlama riski var. Payı kaldırıp yine de indirilsin mi?</string>
     <string name="margin_override_cancel">İptal</string>
     <string name="margin_override_proceed">Yine de indir</string>
+
+    <!-- Channel screen -->
+    <string name="back">Geri</string>
+    <string name="added_to_queue">Kuyruğa eklendi</string>
+    <string name="tab_videos">Videolar</string>
+    <string name="tab_playlists">Oynatma listeleri</string>
+    <string name="tab_search">Ara</string>
+    <string name="subscribers">%1$s abone</string>
+    <string name="channel_search_hint">Kanalda ara</string>
+    <string name="channel_search_scanned">%1$d video tarandı</string>
+    <string name="channel_search_none">Video bulunamadı</string>
+    <string name="channel_search_more">Aramaya devam et</string>
 </resources>

@@ -15,6 +15,8 @@
     <string name="choose_format">Format wählen</string>
     <string name="choose_quality">Qualität wählen</string>
     <string name="download">Herunterladen</string>
+    <string name="download_all">Alle herunterladen</string>
+    <string name="load_more">Mehr laden</string>
     <string name="cancel">Abbrechen</string>
     <string name="load">Metadaten laden</string>
     <string name="download_history_caps">DOWNLOADVERLAUF</string>
@@ -73,6 +75,12 @@
     <string name="search_prompt">YouTube durchsuchen…</string>
     <string name="search_big_prompt">Nach einem YouTube-Video suchen</string>
     <string name="copy_url">URL kopieren</string>
+    <string name="filter_youtube">YouTube</string>
+    <string name="filter_youtube_music">YouTube Music</string>
+    <string name="filter_videos">Videos</string>
+    <string name="filter_channels">Kanäle</string>
+    <string name="filter_playlists">Playlists</string>
+    <string name="filter_songs">Songs</string>
 
     <!-- History Screen -->
     <string name="hist_scr_redownload">Erneut herunterladen</string>
@@ -180,4 +188,16 @@
     <string name="margin_override_message">Dieser Download würde passen, wenn der Sicherheitspuffer entfernt würde. Frei: %1$s, benötigt ohne Puffer: %2$s. Es besteht das Risiko, dass das Gerät bei zu vollem Speicher langsamer wird. Puffer entfernen und trotzdem herunterladen?</string>
     <string name="margin_override_cancel">Abbrechen</string>
     <string name="margin_override_proceed">Trotzdem herunterladen</string>
+
+    <!-- Channel screen -->
+    <string name="back">Zurück</string>
+    <string name="added_to_queue">Zur Warteschlange hinzugefügt</string>
+    <string name="tab_videos">Videos</string>
+    <string name="tab_playlists">Playlists</string>
+    <string name="tab_search">Suche</string>
+    <string name="subscribers">%1$s Abonnenten</string>
+    <string name="channel_search_hint">Im Kanal suchen</string>
+    <string name="channel_search_scanned">%1$d Videos durchsucht</string>
+    <string name="channel_search_none">Keine Videos gefunden</string>
+    <string name="channel_search_more">Weitersuchen</string>
 </resources>

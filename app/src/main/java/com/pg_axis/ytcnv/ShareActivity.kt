@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -130,7 +131,7 @@ fun ShareBottomSheet(
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
                                     ),
-                                    border = androidx.compose.foundation.BorderStroke(
+                                    border = BorderStroke(
                                         width = 2.dp,
                                         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                     )

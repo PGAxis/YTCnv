@@ -320,9 +320,9 @@ fun HistoryItemRow(
                 ) {
                     Text(
                         text = when(isMp3) {
-                            true -> "MP3"
-                            false -> "MP4"
-                            else -> "N/A"
+                            true -> stringResource(R.string.audio)
+                            false -> stringResource(R.string.video)
+                            null -> "N/A"
                         },
                         textAlign = TextAlign.Center,
                         fontSize = 10.sp,
@@ -432,8 +432,8 @@ private fun ReorderableCollectionItemScope.QueueItemRow(
                 VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Text(
                     text = when (video.isAudioTarget) {
-                        true -> "MP3"
-                        false -> "MP4"
+                        true -> stringResource(R.string.audio)
+                        false -> stringResource(R.string.video)
                         null -> "N/A"
                     },
                     textAlign = TextAlign.End,

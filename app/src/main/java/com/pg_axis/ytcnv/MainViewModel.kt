@@ -268,7 +268,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
             if (suggested == null) return@launch
 
-            requestTitleAuthor(suggested.first, suggested.second) { title, author ->
+            requestTitleAuthor(currentVideo, suggested.first, suggested.second) { title, author ->
                 currentVideo.configure(target, isNative, qualityIndex, preferredAudioBitrate, title, author)
                 enqueueVideo(currentVideo)
                 onUrlChanged("")
@@ -298,20 +298,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun onTitleAuthorConfirmed() {
         cancelAutoDownloadTimer()
         showTitleAuthorDialog = false
-        pendingOnConfirm?.invoke(dialogTitle, dialogAuthor)
+        pendingOnConfirm?.invoke(dialogTitle, dialogAuthor) // enqueues first
         pendingOnConfirm = null
+        DownloadQueue.releaseKeepAlive(context)
     }
 
     fun onTitleAuthorDismissed() {
         cancelAutoDownloadTimer()
         showTitleAuthorDialog = false
         pendingOnConfirm = null
+        DownloadQueue.releaseKeepAlive(context)
     }
 
-    private fun requestTitleAuthor(title: String, author: String, onConfirm: (String, String) -> Unit) {
+    private fun requestTitleAuthor(video: Video, title: String, author: String, onConfirm: (String, String) -> Unit) {
         dialogTitle = title
         dialogAuthor = author
         pendingOnConfirm = onConfirm
+        DownloadQueue.acquireKeepAlive(context, video.notificationId)
         showTitleAuthorDialog = true
         onTitleAuthorDialogInteraction()
     }

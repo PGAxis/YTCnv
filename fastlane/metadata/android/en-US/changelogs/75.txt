@@ -1,0 +1,8 @@
+Bug fixes:
+- The history screen would still show "MP3" and "MP4" options, despite it being different codecs. Temporarily replaced with "Audio" and "Video"
+
+Additions:
+- Added playlist download support (currently only through the search screen, not by pasting the playlist link directly) (#17)
+- Added playlist and channel screens + per-channel search (#21)
+- Added a themed icon (#23)
+- Added search suggestions

@@ -1,0 +1,8 @@
+Opravy chyb:
+- Obrazovka historie stahování stále ukazovala "MP3" a "MP4", i když byli videa stažena v jiných kodecích. Zatím nahrazeno pomocí "Audio" a "Video"
+
+Co je nového:
+- Přidána podpora stahování playlistů (zatím jen skrz obrazovku vyhledávání, ne přímým vložením linku) (#17)
+- Přidány obrazovky playlistů a kanálů + vyhledábání v kanálu (#21)
+- Přidána ikona aplikace podporující téma (#23)
+- Přidány návrhy vyhledávání

@@ -24,8 +24,12 @@
 -keep class com.pg_axis.ytcnv.settings.SettingsSave { *; }
 -keep class com.pg_axis.ytcnv.settings.SettingsSave$** { *; }
 -keep class java.net.URLEncoder { *; }
+-keep class org.schabi.newpipe.extractor.services.youtube.protos.** { *; }
+
+-dontwarn org.mozilla.javascript.JavaToJSONConverters
 -dontwarn org.mozilla.javascript.tools.**
--dontwarn org.mozilla.javascript.tools.**
+-dontwarn javax.script.**
+-dontwarn jdk.dynalink.**
 
 -dontwarn com.google.re2j.Matcher
 -dontwarn com.google.re2j.Pattern

@@ -15,6 +15,8 @@
     <string name="choose_format">Выберите формат</string>
     <string name="choose_quality">Выберите качество</string>
     <string name="download">Загрузить</string>
+    <string name="download_all">Скачать всё</string>
+    <string name="load_more">Загрузить ещё</string>
     <string name="cancel">Отмена</string>
     <string name="load">Загрузить метаданные</string>
     <string name="download_history_caps">ИСТОРИЯ ЗАГРУЗОК</string>
@@ -73,6 +75,12 @@
     <string name="search_prompt">Поиск на YouTube…</string>
     <string name="search_big_prompt">Найти видео на YouTube</string>
     <string name="copy_url">Копировать ссылку</string>
+    <string name="filter_youtube">YouTube</string>
+    <string name="filter_youtube_music">YouTube Music</string>
+    <string name="filter_videos">Видео</string>
+    <string name="filter_channels">Каналы</string>
+    <string name="filter_playlists">Плейлисты</string>
+    <string name="filter_songs">Песни</string>
 
     <!-- History Screen -->
     <string name="hist_scr_redownload">Скачать снова</string>
@@ -180,4 +188,16 @@
     <string name="margin_override_message">Эта загрузка поместится, если убрать запас свободного места. Свободно: %1$s, нужно без запаса: %2$s. Есть риск замедления устройства при переполнении хранилища. Убрать запас и всё равно загрузить?</string>
     <string name="margin_override_cancel">Отмена</string>
     <string name="margin_override_proceed">Загрузить всё равно</string>
+
+    <!-- Channel screen -->
+    <string name="back">Назад</string>
+    <string name="added_to_queue">Добавлено в очередь</string>
+    <string name="tab_videos">Видео</string>
+    <string name="tab_playlists">Плейлисты</string>
+    <string name="tab_search">Поиск</string>
+    <string name="subscribers">Подписчиков: %1$s</string>
+    <string name="channel_search_hint">Поиск на канале</string>
+    <string name="channel_search_scanned">Просмотрено видео: %1$d</string>
+    <string name="channel_search_none">Ничего не найдено</string>
+    <string name="channel_search_more">Искать дальше</string>
 </resources>

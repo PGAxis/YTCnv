@@ -56,7 +56,6 @@ import com.pg_axis.ytcnv.dialogs.UpdateDialog
 import com.pg_axis.ytcnv.side_pages.DownloadOptionsPicker
 import com.pg_axis.ytcnv.side_pages.PlaylistPickerSheet
 import com.pg_axis.ytcnv.ui.theme.PopupError
-import java.util.Locale
 
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
@@ -578,17 +577,5 @@ fun MainScreen(
                 )
             }
         }
-    }
-}
-
-private fun formatDuration(seconds: Long): String {
-    if (seconds < 0) return "--"
-    val h = seconds / 3600
-    val m = (seconds % 3600) / 60
-    val s = seconds % 60
-    return when {
-        h > 0 -> String.format(Locale.getDefault(), "%dh %02dm", h, m)
-        m > 0 -> String.format(Locale.getDefault(), "%dm %02ds", m, s)
-        else -> "${s}s"
     }
 }

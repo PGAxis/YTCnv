@@ -13,6 +13,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.pg_axis.ytcnv.search_screens.ChannelScreen
+import com.pg_axis.ytcnv.search_screens.ChannelViewModel
+import com.pg_axis.ytcnv.search_screens.PlaylistScreen
+import com.pg_axis.ytcnv.search_screens.PlaylistViewModel
+import com.pg_axis.ytcnv.search_screens.PreviewScreen
+import com.pg_axis.ytcnv.search_screens.PreviewViewModel
 import com.pg_axis.ytcnv.side_pages.FormatInfoScreen
 import com.pg_axis.ytcnv.side_pages.HistoryScreen
 
@@ -54,7 +60,9 @@ fun AppNavigation(initialUrl: String? = null) {
             SearchScreen(
                 onBack = { popBack() },
                 onEnqueue = { video -> mainViewModel.enqueueVideo(video) },
-                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") }
+                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
+                onChannel = { channelId -> navController.navigate("channel/$channelId") },
+                onPlaylist = { playlistId -> navController.navigate("playlist/$playlistId") }
             )
         }
         composable("settings") {
@@ -75,6 +83,34 @@ fun AppNavigation(initialUrl: String? = null) {
             PreviewScreen(
                 onBack = { popBack() },
                 viewModel = previewViewModel
+            )
+        }
+        composable("channel/{channelId}") { backStackEntry ->
+            val channelId = backStackEntry.arguments?.getString("channelId") ?: return@composable
+            val channelViewModel: ChannelViewModel = viewModel(
+                viewModelStoreOwner = backStackEntry,
+                factory = ChannelViewModel.factory(channelId)
+            )
+            ChannelScreen(
+                onBack = { popBack() },
+                onEnqueue = { video -> mainViewModel.enqueueVideo(video) },
+                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
+                onPlaylist = { playlistId -> navController.navigate("playlist/$playlistId") },
+                viewModel = channelViewModel
+            )
+        }
+        composable("playlist/{playlistId}") { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getString("playlistId") ?: return@composable
+            val playlistViewModel: PlaylistViewModel = viewModel(
+                viewModelStoreOwner = backStackEntry,
+                factory = PlaylistViewModel.factory(playlistId)
+            )
+            PlaylistScreen(
+                onBack = { popBack() },
+                onEnqueue = { video -> mainViewModel.enqueueVideo(video) },
+                onPreviewVideo = { videoId -> navController.navigate("preview/$videoId") },
+                onChannel = { channelId -> navController.navigate("channel/$channelId") },
+                viewModel = playlistViewModel
             )
         }
         composable("history") {

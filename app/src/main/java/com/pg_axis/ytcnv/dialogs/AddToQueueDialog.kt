@@ -35,11 +35,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pg_axis.ytcnv.R
-import com.pg_axis.ytcnv.SearchViewModel
+import com.pg_axis.ytcnv.search_screens.QueueViewModel
 import com.pg_axis.ytcnv.side_pages.DownloadOptionsPicker
 
 @Composable
-fun AddToQueueDialog(viewModel: SearchViewModel) {
+fun AddToQueueDialog(viewModel: QueueViewModel) {
     val item = viewModel.queueItem ?: return
     val video = viewModel.queueVideo
     val settings = viewModel.settings
@@ -65,7 +65,7 @@ fun AddToQueueDialog(viewModel: SearchViewModel) {
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = item.title,
+                    text = item.name,
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,

@@ -213,9 +213,5 @@ class DownloadNotificationService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     override fun onBind(intent: Intent?): IBinder? = null
 }
